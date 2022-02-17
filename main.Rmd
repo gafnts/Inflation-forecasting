@@ -22,22 +22,50 @@ bibliography: bibliography.bib
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-## R Markdown
+\allsectionsfont{\centering}
+\subsectionfont{\raggedright}
+\subsubsectionfont{\raggedright}
 
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+\pagenumbering{gobble}
 
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+\begin{centering}
 
-```{r cars}
-summary(cars)
-```
+\vspace{3cm}
 
-## Including Plots
+\vspace{1cm}
 
-You can also embed plots, for example:
+\Large
+{\bf The University Of Edinburgh}
 
-```{r pressure, echo=FALSE}
-plot(pressure)
-```
+\Large
+{\bf School Of Geosciences}
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+\vspace{1cm}
+
+\Large
+
+\doublespacing
+{\bf COMPARISON OF TOP-DOWN AND BOTTOM-UP APPROACHES ON SPECIFIC LEAF AREA PATTERNS, \\AT GLOBAL, LATITUDINAL, AND BIOME SCALES}
+
+\vspace{1 cm}
+
+\normalsize
+\singlespacing
+By
+
+\vspace{0.5 cm}
+
+\Large
+
+{\bf ANNA CHIRUMBOLO}
+
+\vspace{1.5 cm}
+
+in partial fulfilment of the requirement \\for the degree of BSc with Honours \\in Ecological and Environmental Sciences
+
+\vspace{1.5 cm}
+
+\normalsize
+mm yy
+
+\end{centering}
