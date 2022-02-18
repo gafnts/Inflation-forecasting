@@ -1,0 +1,35 @@
+---
+title: "Pronósticos de inflación en Guatemala: Modelos de series de tiempo *versus* modelos de aprendizaje estadístico"
+author: Gabriel A. Fuentes^[Séptimo semestre, Teoría y Política Monetaria. Correo electrónico`:` gafnts@gmail.com]
+date: "21 de abril, 2022"
+output:
+  pdf_document:
+    number_sections: FALSE
+geometry: "left = 2.5cm, right = 2.5cm, top = 2.5cm, bottom = 2.5cm"
+fontsize: 11pt
+bibliography: bibliography.bib
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+\begin{centering}
+
+\large
+
+\bf Resumen
+
+\end{centering}
+
+Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque nibh ex, mollis nec turpis ac, ultrices mollis quam. Aliquam sed tortor eget dolor dignissim ornare quis in nibh. Duis non nisl convallis, ornare erat et, sagittis mauris. Mauris sit amet sapien vehicula, volutpat mi laoreet, viverra tellus. Aliquam id placerat risus, sed convallis urna. Phasellus varius iaculis tellus ac venenatis. Pellentesque molestie libero orci, in hendrerit dolor semper quis. Nunc sed dolor facilisis, faucibus odio semper, accumsan tellus. Proin pretium felis et urna commodo, in tempor sapien iaculis. Quisque feugiat tincidunt porta. Nulla vestibulum vel nibh non rhoncus. Nunc eu urna velit. In imperdiet magna eget ex auctor, porta aliquam lorem cursus. Nullam et commodo mauris. In ullamcorper egestas erat, quis faucibus lectus. Nullam pellentesque quam eget nibh condimentum, in vestibulum neque posuere. Sed sed lorem vitae lacus laoreet aliquet. Curabitur egestas enim a odio lacinia sodales. Vestibulum fermentum, dui.
+
+\vspace{1 cm}
+
+\normalsize
+
+\textbf{JEL Classification:} C14; C15; C22; C53; C55; E17; E31.
+
+\textbf{Keywords:} Machine learning; Inflación; Pronósticos.
+
+\newpage
