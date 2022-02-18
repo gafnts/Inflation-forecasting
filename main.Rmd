@@ -4,7 +4,7 @@ author: Gabriel A. Fuentes^[Séptimo semestre, Teoría y Política Monetaria. Co
 date: "21 de abril, 2022"
 output:
   pdf_document:
-    number_sections: FALSE
+    number_sections: TRUE
 geometry: "left = 2.5cm, right = 2.5cm, top = 2.5cm, bottom = 2.5cm"
 fontsize: 11pt
 bibliography: bibliography.bib
@@ -28,8 +28,42 @@ Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque nibh ex, mollis
 
 \normalsize
 
-\textbf{JEL Classification:} C14; C15; C22; C53; C55; E17; E31.
-
 \textbf{Keywords:} Machine learning; Inflación; Pronósticos.
 
+\textbf{JEL Classification:} C14; C15; C22; C53; C55; E17; E31.
+
 \newpage
+
+```{r intro, child = 'intro.Rmd'}
+
+```
+
+\newpage
+
+```{r framework, child = 'framework.Rmd'}
+
+```
+
+\newpage
+
+```{r methodology, child = 'methodology.Rmd'}
+
+```
+
+\newpage
+
+```{r results, child = 'results.Rmd'}
+
+```
+
+\newpage
+
+```{r conclusions, child = 'conclusions.Rmd'}
+
+```
+
+\newpage
+
+```{r biblio, child = 'bibliography.Rmd'}
+
+```
