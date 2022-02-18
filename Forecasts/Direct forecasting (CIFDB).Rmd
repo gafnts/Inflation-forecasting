@@ -1,0 +1,382 @@
+# Direct forecasting
+
+```{r}
+pacman::p_load(tidyverse, here)
+```
+
+## 1. Importing data
+
+```{r}
+data <- 
+  read_csv("database.csv") %>% 
+  select(-fecha) %>% 
+  relocate(inf = "ipc_variacion_interanual")
+
+data
+```
+
+## 2. Multi-output forecasting
+
+```{r}
+pacman::p_load(forecastML, glmnet, randomForest, xgboost)
+```
+
+```{r}
+date_frequency <- "1 month"
+dates <- seq(as.Date("2010-01-01"), as.Date("2021-10-01"), by = date_frequency)
+```
+
+```{r}
+data_train <- data[1:(nrow(data) - 12), ]
+data_test <- data[(nrow(data) - 12 + 1):nrow(data), ]
+
+data %>% 
+  ggplot(aes(x = dates, y = inf)) + 
+  geom_line() +
+  geom_vline(xintercept = dates[nrow(data_train)], color = "red", size = 1.1) +
+  theme_bw() + xlab("") + ylab("")
+```
+
+### a) Lagged dataframe
+
+```{r}
+outcome_col <- 1
+horizons <- c(1, 3, 6, 12)
+lookback <- c(1:6, 9, 12, 15)
+
+data_list <- create_lagged_df(data_train,
+                             outcome_col = outcome_col,
+                             type = "train",
+                             horizons = horizons,
+                             lookback = lookback,
+                             date = dates[1:nrow(data_train)],
+                             frequency = date_frequency)
+
+plot(data_list)
+```
+
+### b) Windows
+
+```{r}
+windows <- create_windows(lagged_df = data_list, 
+                          window_length = 12, 
+                          skip = 36,
+                          window_start = NULL, 
+                          window_stop = NULL,
+                          include_partial_window = TRUE)
+windows
+
+plot(windows, data_list, show_labels = TRUE)
+```
+
+### c) Model training
+
+#### Modeling functions
+
+```{r}
+# Lasso
+model_function <- function(data) {
+
+  x <- data[, -(1), drop = FALSE]
+  y <- data[, 1, drop = FALSE]
+  x <- as.matrix(x, ncol = ncol(x))
+  y <- as.matrix(y, ncol = ncol(y))
+
+  model <- glmnet::cv.glmnet(x, y, nfolds = 3)
+  return(list("model" = model))
+}
+
+# Random Forest
+model_function_2 <- function(data) {
+
+  outcome_names <- names(data)[1]
+  model_formula <- formula(paste0(outcome_names,  "~ ."))
+
+  model <- randomForest::randomForest(formula = model_formula, data = data, ntree = 200)
+  return(model)
+}
+
+# XGBoost
+model_function_3 <- function(data, outcome_col = 1) {
+  
+  data <- data[!is.na(data[, outcome_col]), ]
+
+  indices <- 1:nrow(data)
+  
+  set.seed(123)
+  train_indices <- sample(1:nrow(data), ceiling(nrow(data) * .8), replace = FALSE)
+  test_indices <- indices[!(indices %in% train_indices)]
+
+  data_train <- xgboost::xgb.DMatrix(data = as.matrix(data[train_indices,
+                                                           -(outcome_col), drop = FALSE]),
+                                     label = as.matrix(data[train_indices, 
+                                                            outcome_col, drop = FALSE]))
+
+  data_test <- xgboost::xgb.DMatrix(data = as.matrix(data[test_indices, 
+                                                          -(outcome_col), drop = FALSE]),
+                                    label = as.matrix(data[test_indices, 
+                                                           outcome_col, drop = FALSE]))
+
+  params <- list("objective" = "reg:squarederror")
+  watchlist <- list(train = data_train, test = data_test)
+  
+  set.seed(234)
+  model <- xgboost::xgb.train(data = data_train, params = params, 
+                              max.depth = 8, nthread = 2, nrounds = 30, verbose = 0, 
+                              early_stopping_rounds = 5, 
+                              watchlist = watchlist)
+
+  return(model)
+}
+```
+
+#### Multi-session training
+
+```{r}
+library(future)
+future::plan(future::multisession)
+
+model_results <- train_model(data_list, 
+                             windows, 
+                             model_name = "LASSO",
+                             model_function, 
+                             use_future = TRUE)
+
+model_results_2 <- train_model(data_list, 
+                               windows, 
+                               model_name = "RF",
+                               model_function_2, 
+                               use_future = TRUE)
+
+model_results_3 <- train_model(data_list, 
+                               windows, 
+                               model_name = "XGBoost",
+                               model_function_3, 
+                               use_future = TRUE)
+```
+
+### d) Model predictions
+
+#### Prediction functions
+
+```{r}
+# Lasso
+prediction_function <- function(model, data_features) {
+  x <- as.matrix(data_features, ncol = ncol(data_features))
+  data_pred <- data.frame("y_pred" = predict(model$model, x, s = "lambda.min"))
+  return(data_pred)
+}
+
+# Random Forest
+prediction_function_2 <- function(model, data_features) {
+  data_pred <- data.frame("y_pred" = predict(model, data_features))
+  return(data_pred)
+}
+
+# XGBoost
+prediction_function_3 <- function(model, data_features) {
+  x <- xgboost::xgb.DMatrix(data = as.matrix(data_features))
+  data_pred <- data.frame("y_pred" = predict(model, x),
+                          "y_pred_lower" = predict(model, x) - 2, 
+                          "y_pred_upper" = predict(model, x) + 2)
+  return(data_pred)
+}
+```
+
+#### Predictions
+
+```{r}
+data_results <- predict(model_results, 
+                        model_results_2,
+                        model_results_3,
+                        prediction_function = list(prediction_function,
+                                                   prediction_function_2,
+                                                   prediction_function_3),
+                        data = data_list)
+
+plot(data_results, type = "prediction", horizons = c(1, 6, 12))
+```
+
+```{r}
+plot(data_results, type = "forecast_stability", windows = 3)
+```
+
+### e) Model performance
+
+```{r}
+data_error <- forecastML::return_error(data_results)
+data_error$error_global[, -1] <- lapply(data_error$error_global[, -1], round, 1)
+data_error$error_global
+```
+
+```{r}
+plot(data_error, type = "window", facet = ~ horizon, horizons = c(1, 6, 12))
+```
+
+```{r}
+plot(data_error, type = "horizon", facet = ~ horizon, horizons = c(1, 6, 12))
+```
+
+```{r}
+plot(data_error, type = "global", facet = ~ horizon)
+```
+
+### f) Hyperparameters
+
+```{r}
+hyper_function <- function(model) {
+
+  lambda_min <- model$model$lambda.min
+  lambda_1se <- model$model$lambda.1se
+
+  data_hyper <- data.frame("lambda_min" = lambda_min, "lambda_1se" = lambda_1se)
+  return(data_hyper)
+}
+```
+
+```{r}
+data_hyper <- forecastML::return_hyper(model_results, hyper_function)
+
+plot(data_hyper, data_results, data_error, type = "stability", horizons = c(1, 6, 12))
+```
+
+```{r}
+plot(data_hyper, data_results, data_error, type = "error", c(1, 6, 12))
+```
+
+## 3. Forecast
+
+```{r}
+data_forecast_list <- create_lagged_df(data_train,
+                                       outcome_col = outcome_col,
+                                       type = "forecast",
+                                       horizons = horizons,
+                                       lookback = lookback,
+                                       date = dates[1:nrow(data_train)],
+                                       frequency = date_frequency)
+
+data_forecast_list$horizon_6 %>% as_tibble()
+```
+
+```{r}
+data_forecast <- 
+  predict(model_results,
+          model_results_2,
+          model_results_3,
+          prediction_function = list(prediction_function,
+                                     prediction_function_2,
+                                     prediction_function_3),
+          data = data_forecast_list)
+
+data_forecast %>% as_tibble()
+```
+
+### a) Forecasts
+
+```{r}
+plot(data_forecast,
+     data_actual = data,
+     actual_indices = dates, 
+     horizons = c(1, 6, 12))
+```
+
+### b) Forecast error
+
+```{r}
+data_error <- return_error(data_forecast,
+                           data_test = data_test,
+                           test_indices = dates[(nrow(data_train) + 1):length(dates)])
+
+plot(data_error, facet = ~ horizon, type = "window")
+```
+
+```{r}
+plot(data_error, facet = ~ horizon, type = "horizon")
+```
+
+```{r}
+plot(data_error, facet = ~ horizon, type = "global")
+```
+
+## 4. Model selection and re-training
+
+```{r}
+data_list <- create_lagged_df(data_train,
+                              outcome_col = outcome_col,
+                              type = "train",
+                              horizons = horizons,
+                              lookback = lookback,
+                              date = dates[1:nrow(data_train)],
+                              frequency = date_frequency)
+```
+
+```{r}
+windows <- create_windows(data_list, window_length = 0)
+plot(windows, data_list, show_labels = TRUE)
+```
+
+```{r}
+model_results <- train_model(data_list, 
+                             windows,  
+                             model_name = "LASSO", 
+                             model_function)
+
+data_results <- predict(model_results, 
+                        prediction_function = list(prediction_function), 
+                        data = data_list)
+
+data_results %>% as_tibble()
+```
+
+```{r}
+plot(data_results, type = "prediction", horizons = c(1, 6, 12))
+```
+
+### a) Forecast with 1 Model Per Horizon
+
+```{r}
+data_forecast_list <- create_lagged_df(data_train,
+                                       outcome_col = outcome_col,
+                                       type = "forecast",
+                                       horizons = horizons,
+                                       lookback = lookback,
+                                       date = dates[1:nrow(data_train)],
+                                       frequency = date_frequency)
+
+data_forecast <- predict(model_results, 
+                         prediction_function = list(prediction_function), 
+                         data = data_forecast_list)
+
+plot(data_forecast,
+     data_actual = data,
+     actual_indices = dates,
+     horizons = c(1, 6, 12))
+```
+
+```{r}
+data_error <- 
+  return_error(data_forecast, 
+               data_test = data_test, 
+               test_indices = dates[(nrow(data_train) + 1):nrow(data)])
+
+plot(data_error, type = "horizon", facet = ~ horizon)
+```
+
+## 5. Forecast combination
+
+```{r}
+data_combined <- combine_forecasts(data_forecast)
+
+data_actual <- data[dates >= as.Date("2010-01-01"), ]
+actual_indices <- dates[dates >= as.Date("2010-01-01")]
+
+plot(data_combined, data_actual = data_actual, actual_indices = actual_indices)
+```
+
+```{r}
+return_error(data_combined, data_actual, actual_indices)$error_by_horizon
+```
+
+```{r}
+return_error(data_combined, data_actual, actual_indices)$error_global
+```

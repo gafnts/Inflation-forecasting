@@ -1,0 +1,217 @@
+```{r}
+pacman::p_load(tidyverse, magrittr, here, janitor, lubridate, purrr)
+```
+
+# Comprehensive Inflation Forecasting Database
+
+## Importing and cleaning function
+
+### Monthly function
+
+```{r}
+import <- function(name) {
+  data <- 
+    read_csv(name, skip = 5) %>% 
+    clean_names() %>% 
+    rename(fecha = "x1") %>% 
+    drop_na()
+
+  cleaned <- 
+    data %>% 
+    separate(fecha, c("Año", "Mes")) %>% 
+    mutate(Año = as.integer(Año),
+           Mes = rep(1:12, length.out = nrow(data)),
+           Día = 1,
+           fecha = make_date(year = Año, month = Mes, day = Día)) %>% 
+    select(-Año, -Mes, -Día) %>% 
+    select(fecha, everything())
+}
+```
+
+## Categories
+
+### (a) Dinero
+
+```{r}
+setwd(here("CIFDB", "Dinero"))
+
+a <- import("Base monetaria.csv")
+b <- import("Crédito total.csv")
+c <- import("Depósitos totales.csv")
+d <- import("M1.csv")
+e <- import("M2 y M3.csv")
+f <- import("Títulos emitidos por BC.csv")
+
+setwd(here("CIFDB"))
+
+dinero <- 
+  reduce(list(a, b, c, d, e, f), dplyr::left_join, by = "fecha")
+
+dinero %<>% 
+  select(-depositos_y_valores_de_otros_sectores) %>% 
+  mutate(titulos_emitidos_por_el_banco_central_total =
+           round(titulos_emitidos_por_el_banco_central_en_mn +
+           titulos_emitidos_por_el_banco_central_en_me, 2)) %>% 
+  write_csv("dinero.csv")
+```
+
+### (b) Exterior
+
+```{r}
+setwd(here("CIFDB", "Exterior"))
+
+a <- import("Exports Agriculture.csv")
+b <- import("Exports.csv")
+c <- import("Imports Hidrocarburos.csv")
+d <- import("Imports.csv")
+e <- import("Remesas.csv")
+f <- import("RIN.csv")
+
+setwd(here("CIFDB"))
+
+exterior <- 
+  reduce(list(a, b, c, d, e, f), dplyr::left_join, by = "fecha") %>% 
+  write_csv("exterior.csv")
+```
+
+### (c) Mercado de valores
+
+```{r}
+setwd(here("CIFDB", "Mercado de valores"))
+
+a <- import("Volumen transado.csv")
+
+setwd(here("CIFDB"))
+
+valores <- 
+  a %>% 
+  write_csv("valores.csv")
+```
+
+### (d) Precios
+
+```{r}
+setwd(here("CIFDB", "Precios"))
+
+a <- import("EXPEC.csv")
+b <- import("IPC.csv")
+c <- import("ISI.csv")
+
+setwd(here("CIFDB"))
+
+precios <- 
+  reduce(list(a, b, c), dplyr::left_join, by = "fecha") %>% 
+  write_csv("precios.csv")
+```
+
+### (e) Producción
+
+IMAE (Únicamente serie original)
+
+```{r}
+setwd(here("CIFDB", "Producción"))
+
+a <- read_csv("IMAE.csv", skip = 6) %>% 
+  clean_names() %>% 
+  rename(fecha = "x1",
+         imae = "imae_2",
+         imae_variacion_interanual = "imae_variacion_interanual_3",
+         imae_variacion_acumulada = "imae_variacion_acumulada_4"
+         ) %>% 
+  select(1:4) 
+
+a %<>%
+  separate(fecha, c("Año", "Mes")) %>%
+  mutate(Año = as.integer(Año), 
+         Mes = rep(1:12, length.out = nrow(a)),
+         Día = 1,
+         fecha = make_date(year = Año, month = Mes, day = Día)) %>%
+  select(-Año,-Mes,-Día) %>%
+  select(fecha, everything())
+```
+
+```{r}
+setwd(here("CIFDB"))
+
+produccion <- 
+  a %>% 
+  write_csv("produccion.csv")
+```
+
+PIB-T: Separar trimestres en promedios
+
+```{r}
+b <- read_csv("PIBT.csv", skip = 5) %>% 
+  clean_names() %>% 
+  rename(fecha = "x1")
+```
+
+```{r}
+setwd(here("CIFDB"))
+
+produccion <- 
+  reduce(list(a), dplyr::left_join, by = "fecha") %>% 
+  write_csv("produccion.csv")
+```
+
+### (f) Sector público
+
+```{r}
+setwd(here("CIFDB", "Sector público"))
+
+a <- import("Deuda externa.csv")
+b <- import("Deuda pública interna.csv")
+c <- import("Resultado fiscal.csv")
+
+setwd(here("CIFDB"))
+
+sec_publico <- 
+  reduce(list(a, b, c), dplyr::left_join, by = "fecha") %>% 
+  write_csv("sec_publico.csv")
+```
+
+### (g) Tasas de interés
+
+```{r}
+setwd(here("CIFDB", "Tasas de interés"))
+
+a <- import("Encaje.csv")
+b <- import("Tasa de interés política monetaria.csv")
+c <- import("Tasa de interés.csv")
+
+setwd(here("CIFDB"))
+
+tasas_interes <- 
+  reduce(list(a, b, c), dplyr::left_join, by = "fecha") %>% 
+  write_csv("tasas_interes.csv")
+```
+
+### (h) Tipos de cambio
+
+```{r}
+setwd(here("CIFDB", "Tipos de cambio"))
+
+a <- import("ITCER.csv")
+b <- import("Tipos cambiarios de mercado.csv")
+
+setwd(here("CIFDB"))
+
+tipos_cambiarios <- 
+  reduce(list(a, b), dplyr::left_join, by = "fecha") %>% 
+  write_csv("tipos_cambiarios.csv")
+```
+
+## Final database export
+
+### Without quarterly series
+
+```{r}
+setwd(here())
+
+database <- 
+  reduce(list(dinero, exterior, valores, precios, sec_publico,
+              tasas_interes, tipos_cambiarios, produccion), left_join, 
+         by = "fecha") %>% 
+  drop_na() %>% 
+  write_csv("database.csv")
+```
