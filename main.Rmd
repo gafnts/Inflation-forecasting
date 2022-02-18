@@ -18,7 +18,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 \large
 
-\bf Resumen
+\textbf{Resumen}
 
 \end{centering}
 
@@ -28,9 +28,9 @@ Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque nibh ex, mollis
 
 \normalsize
 
-\textbf{Keywords:} Machine learning; Inflación; Pronósticos.
+\textbf{Palabras clave:} Machine learning; Inflación; Pronósticos.
 
-\textbf{JEL Classification:} C14; C15; C22; C53; C55; E17; E31.
+\textbf{Clasificación JEL:} C14; C15; C22; C53; C55; E17; E31.
 
 \newpage
 
