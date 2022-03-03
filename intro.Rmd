@@ -1,1 +1,13 @@
+---
+bibliography: references.bib
+---
+
 # Introducción
+
+Instrucciones: En esta etapa, este apartado deberá describir brevemente el problema/pregunta principal de la investigación y la metodología que utilizarán para resolverlo.
+
+El artículo 3 de la Ley Orgánica del Banco de Guatemala establece que el objetivo fundamental de dicha institución consiste en propiciar las condiciones monetarias, cambiarias y crediticias que promuevan la estabilidad en el nivel general de precios.
+
+Para [@moenjak2014]
+
+Para @athey2019
