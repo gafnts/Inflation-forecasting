@@ -2,6 +2,4 @@
 bibliography: references.bib
 ---
 
-# Marco teórico
-
-This is just a test [@castillo2014]
+# Revisión de la literatura
