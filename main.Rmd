@@ -1,5 +1,5 @@
 ---
-title: "Pronósticos de inflación en Guatemala: Modelos de series de tiempo *versus* modelos de aprendizaje estadístico"
+title: "Pronósticos de inflación en Guatemala: Modelos de series de tiempo *versus* modelos de aprendizaje estadístico^[Con el propósito de maximizar la reproducibilidad del presente estudio, las bases de datos utilizadas y el código en R se encuentran disponibles en`:` https://github.com/gafnts/Inflation-forecasting]"
 author: Gabriel A. Fuentes^[Séptimo semestre, Teoría y Política Monetaria. Correo electrónico`:` gafnts@gmail.com]
 date: "21 de abril, 2022"
 output:
@@ -14,6 +14,7 @@ bibliography: bibliography.bib
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+```{=tex}
 \begin{centering}
 
 \large
@@ -21,16 +22,16 @@ knitr::opts_chunk$set(echo = TRUE)
 \textbf{Resumen}
 
 \end{centering}
-
+```
 Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque nibh ex, mollis nec turpis ac, ultrices mollis quam. Aliquam sed tortor eget dolor dignissim ornare quis in nibh. Duis non nisl convallis, ornare erat et, sagittis mauris. Mauris sit amet sapien vehicula, volutpat mi laoreet, viverra tellus. Aliquam id placerat risus, sed convallis urna. Phasellus varius iaculis tellus ac venenatis. Pellentesque molestie libero orci, in hendrerit dolor semper quis. Nunc sed dolor facilisis, faucibus odio semper, accumsan tellus. Proin pretium felis et urna commodo, in tempor sapien iaculis. Quisque feugiat tincidunt porta. Nulla vestibulum vel nibh non rhoncus. Nunc eu urna velit. In imperdiet magna eget ex auctor, porta aliquam lorem cursus. Nullam et commodo mauris. In ullamcorper egestas erat, quis faucibus lectus. Nullam pellentesque quam eget nibh condimentum, in vestibulum neque posuere. Sed sed lorem vitae lacus laoreet aliquet. Curabitur egestas enim a odio lacinia sodales. Vestibulum fermentum, dui.
 
 \vspace{1 cm}
 
 \normalsize
 
-\textbf{Palabras clave:} Machine learning; Inflación; Pronósticos.
+\textbf{Palabras clave:} Machine learning, deep learning, series de tiempo, pronósticos, inflación
 
-\textbf{Clasificación JEL:} C14; C15; C22; C53; C55; E17; E31.
+\textbf{Clasificación JEL:} E31, C22, C45, C53
 
 \newpage
 
