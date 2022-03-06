@@ -2,4 +2,4 @@
 bibliography: references.bib
 ---
 
-# Revisión de la literatura
+# Marco teórico

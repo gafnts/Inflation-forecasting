@@ -40,6 +40,10 @@ Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque nibh ex, mollis
 
 ```
 
+```{r litrev, child = 'literaturerev.Rmd'}
+
+```
+
 \newpage
 
 ```{r framework, child = 'framework.Rmd'}

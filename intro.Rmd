@@ -4,7 +4,7 @@ bibliography: references.bib
 
 # Introducción
 
-El artículo número tres de la ley orgánica del Banco de Guatemala establece que su objetivo fundamental consiste en propiciar las condiciones monetarias, cambiarias y crediticias que promuevan la estabilidad en el nivel general de precios. En el 2005, como parte de su esfuerzo por lograr este fin, dicha entidad adoptó un régimen de metas explícitas de inflación.
+El artículo número tres de la ley orgánica del Banco de Guatemala establece que su objetivo fundamental consiste en propiciar las condiciones monetarias, cambiarias y crediticias que promuevan la estabilidad en el nivel general de precios. En el 2005, como parte de su esfuerzo por lograr este fin, dicha entidad adoptó por conducir sus acciones a través de un marco de metas explícitas de inflación.
 
 Debido a que naturalmente existe un periodo de tiempo entre el ajuste de las condiciones monetarias por parte del banco central y el efecto que este cambio podría originar en las variables reales del sistema macroeconómico, la autoridad monetaria, bajo un régimen de metas de inflación, actúa en el presente considerando sus pronósticos sobre el comportamiento de los precios en el futuro.
 
@@ -18,20 +18,12 @@ Por el otro, algoritmos de aprendizaje estadístico[^1] (*machine learning*) com
 
 [^1]: A lo largo de la presente investigación los términos "aprendizaje estadístico", "aprendizaje de máquina" y "aprendizaje automático" serán empleados indistintamente.
 
-En general, los modelos de series de tiempo asumen que las variables empleadas durante la estimación de los parámetros se vinculan entre sí a través de una dinámica intrínseca regida por relaciones lineales que únicamente conducen a soluciones que oscilan periódicamente o que exhiben un comportamiento exponencial, de modo que la totalidad en la conducta irregular del sistema es atribuida únicamente a una entrada que es tanto externa como estocástica [@kantz2004nonlinear]. Sin embargo, esta entrada aleatoria puede no ser la fuente exclusiva de irregularidad. Existe evidencia que tanto series macroeconómicas como datos financieros exhiben interesantes estructuras no-lineales que se originan debido al impacto de perturbaciones en diferentes fases del ciclo económico [@lebaron1994].
+En general, los modelos de series de tiempo asumen que las variables empleadas durante la estimación de los parámetros se vinculan entre sí a través de una dinámica intrínseca regida por relaciones lineales que únicamente conducen a soluciones que oscilan periódicamente o que exhiben un comportamiento exponencial, de modo que la totalidad en la conducta irregular del sistema es atribuida únicamente a una entrada que es tanto exógena como estocástica [@kantz2004nonlinear].
 
-**Pregunta principal de la investigación.**
+Sin embargo, esta entrada aleatoria puede no ser la fuente exclusiva de irregularidad. Existe evidencia que tanto series macroeconómicas como datos financieros exhiben interesantes estructuras no-lineales que se originan debido al impacto de perturbaciones en diferentes fases del ciclo económico [@lebaron1994].
 
-Por lo que, dada la naturaleza no-lineal entre la relación entre las variables macroeconómicas y el ritmo inflacionario, ha habido un mayor interés en el uso de modelos no lineales.
+Dada la naturaleza no-lineal entre la relación de las variables macroeconómicas, existe cada vez un mayor énfasis en la aplicación de modelos de *machine learning* [@athey2019]. Precisamente, tal es el propósito del presente estudio.
 
-**Metodología que se utilizará para resolverlo.**
+Por medio de una competencia de predicciones fuera de muestra (*out-of-sample*) entre una amplia gama de modelos que difieren respecto de ciertas características esenciales, esta investigación buscará arrojar luz sobre si modelos de aprendizaje automático tales como bosques aleatorios (*random forest*), k vecinos más cercanos (KNN), máquinas de vectores de soporte (SVM), redes neuronales de una sola capa (*single-layer perceptron*) y redes neuronales recurrentes de larga memoria de corto plazo (LSTM) son capaces de generar pronósticos más eficientes en distintos horizontes temporales---comparados a través de tres criterios de evaluación (RMSE, WAPE y MAE)---al contrastarlos con los pronósticos de un repertorio de modelos estimados a partir de métodos econométricos tradicionales.
 
-La metodología consistirá en una competencia de predicción fuera de muestra (*out-of-sample*) entre una amplia gama de modelos que difieren con respecto a ciertas características esenciales: linealidad o no linealidad, regularización y selección de hiperparámetros.
-
-Algunos de los modelos más populares como redes neuronales artificiales (ANN) y redes neuronales recurrentes (RNN), máquinas de vectores de soporte (SVM), bosques aleatorios (*random forest*) y pronósticos de ensambles entre modelos de series de tiempo y algoritmos de aprendizaje automático.
-
-**¿Por qué es importante?**
-
-High inflation rates deteriorate economic growth rates, diminish real wages, and increase production costs. Similarly, a low inflationary environment is considered as a negative eco- nomic indicator that is associated with decreasing level of the demand in the economy. Therefore, the forecasting of inflation within different time horizons is important. The aim of this study is to compare time series and machine learning models for inflation forecasting in different horizons [@ülke2018].
-
-**Resumen de la composición estructural del documento en cuestión.**
+El resto del documento se subdividirá de la siguiente manera. La sección dos hace un repaso sobre la literatura basada en pronósticos de inflación a partir de diversas metodologías para Guatemala, así como para el resto del mundo. La sección tres se ocupa de () un marco teórico con el objeto de definir los métodos que serán empleados a partir de la sección cuatro. Esta última
