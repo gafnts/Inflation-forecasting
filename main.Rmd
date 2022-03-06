@@ -1,5 +1,5 @@
 ---
-title: "Pronósticos de inflación en Guatemala: Modelos de series de tiempo *versus* modelos de aprendizaje estadístico^[Con el propósito de maximizar la reproducibilidad del presente estudio, las bases de datos utilizadas y el código en R se encuentran disponibles en`:` https://github.com/gafnts/Inflation-forecasting]"
+title: "Pronósticos de inflación en Guatemala: Modelos de series de tiempo *versus* algoritmos de aprendizaje estadístico^[Con el propósito de maximizar la reproducibilidad del presente estudio, las bases de datos utilizadas y el código en R se encuentran disponibles en`:` https://github.com/gafnts/Inflation-forecasting]"
 author: Gabriel A. Fuentes^[Séptimo semestre, Teoría y Política Monetaria. Correo electrónico`:` gafnts@gmail.com]
 date: "21 de abril, 2022"
 output:
