@@ -18,4 +18,20 @@ Por el otro, algoritmos de aprendizaje estadístico[^1] (*machine learning*) com
 
 [^1]: A lo largo de la presente investigación los términos "aprendizaje estadístico", "aprendizaje de máquina" y "aprendizaje automático" serán empleados indistintamente.
 
+En general, los modelos de series de tiempo asumen que las variables empleadas durante la estimación de los parámetros se vinculan entre sí a través de una dinámica intrínseca regida por relaciones lineales que únicamente conducen a soluciones que oscilan periódicamente o que exhiben un comportamiento exponencial, de modo que la totalidad en la conducta irregular del sistema es atribuida únicamente a una entrada que es tanto externa como estocástica [@kantz2004nonlinear]. Sin embargo, esta entrada aleatoria puede no ser la fuente exclusiva de irregularidad. Existe evidencia que tanto series macroeconómicas como datos financieros exhiben interesantes estructuras no-lineales que se originan debido al impacto de perturbaciones en diferentes fases del ciclo económico [@lebaron1994].
+
+**Pregunta principal de la investigación.**
+
+Por lo que, dada la naturaleza no-lineal entre la relación entre las variables macroeconómicas y el ritmo inflacionario, ha habido un mayor interés en el uso de modelos no lineales.
+
+**Metodología que se utilizará para resolverlo.**
+
+La metodología consistirá en una competencia de predicción fuera de muestra (*out-of-sample*) entre una amplia gama de modelos que difieren con respecto a ciertas características esenciales: linealidad o no linealidad, regularización y selección de hiperparámetros.
+
+Algunos de los modelos más populares como redes neuronales artificiales (ANN) y redes neuronales recurrentes (RNN), máquinas de vectores de soporte (SVM), bosques aleatorios (*random forest*) y pronósticos de ensambles entre modelos de series de tiempo y algoritmos de aprendizaje automático.
+
+**¿Por qué es importante?**
+
 High inflation rates deteriorate economic growth rates, diminish real wages, and increase production costs. Similarly, a low inflationary environment is considered as a negative eco- nomic indicator that is associated with decreasing level of the demand in the economy. Therefore, the forecasting of inflation within different time horizons is important. The aim of this study is to compare time series and machine learning models for inflation forecasting in different horizons [@ülke2018].
+
+**Resumen de la composición estructural del documento en cuestión.**
