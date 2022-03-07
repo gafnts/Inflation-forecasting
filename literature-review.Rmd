@@ -1,1 +1,7 @@
+---
+bibliography: references.bib
+---
+
 # Revisión de la literatura
+
+Trabajos que comparan series de tiempo con machine learning: @ülke2018, @moshiri2000
