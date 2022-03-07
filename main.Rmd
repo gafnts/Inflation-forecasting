@@ -8,7 +8,7 @@ output:
 geometry: "left = 2.5cm, right = 2.5cm, top = 2.5cm, bottom = 2.5cm"
 fontsize: 11pt
 bibliography: references.bib
-csl: apa-6th-edition.csl
+csl: apa.csl
 ---
 
 ```{r setup, include=FALSE}
@@ -40,7 +40,7 @@ Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque nibh ex, mollis
 
 ```
 
-```{r litrev, child = 'literaturerev.Rmd'}
+```{r litrev, child = 'literature-review.Rmd'}
 
 ```
 
