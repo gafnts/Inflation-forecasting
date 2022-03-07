@@ -6,7 +6,7 @@ bibliography: references.bib
 
 El artículo número tres de la ley orgánica del Banco de Guatemala establece que su objetivo fundamental consiste en propiciar las condiciones monetarias, cambiarias y crediticias que promuevan la estabilidad en el nivel general de precios. En el 2005, como parte de su esfuerzo por lograr este fin, dicha entidad optó por conducir sus acciones a través de un marco de metas de inflación.
 
-Dado a que naturalmente existe un periodo de tiempo entre el ajuste de las condiciones monetarias y el efecto que este cambio podría originar en las variables reales del sistema macroeconómico, la autoridad monetaria---bajo un régimen de metas explícitas de inflación---actúa en el presente considerando sus pronósticos sobre el comportamiento de los precios en el futuro.
+Dado a que naturalmente existe un periodo de tiempo entre el ajuste de las condiciones monetarias y el efecto que este cambio genera en las variables reales del sistema macroeconómico, la autoridad monetaria---bajo un régimen de metas explícitas de inflación---actúa en el presente considerando sus pronósticos sobre el comportamiento de los precios en el futuro.
 
 Concretamente, un cambio en la tasa de interés de política monetaria puede demorar entre 12 y 24 meses en ejercer una influencia en la demanda agregada y, por tanto, en tener un impacto en la evolución del ritmo inflacionario interno. En consecuencia, el banco central deberá pronosticar esta variable durante dicho horizonte temporal y efectuar sus decisiones de política monetaria de modo que pueda estar seguro de que los pronósticos y expectativas de inflación se mantendrán anclados a la meta establecida durante el mediano plazo [@moenjak2014a].
 
