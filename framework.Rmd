@@ -1,5 +1,0 @@
----
-bibliography: references.bib
----
-
-# Marco teórico
