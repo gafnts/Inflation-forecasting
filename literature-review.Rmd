@@ -4,4 +4,8 @@ bibliography: references.bib
 
 # Revisión de la literatura
 
-Trabajos que comparan series de tiempo con machine learning: @ülke2018, @moshiri2000
+Algunos autores afirman que la literatura dedicada a la comparación de pronósticos entre modelos econométricos y de aprendizaje de máquina es relativamente reciente. Por ejemplo, @rodríguez-vargas2020 observa que, si bien desde inicios de los años noventas ha habido diferentes estudios en los que variables macroeconómicas son pronosticadas utilizando modelos como KNN y redes neuronales artificiales (ANN), en general, en ningún momento estos autores se enfocaron en producir evaluaciones de las propiedades de sus pronósticos de manera sistemática.
+
+Sin embargo, un análisis más detenido permite apreciar que ya desde ese momento diversos estudios evalúan los resultados de predicciones generadas a través de redes neuronales y las contrastan con aquellas obtenidas por modelos autorregresivos integrados de medias móviles y de suavizamiento exponencial para series de tiempo en ámbitos macro y microeconómicos.
+
+@kang1991investigation encuentra que las predicciones de modelos ARIMA son iguales o superiores a las de 18 redes neuronales con arquitecturas diferentes. @foster1992 obtienen resultados similares; modelos de suavizamiento exponencial y mínimos cuadrados ordinarios producen pronósticos más eficientes que redes neuronales en series de tiempo anuales y mensuales, aunque comparables en series trimestrales. Mientras tanto, @hill1996 concluye que los pronósticos generados por redes neuronales son comparables con las predicciones de modelos econométricos tradicionales para series anuales y superiores en series mensuales y trimestrales. En general, resultados contradictorios entre investigaciones son una constante en este tipo de literatura.
