@@ -4,7 +4,7 @@ bibliography: references.bib
 
 # Introducción
 
-El artículo número tres de la ley orgánica del Banco de Guatemala establece que su objetivo fundamental consiste en propiciar las condiciones monetarias, cambiarias y crediticias que promuevan la estabilidad en el nivel general de precios. En el 2005, como parte de su esfuerzo por lograr este fin, dicha entidad optó por conducir sus acciones a través de un esquema de metas inflacionarias.
+El artículo número 3 de la ley orgánica del Banco de Guatemala establece que su objetivo fundamental consiste en propiciar las condiciones monetarias, cambiarias y crediticias que promuevan la estabilidad en el nivel general de precios. En el 2005, como parte de su esfuerzo por lograr este fin, dicha entidad optó por conducir sus acciones a través de un esquema de metas inflacionarias.
 
 Debido a que naturalmente existe un periodo de tiempo entre el ajuste de las condiciones monetarias y el efecto que este cambio genera en las variables reales del sistema macroeconómico, la autoridad monetaria---bajo un régimen de metas explícitas de inflación---actúa en el presente considerando sus pronósticos sobre el comportamiento de los precios en el futuro.
 
