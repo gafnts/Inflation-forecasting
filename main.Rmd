@@ -1,7 +1,7 @@
 ---
 title: "Pronósticos de inflación en Guatemala: ¿Modelos de series de tiempo o algoritmos de *machine learning*?^[Con el propósito de maximizar la reproducibilidad del presente estudio, las bases de datos utilizadas y el código en R se encuentran disponibles en`:` https://github.com/gafnts/Inflation-forecasting]"
 author: Gabriel A. Fuentes^[Séptimo semestre, Teoría y Política Monetaria. Correo electrónico`:` gafnts@gmail.com]
-date: "21 de abril, 2022"
+date: "10 de marzo, 2022"
 output:
   pdf_document:
     number_sections: TRUE
@@ -43,8 +43,6 @@ Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque nibh ex, mollis
 ```{r litrev, child = 'literature-review.Rmd'}
 
 ```
-
-\newpage
 
 ```{r methodology, child = 'methodology.Rmd'}
 
