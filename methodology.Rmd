@@ -1,1 +1,41 @@
 # Datos y metodología
+
+## Descripción de los datos
+
+-   Inflación (IPC) (¿intermensual o interanual?)
+
+**Canal: Demanda agregada**
+
+-   Tasa de interés de política monetaria
+
+-   Medio circulante
+
+-   Medios de pago
+
+-   Tasa de interés nominal (¿o real?) de mercado (¿pasiva o activa?)
+
+-   IMAE (tendencia ciclo)
+
+-   Crédito bancario al sector privado
+
+-   Gasto público (como porcentaje del gdp)
+
+**Canal: Tipo de cambio**
+
+-   Inflación externa (US)
+
+-   Tipo de cambio (nominal o real)
+
+-   Precio internacional del petróleo
+
+-   Grains index
+
+**Canal: Expectativas**
+
+-   Expectativas de inflación
+
+## Métodos de pre-procesamiento
+
+## Modelos, hiperparámetros y validación
+
+## Medidas de precisión
