@@ -37,7 +37,7 @@ setwd(here("data", "raw", "secmca"))
 filenames <- gsub("\\.csv$","", list.files(pattern = "\\.csv$"))
 
 for(i in filenames){
-  assign(i, import_secmca(paste(i, ".csv", sep="")))
+  assign(i, import_secmca(paste(i, ".csv", sep = "")))
 }
 
 setwd(here())
@@ -141,7 +141,7 @@ setwd(here("data", "raw", "fred"))
 filenames <- gsub("\\.csv$","", list.files(pattern = "\\.csv$"))
 
 for(i in filenames){
-  assign(i, read_csv(paste(i, ".csv", sep="")))
+  assign(i, read_csv(paste(i, ".csv", sep = "")))
 }
 
 setwd(here())
