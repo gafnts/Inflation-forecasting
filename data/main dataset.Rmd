@@ -43,6 +43,59 @@ for(i in filenames){
 setwd(here())
 ```
 
+### Variable selection
+
 ```{r}
-exchange
+exchange %<>% 
+  select(fecha,
+         "exchange" = tipo_de_cambio_de_compra_promedio_del_mes)
+
+expec %<>% 
+  select(fecha,
+         "expec" = expectativas_de_inflacion)
+
+imae %<>% 
+  select(fecha,
+         "imae" = imae_2) #tendencia-ciclo
+
+ipc %<>% 
+  select(fecha,
+         "ipc" = ipc_variacion_interanual)
+
+itcer %<>% 
+  select(fecha,
+         "itcer" = itcer_con_usa)
+
+money %<>% 
+  select(fecha,
+         "m1" = agregado_monetario_m1,
+         "m2" = agregado_monetario_m2)
+
+rates %<>% 
+  select(fecha,
+         "deprate" = tasa_de_interes_pasiva_real_en_mn)
+
+tpm %<>% 
+  select(fecha,
+         "tpm" = tasa_de_politica_monetaria)
+```
+
+### Dataset
+
+```{r}
+secmca <- 
+  exchange %>% 
+  inner_join(ipc) %>% 
+  inner_join(rates) %>% 
+  inner_join(itcer) %>% 
+  inner_join(imae) %>% 
+  inner_join(money) %>% 
+  inner_join(tpm) %>% 
+  inner_join(expec)
+```
+
+## Banguat
+
+```{r}
+
 ```
