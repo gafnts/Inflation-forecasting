@@ -1,7 +1,7 @@
 # General data wrangling
 
 ```{r}
-pacman::p_load(tidyverse, magrittr, janitor, here)
+pacman::p_load(tidyverse, magrittr, janitor, here, readxl)
 ```
 
 ## Secmca
@@ -91,15 +91,73 @@ secmca <-
   inner_join(imae) %>% 
   inner_join(money) %>% 
   inner_join(tpm) %>% 
-  inner_join(expec)
-```
-
-```{r}
-secmca %>% write_csv(here("data", "secmca.csv"))
+  inner_join(expec) %>% 
+  write_csv(here("data", "raw", "secmca.csv"))
 ```
 
 ## Banguat
 
 ```{r}
+cred <- 
+  read_xls(here("data", "raw", "banguat", "cred.xls")) %>% 
+  slice(3:15) %>%
+  select(2:29) %>% 
+  row_to_names(1) %>% 
+  clean_names() %>% 
+  mutate(mes = seq(1:12),
+         across(where(is.character), as.double)) %>%
+  pivot_longer(!mes, names_to = "año", values_to = "cred") %>% 
+  mutate(año = as.double(str_remove_all(año, "x"))) %>% 
+  arrange(año, mes) %>% 
+  mutate(fecha = as.Date(str_c(año, mes, "1", sep = "-")),
+         cred = round(cred, 2)) %>% 
+  select(fecha, cred)
 
+gov <- 
+  read_xls(here("data", "raw", "banguat", "gov.xls")) %>% 
+  slice(5:17) %>%
+  select(1:28) %>% 
+  row_to_names(1) %>% 
+  clean_names() %>% 
+  mutate(na = seq(1:12),
+         across(where(is.character), as.double)) %>%
+  pivot_longer(!na, names_to = "año", values_to = "gov") %>% 
+  mutate(año = as.double(str_remove_all(año, "x"))) %>% 
+  arrange(año, na) %>% 
+  mutate(fecha = as.Date(str_c(año, na, "1", sep = "-")),
+         gov = round(gov, 2)) %>% 
+  select(fecha, gov)
+```
+
+```{r}
+banguat <- cred %>% inner_join(gov) %>% write_csv(here("data", "raw", "banguat.csv"))
+```
+
+## Fred
+
+```{r}
+setwd(here("data", "raw", "fred"))
+
+filenames <- gsub("\\.csv$","", list.files(pattern = "\\.csv$"))
+
+for(i in filenames){
+  assign(i, read_csv(paste(i, ".csv", sep="")))
+}
+
+setwd(here())
+```
+
+```{r}
+fred <- 
+  cpi %>% 
+  inner_join(oil) %>% 
+  inner_join(sugar)
+
+fred %>% 
+  rename("fecha" = DATE,
+         "cpi" = CPIAUCSL,
+         "oil" = POILBREUSDM,
+         "sugar" = PSUGAISAUSDM) %>% 
+  mutate(across(where(is.numeric), ~round(.x, 4))) %>% 
+  write_csv(here("data", "raw", "fred.csv"))
 ```
