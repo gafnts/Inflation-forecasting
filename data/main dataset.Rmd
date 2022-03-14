@@ -6,11 +6,13 @@ pacman::p_load(tidyverse, magrittr, janitor, here)
 
 ## Secmca
 
+### Import/cleaning function
+
 ```{r}
-import_secmca <- function(file) {
+import_secmca <- function(file, n = 5) {
   data <- 
     read_csv(here("data", "raw", "secmca", file)) %>% 
-    slice(5:nrow(.)) %>% 
+    slice(n:nrow(.)) %>% 
     row_to_names(1) %>% 
     clean_names() %>% 
     select(where(~!all(is.na(.x)))) %>% 
@@ -27,6 +29,20 @@ import_secmca <- function(file) {
 }
 ```
 
+### Import loop
+
 ```{r}
-test <- import_secmca("expec.csv")
+setwd(here("data", "raw", "secmca"))
+
+filenames <- gsub("\\.csv$","", list.files(pattern = "\\.csv$"))
+
+for(i in filenames){
+  assign(i, import_secmca(paste(i, ".csv", sep="")))
+}
+
+setwd(here())
+```
+
+```{r}
+exchange
 ```
