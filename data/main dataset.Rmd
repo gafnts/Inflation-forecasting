@@ -1,5 +1,32 @@
 # General data wrangling
 
 ```{r}
-pacman::p_load(tidyverse, magrittr, here)
+pacman::p_load(tidyverse, magrittr, janitor, here)
+```
+
+## Secmca
+
+```{r}
+import_secmca <- function(file) {
+  data <- 
+    read_csv(here("data", "raw", "secmca", file)) %>% 
+    slice(5:nrow(.)) %>% 
+    row_to_names(1) %>% 
+    clean_names() %>% 
+    select(where(~!all(is.na(.x)))) %>% 
+    rename("fecha" = na) %>% 
+    separate(fecha, c("A", "B")) %>% 
+    mutate(C = rep(1:12, length.out = nrow(.)),
+           D = 1,
+           fecha = str_c(A, C, D, sep = "-")) %>% 
+    select(-c(A, B, C, D)) %>% 
+    select(fecha, everything()) %>% 
+    mutate(fecha = as.Date(fecha),
+           across(where(is.character), as.double)) %>% 
+    replace(is.na(.), 0)
+}
+```
+
+```{r}
+test <- import_secmca("expec.csv")
 ```
