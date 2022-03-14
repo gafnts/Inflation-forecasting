@@ -1,0 +1,5 @@
+# General data wrangling
+
+```{r}
+pacman::p_load(tidyverse, magrittr, here)
+```
