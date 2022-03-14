@@ -28,7 +28,7 @@
 
 -   Precio internacional del petróleo (OIL) \*
 
--   Precio internacional del azúcar
+-   Precio internacional del azúcar (SUGAR) \*
 
 **Canal: Expectativas**
 
