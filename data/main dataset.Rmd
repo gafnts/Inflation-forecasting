@@ -94,6 +94,10 @@ secmca <-
   inner_join(expec)
 ```
 
+```{r}
+secmca %>% write_csv(here("data", "secmca.csv"))
+```
+
 ## Banguat
 
 ```{r}
