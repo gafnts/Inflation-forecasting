@@ -2,37 +2,37 @@
 
 ## Descripción de los datos
 
--   Inflación (IPC) (¿intermensual o interanual?)
+-   Inflación (IPC) (¿intermensual o interanual?) \*
 
 **Canal: Demanda agregada**
 
--   Tasa de interés de política monetaria
+-   Tasa de interés de política monetaria (TPM) \*
 
--   Medio circulante
+-   Medio circulante (M1) \*
 
--   Medios de pago
+-   Medios de pago (M2) \*
 
--   Tasa de interés nominal (¿o real?) de mercado (¿pasiva o activa?)
+-   Tasa de interés nominal (¿o real?) de mercado (¿pasiva o activa?) (RATES) \*
 
--   IMAE (tendencia ciclo)
+-   IMAE (tendencia ciclo) (IMAE) \*
 
--   Crédito bancario al sector privado
+-   Crédito bancario al sector privado (CRED)\*
 
--   Gasto público (como porcentaje del gdp)
+-   Gasto público (GOV)\*
 
 **Canal: Tipo de cambio**
 
--   Inflación externa (US)
+-   Inflación externa (US) (CPI)\*
 
--   Tipo de cambio (nominal o real)
+-   Tipo de cambio (nominal o real) (Exchange) \*
 
--   Precio internacional del petróleo
+-   Precio internacional del petróleo (OIL) \*
 
--   Grains index
+-   Precio internacional del azúcar
 
 **Canal: Expectativas**
 
--   Expectativas de inflación
+-   Expectativas de inflación (EXPEC) \*
 
 ## Métodos de pre-procesamiento
 
