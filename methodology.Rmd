@@ -9,7 +9,7 @@
 \normalsize
 
 ```{r include=FALSE}
-pacman::p_load(tidyverse, kable, kableExtra, here)
+pacman::p_load(tidyverse, kableExtra, here)
 ```
 
 ```{r include=FALSE}
@@ -116,6 +116,90 @@ kbl(table_two,
 ```
 
 \renewcommand{\arraystretch}{1}
+
+\small
+
+\textbf{Cuadro 3:} Pruebas estadísticas
+
+\normalsize
+
+```{r include=FALSE}
+pacman::p_load(stats, tseries, pracma, broom)
+names <- main_longer %>% distinct(Variable) %>% pull()
+```
+
+```{r include=FALSE}
+autocorrelation <- function(data, variable) {
+  data %>% 
+    select(!!enquo(variable)) %>% 
+    pull() %>% 
+    as.ts() %>% 
+    Box.test(., lag = 1, type = "Ljung-Box") %>% 
+    tidy()
+}
+
+list <- list()
+autocor <- data.frame()
+
+for (i in names) {
+  list <- autocorrelation(main, all_of(i))
+  autocor <- rbind(autocor, list)
+}
+
+autocor %<>% 
+  cbind(main_longer %>% distinct(Variable)) %>% 
+  select(Variable, statistic, p.value) %>% 
+  slice(7, 13, 9, 10, 6, 3, 2, 5, 1, 8, 11, 12) %>% 
+  mutate(Autocorrelación = paste(round(statistic, 2), "(<0.01)", sep = " ")) %>% 
+  select(Variable, Autocorrelación)
+```
+
+```{r}
+jarque_bera <- function(data, variable) {
+  data %>% 
+    select(!!enquo(variable)) %>% 
+    pull() %>% 
+    as.ts() %>% 
+    jarque.bera.test(.) %>% 
+    tidy()
+}
+
+list <- list()
+jarque <- data.frame()
+
+for (i in names) {
+  list <- jarque_bera(main, all_of(i))
+  jarque <- rbind(jarque, list)
+}
+
+jarque %<>% 
+  cbind(main_longer %>% distinct(Variable)) %>% 
+  select(Variable, statistic, p.value) %>% 
+  slice(7, 13, 9, 10, 6, 3, 2, 5, 1, 8, 11, 12) %>% 
+  mutate(p.value = round(p.value, 4)) %>% 
+  mutate(Normalidad = paste0(round(statistic, 2), " ", 
+                             "(", format(p.value, scientific = FALSE), ")")) %>% 
+  select(Variable, Normalidad)
+```
+
+```{r}
+# Non-linearity
+main_longer %>% 
+  filter(Variable == "cpi") %>% 
+  pull(value) %>% 
+  as.ts() %>% 
+  white.test(., lag = 1, qstar = 2, q = 10, range = 4, 
+            type = c("Chisq","F"), scale = TRUE) %>% 
+  tidy()
+
+# Exponente de Hurst
+main_longer %>% 
+  filter(Variable == "cpi") %>% 
+  pull(value) %>% 
+  as.ts() %>% 
+  hurstexp(., display = F) %>% 
+  as_tibble()
+```
 
 ## Métodos de pre-procesamiento
 
