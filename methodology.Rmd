@@ -1,6 +1,6 @@
-# Metodología y datos
+# Datos y metodología
 
-## Descripción de los datos
+## Análisis de datos
 
 \small
 
@@ -15,7 +15,7 @@ pacman::p_load(tidyverse, kable, kableExtra, here)
 ```{r include=FALSE}
 table_one <- 
   tribble(
-  ~ Nombre, ~ Descripción, ~ Fuente,
+  ~ Variable, ~ Descripción, ~ Fuente,
   "ipc", "Tasa de variación interanual del índice de precios al consumidor", "INE",
   "tpm", "Tasa de interés de política monetaria", "BANGUAT",
   "m1", "Medio circulante (en millones de quetzales)", "SECMCA",
@@ -31,7 +31,7 @@ table_one <-
   )
 ```
 
-\renewcommand{\arraystretch}{2}
+\renewcommand{\arraystretch}{1.5}
 
 ```{r table_one, echo=FALSE}
 kbl(table_one, 
@@ -39,9 +39,13 @@ kbl(table_one,
     align = c("cll")) %>%
   kable_styling(font_size = 9,
                 full_width = T) %>% 
-  row_spec(0, bold = TRUE) %>% 
+  row_spec(0, bold = TRUE, extra_css = 'vertical-align: middle !important;') %>% 
   column_spec(1, width = "1.5cm") %>% 
-  column_spec(2, width = "11.9cm")
+  column_spec(2, width = "11.9cm") %>% 
+  group_rows(start_row = 1, 
+             end_row = 12, 
+             latex_align = "c",
+             latex_gap_space = "-0.55cm")
 ```
 
 \renewcommand{\arraystretch}{1}
@@ -53,6 +57,65 @@ $^2$ SECMCA: Secretaría Ejecutiva del Consejo Monetario Centroamericano\
 $^3$ FRED: Federal Reserve Bank of St. Louis
 
 \normalsize
+
+\small
+
+\textbf{Cuadro 2:} Estadísticas descriptivas
+
+\normalsize
+
+```{r include=FALSE}
+library(e1071)
+
+main <- read_csv(here("data", "main dataset.csv"))
+
+main_longer <- 
+  main %>% 
+  pivot_longer(-fecha, names_to = "Variable", values_to = "value") %>% 
+  arrange(Variable, fecha) %>% 
+  group_by(Variable)
+
+sumtable <- 
+  main_longer %>% 
+  summarise(Media = round(mean(value), 2),
+            Mediana = round(median(value), 2),
+            Mínimo = round(min(value), 2),
+            Máximo = round(max(value), 2),
+            `Desv. Est.` = round(sd(value), 2),
+            Asimetría = round(skewness(value), 2),
+            Curtosis = round(kurtosis(value), 2))
+
+obs <- 
+  main_longer %>% 
+  count(Variable) %>% 
+  rename(`Obs.` = n)
+
+table_two <- 
+  sumtable %>% 
+  left_join(obs) %>% 
+  slice(7, 13, 9, 10, 6, 3, 2, 5, 1, 8, 11, 12) %>% 
+  as.data.frame()
+```
+
+\renewcommand{\arraystretch}{1.3}
+
+```{r table_two, echo=FALSE}
+kbl(table_two, 
+    booktabs = T,
+    align = c("c")) %>%
+  kable_styling(font_size = 9,
+                full_width = T) %>% 
+  row_spec(0, bold = TRUE) %>% 
+  column_spec(1, width = "1.5cm") %>% 
+  column_spec(6, width = "1.8cm") %>% 
+  column_spec(9, width = "0.8cm") %>% 
+  group_rows(start_row = 1, 
+             end_row = 12, 
+             latex_align = "c",
+             latex_gap_space = "-0.5cm")
+```
+
+\renewcommand{\arraystretch}{1}
 
 ## Métodos de pre-procesamiento
 
