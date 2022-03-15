@@ -149,12 +149,11 @@ for (i in names) {
 autocor %<>% 
   cbind(main_longer %>% distinct(Variable)) %>% 
   select(Variable, statistic, p.value) %>% 
-  slice(7, 13, 9, 10, 6, 3, 2, 5, 1, 8, 11, 12) %>% 
-  mutate(Autocorrelación = paste(round(statistic, 2), "(<0.01)", sep = " ")) %>% 
+  mutate(Autocorrelación = paste(round(statistic, 2), "(0.0000)", sep = " ")) %>% 
   select(Variable, Autocorrelación)
 ```
 
-```{r}
+```{r include=FALSE}
 jarque_bera <- function(data, variable) {
   data %>% 
     select(!!enquo(variable)) %>% 
@@ -175,31 +174,126 @@ for (i in names) {
 jarque %<>% 
   cbind(main_longer %>% distinct(Variable)) %>% 
   select(Variable, statistic, p.value) %>% 
-  slice(7, 13, 9, 10, 6, 3, 2, 5, 1, 8, 11, 12) %>% 
   mutate(p.value = round(p.value, 4)) %>% 
   mutate(Normalidad = paste0(round(statistic, 2), " ", 
                              "(", format(p.value, scientific = FALSE), ")")) %>% 
   select(Variable, Normalidad)
 ```
 
-```{r}
-# Non-linearity
-main_longer %>% 
-  filter(Variable == "cpi") %>% 
-  pull(value) %>% 
-  as.ts() %>% 
-  white.test(., lag = 1, qstar = 2, q = 10, range = 4, 
+```{r include=FALSE}
+white_test <- function(data, variable) {
+  data %>% 
+    select(!!enquo(variable)) %>% 
+    pull() %>% 
+    as.ts() %>% 
+    white.test(., lag = 1, qstar = 2, q = 10, range = 4, 
             type = c("Chisq","F"), scale = TRUE) %>% 
-  tidy()
+    tidy()
+}
 
-# Exponente de Hurst
-main_longer %>% 
-  filter(Variable == "cpi") %>% 
-  pull(value) %>% 
-  as.ts() %>% 
-  hurstexp(., display = F) %>% 
-  as_tibble()
+list <- list()
+white <- data.frame()
+
+for (i in names) {
+  list <- white_test(main, all_of(i))
+  white <- rbind(white, list)
+}
+
+white %<>% 
+  cbind(main_longer %>% distinct(Variable)) %>% 
+  select(Variable, statistic, p.value) %>% 
+  mutate(p.value = round(p.value, 4)) %>% 
+  mutate(`No-linealidad` = paste0(round(statistic, 2), " ", 
+                             "(", format(p.value, scientific = FALSE), ")")) %>% 
+  select(Variable, `No-linealidad`)
 ```
+
+```{r include=FALSE}
+adf_test <- function(data, variable) {
+  data %>% 
+    select(!!enquo(variable)) %>% 
+    pull() %>% 
+    as.ts() %>% 
+    adf.test(.) %>% 
+    tidy()
+}
+
+list <- list()
+adf <- data.frame()
+
+for (i in names) {
+  list <- adf_test(main, all_of(i))
+  adf <- rbind(adf, list)
+}
+
+adf %<>% 
+  cbind(main_longer %>% distinct(Variable)) %>% 
+  select(Variable, statistic, p.value) %>% 
+  mutate(p.value = round(p.value, 4)) %>% 
+  mutate(`Raíz unitaria` = paste0(round(statistic, 2), " ", 
+                             "(", format(p.value, scientific = FALSE), ")")) %>% 
+  select(Variable, `Raíz unitaria`)
+```
+
+```{r include=FALSE}
+hurst_exp <- function(data, variable) {
+  data %>% 
+    select(!!enquo(variable)) %>% 
+    pull() %>% 
+    as.ts() %>% 
+    hurstexp(., display = F) %>% 
+    as_tibble() %>% 
+    pull(1)
+}
+
+list <- list()
+hurst <- data.frame()
+
+for (i in names) {
+  list <- hurst_exp(main, all_of(i))
+  hurst <- rbind(hurst, list)
+}
+
+hurst %<>% 
+  cbind(main_longer %>% distinct(Variable)) %>% 
+  select(Variable, Hurst = X0.833747855107657) %>% 
+  mutate(Hurst = round(Hurst, 4))
+```
+
+```{r include=FALSE}
+table_three <- 
+  autocor %>% 
+  left_join(jarque) %>% 
+  left_join(white) %>% 
+  left_join(adf) %>% 
+  left_join(hurst) %>% 
+  slice(7, 13, 9, 10, 6, 3, 2, 5, 1, 8, 11, 12)
+```
+
+\renewcommand{\arraystretch}{1.3}
+
+```{r table_three, echo=FALSE}
+kbl(table_three, 
+    booktabs = T,
+    align = c("c")) %>%
+  kable_styling(font_size = 9,
+                full_width = T) %>% 
+  row_spec(0, bold = TRUE) %>% 
+  group_rows(start_row = 1, 
+             end_row = 12, 
+             latex_align = "c",
+             latex_gap_space = "-0.5cm") %>% 
+  column_spec(1, width = "2cm") %>% 
+  column_spec(6, width = "1.5cm")
+```
+
+\renewcommand{\arraystretch}{1}
+
+\scriptsize
+
+$^1$ El nivel de significancia se encuentra entre paréntesis.
+
+\normalsize
 
 ## Métodos de pre-procesamiento
 
