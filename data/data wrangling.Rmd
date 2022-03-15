@@ -45,7 +45,7 @@ setwd(here())
 
 ### Variable selection
 
-First, I removed inflation expectations because the series started at 2010. \
+First, I removed inflation expectations because the series started at 2010.\
 Second, what's better: itcer or exchange?
 
 ```{r}
