@@ -4,7 +4,7 @@
 
 \small
 
-\textbf{Tabla 1:} Variables empleadas
+\textbf{Cuadro 1:} Variables empleadas durante el proceso de predicción
 
 \normalsize
 
@@ -15,41 +15,42 @@ pacman::p_load(tidyverse, kable, kableExtra, here)
 ```{r include=FALSE}
 table_one <- 
   tribble(
-  ~Nombre, ~Descripción, ~Fuente,
-  "ipc", "Tasa de variación interanual del Índice de Precios al Consumidor", "INE",
-  "tpm", "Tasa de interés de política monetaria", "Banco de Guatemala",
+  ~ Nombre, ~ Descripción, ~ Fuente,
+  "ipc", "Tasa de variación interanual del índice de precios al consumidor", "INE",
+  "tpm", "Tasa de interés de política monetaria", "BANGUAT",
   "m1", "Medio circulante (en millones de quetzales)", "SECMCA",
   "m2", "Medios de pago (en millones de quetzales)", "SECMCA",
-  "deprate", "Tasa de interés real pasiva en moneda nacional", "SECMCA",
-  "imae", "Tasa de variación interanual del Índice Mensual de Actividad Económica (Tendencia ciclo)", "SECMCA",
-  "cred", "Crédito bancario al sector privado (en millones de quetzales)", "Banco de Guatemala",
-  "gov", "Gastos totales del gobierno central (en millones de quetzales)", "Banco de Guatemala",
-  "cpi", "Tasa de variación interanual del Índice de Precios al Consumidor en Estados Unidos (ajustada estacionalmente)", "FRED",
+  "imae", "Tasa de variación interanual del índice mensual de actividad económica (tendencia-ciclo)", "SECMCA",
+  "deprate", "Tasa de interés pasiva real en moneda nacional", "SECMCA",
+  "cred", "Crédito bancario al sector privado (en millones de quetzales)", "BANGUAT",
+  "gov", "Gastos totales del gobierno central (en millones de quetzales)", "BANGUAT",
+  "cpi", "Tasa de variación interanual del índice de precios al consumidor en Estados Unidos (ajustada por estacionalidad)", "FRED",
   "itcer", "Índice de tipo de cambio efectivo real con Estados Unidos", "SECMCA",
   "oil", "Precio internacional del petróleo (dólares por barril)", "FRED",
-  "sugar", "Precio internacional del azúcar (centavos por libra)", "FRED"
+  "sugar", "Precio internacional del azúcar (centavos de dólar por libra)", "FRED"
   )
 ```
 
 \renewcommand{\arraystretch}{2}
 
-```{r echo=FALSE}
-kbl(table_one, booktabs = T, align = c("cll")) %>%
+```{r table_one, echo=FALSE}
+kbl(table_one, 
+    booktabs = T, 
+    align = c("cll")) %>%
+  kable_styling(font_size = 9,
+                full_width = T) %>% 
   row_spec(0, bold = TRUE) %>% 
-  kable_styling(latex_options = "striped", 
-                font_size = 9,
-                full_width = T, ) %>% 
   column_spec(1, width = "1.5cm") %>% 
-  column_spec(2, width = "10cm")
+  column_spec(2, width = "11.9cm")
 ```
 
 \renewcommand{\arraystretch}{1}
 
-\small
+\scriptsize
 
-$^1$INE: Instituto Nacional de Estadística\
-$^2$SECMCA: Secretaría Ejecutiva del Consejo Monetario Centroamericano\
-$^3$FRED: Federal Reserve Bank of St. Louis
+$^1$ INE: Instituto Nacional de Estadística\
+$^2$ SECMCA: Secretaría Ejecutiva del Consejo Monetario Centroamericano\
+$^3$ FRED: Federal Reserve Bank of St. Louis
 
 \normalsize
 

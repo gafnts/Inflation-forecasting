@@ -45,18 +45,17 @@ setwd(here())
 
 ### Variable selection
 
+First, I removed inflation expectations because the series started at 2010. \
+Second, what's better: itcer or exchange?
+
 ```{r}
 exchange %<>% 
   select(fecha,
          "exchange" = tipo_de_cambio_de_compra_promedio_del_mes)
 
-expec %<>% 
-  select(fecha,
-         "expec" = expectativas_de_inflacion)
-
 imae %<>% 
   select(fecha,
-         "imae" = imae_2) #tendencia-ciclo
+         "imae" = imae_variacion_interanual_2)
 
 ipc %<>% 
   select(fecha,
@@ -80,8 +79,6 @@ tpm %<>%
          "tpm" = tasa_de_politica_monetaria)
 ```
 
-### Dataset
-
 ```{r}
 secmca <- 
   exchange %>% 
@@ -90,9 +87,7 @@ secmca <-
   inner_join(itcer) %>% 
   inner_join(imae) %>% 
   inner_join(money) %>% 
-  inner_join(tpm) %>% 
-  inner_join(expec) %>% 
-  write_csv(here("data", "raw", "secmca.csv"))
+  inner_join(tpm)
 ```
 
 ## Banguat
@@ -130,7 +125,7 @@ gov <-
 ```
 
 ```{r}
-banguat <- cred %>% inner_join(gov) %>% write_csv(here("data", "raw", "banguat.csv"))
+banguat <- cred %>% inner_join(gov)
 ```
 
 ## Fred
@@ -153,11 +148,19 @@ fred <-
   inner_join(oil) %>% 
   inner_join(sugar)
 
-fred %>% 
+fred %<>% 
   rename("fecha" = DATE,
          "cpi" = CPIAUCSL,
          "oil" = POILBREUSDM,
          "sugar" = PSUGAISAUSDM) %>% 
-  mutate(across(where(is.numeric), ~round(.x, 4))) %>% 
-  write_csv(here("data", "raw", "fred.csv"))
+  mutate(across(where(is.numeric), ~round(.x, 4)))
+```
+
+## Main data frame
+
+```{r}
+fred %>% 
+  inner_join(banguat) %>% 
+  inner_join(secmca) %>%
+  write_csv(here("data", "main dataset.csv"))
 ```
