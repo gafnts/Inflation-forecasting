@@ -93,7 +93,7 @@ main <-
     "lendrate" = tasa_de_interes_activa_real_en_mn,
     "deprate" = tasa_de_interes_pasiva_nominal_en_mn,
     "tpm" = tasa_de_politica_monetaria,
-    "banana" = banano_precio_promedio_de_exportacion
+    "bananas" = banano_precio_promedio_de_exportacion
   ) %>% 
   write_csv(here("data", "main.csv"))
 ```
