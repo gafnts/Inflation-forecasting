@@ -261,6 +261,51 @@ hurst %<>%
 ```
 
 ```{r include=FALSE}
+library(lmtest)
+
+granger_causality <- function(data, x, y, lag) {
+  x <- 
+    data %>% 
+    select(!!enquo(x)) %>% 
+    pull() %>% 
+    as.ts()
+  
+  y <- 
+    data %>% 
+    select(!!enquo(y)) %>% 
+    pull() %>% 
+    as.ts()
+  
+  grangertest(x, y, order = lag) %>% 
+    tidy() %>% 
+    select(3, 4) %>% 
+    na.omit()
+}
+
+# Looping through variables
+names_two <- c("cpi", "cred", "deprate")
+
+list <- list()
+granger <- data.frame()
+
+for (i in names_two) {
+  list <- granger_causality(main, x = ipc, y = all_of(i), lag = 1)
+  granger <- rbind(granger, list)
+}
+
+# Looping through lags
+list <- list()
+granger <- data.frame()
+
+for (i in 1:48) {
+  list <- granger_causality(main, x = ipc, y = tpm, lag = i)
+  granger <- rbind(granger, list)
+}
+
+granger %>% print(n = Inf)
+```
+
+```{r include=FALSE}
 table_three <- 
   autocor %>% 
   left_join(jarque) %>% 
