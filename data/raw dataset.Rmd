@@ -109,12 +109,12 @@ gov_expend <-
   clean_names() %>% 
   mutate(na = seq(1:12),
          across(where(is.character), as.double)) %>%
-  pivot_longer(!na, names_to = "año", values_to = "gov") %>% 
+  pivot_longer(!na, names_to = "año", values_to = "gobierno_gastos") %>% 
   mutate(año = as.double(str_remove_all(año, "x"))) %>% 
   arrange(año, na) %>% 
   mutate(fecha = as.Date(str_c(año, na, "1", sep = "-")),
-         gov = round(gov, 2)) %>% 
-  select(fecha, gov)
+         gobierno_gastos = round(gobierno_gastos, 2)) %>% 
+  select(fecha, gobierno_gastos)
 
 gov_rev <- 
   read_xls(here("data", "raw", "banguat", "gov_rev.xls")) %>% 
