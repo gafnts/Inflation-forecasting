@@ -77,6 +77,124 @@ secmca <-
   inner_join(exports) %>% 
   inner_join(tpm) %>% 
   inner_join(imports_hidrocarbs) %>% 
-  filter(between(fecha, as.Date("2005-01-01"), as.Date("2020-12-01"))) %>% 
+  filter(between(fecha, as.Date("2005-01-01"), as.Date("2021-12-01"))) %>% 
   write_csv(here("data", "raw", "secmca.csv"))
+```
+
+## Banguat
+
+### Import datasets
+
+```{r}
+cred <- 
+  read_xls(here("data", "raw", "banguat", "cred.xls")) %>% 
+  slice(3:15) %>%
+  select(2:29) %>% 
+  row_to_names(1) %>% 
+  clean_names() %>% 
+  mutate(mes = seq(1:12),
+         across(where(is.character), as.double)) %>%
+  pivot_longer(!mes, names_to = "año", values_to = "credito_sector_privado") %>% 
+  mutate(año = as.double(str_remove_all(año, "x"))) %>% 
+  arrange(año, mes) %>% 
+  mutate(fecha = as.Date(str_c(año, mes, "1", sep = "-")),
+         credito_sector_privado = round(credito_sector_privado, 2)) %>% 
+  select(fecha, credito_sector_privado)
+
+gov_expend <- 
+  read_xls(here("data", "raw", "banguat", "gov_expend.xls")) %>% 
+  slice(5:17) %>%
+  select(1:28) %>% 
+  row_to_names(1) %>% 
+  clean_names() %>% 
+  mutate(na = seq(1:12),
+         across(where(is.character), as.double)) %>%
+  pivot_longer(!na, names_to = "año", values_to = "gov") %>% 
+  mutate(año = as.double(str_remove_all(año, "x"))) %>% 
+  arrange(año, na) %>% 
+  mutate(fecha = as.Date(str_c(año, na, "1", sep = "-")),
+         gov = round(gov, 2)) %>% 
+  select(fecha, gov)
+
+gov_rev <- 
+  read_xls(here("data", "raw", "banguat", "gov_rev.xls")) %>% 
+  slice(5:17) %>%
+  select(1:28) %>% 
+  row_to_names(1) %>% 
+  clean_names() %>% 
+  mutate(na = seq(1:12),
+         across(where(is.character), as.double)) %>%
+  pivot_longer(!na, names_to = "año", values_to = "gobierno_ingresos") %>% 
+  mutate(año = as.double(str_remove_all(año, "x"))) %>% 
+  arrange(año, na) %>% 
+  mutate(fecha = as.Date(str_c(año, na, "1", sep = "-")),
+         gobierno_ingresos = round(gobierno_ingresos, 2)) %>% 
+  select(fecha, gobierno_ingresos)
+
+debt_ext <- 
+  read_xls(here("data", "raw", "banguat", "debt_ext.xls")) %>% 
+  slice(4:16) %>%
+  select(1:28) %>% 
+  row_to_names(1) %>% 
+  clean_names() %>% 
+  mutate(mes = seq(1:12),
+         across(where(is.character), as.double)) %>%
+  pivot_longer(!mes, names_to = "año", values_to = "deuda_externa") %>% 
+  mutate(año = as.double(str_remove_all(año, "x"))) %>% 
+  arrange(año, mes) %>% 
+  mutate(fecha = as.Date(str_c(año, mes, "1", sep = "-")),
+         deuda_externa = round(deuda_externa, 2)) %>% 
+  select(fecha, deuda_externa)
+
+debt_int <- 
+  read_xls(here("data", "raw", "banguat", "debt_int.xls")) %>% 
+  slice(4:16) %>%
+  select(1:28) %>% 
+  row_to_names(1) %>% 
+  clean_names() %>% 
+  mutate(na = seq(1:12),
+         across(where(is.character), as.double)) %>%
+  pivot_longer(!na, names_to = "año", values_to = "deuda_interna") %>% 
+  mutate(año = as.double(str_remove_all(año, "x"))) %>% 
+  arrange(año, na) %>% 
+  mutate(fecha = as.Date(str_c(año, na, "1", sep = "-")),
+         deuda_interna = round(deuda_interna, 2)) %>% 
+  select(fecha, deuda_interna)
+```
+
+### Interannual growth rate
+
+```{r}
+cred %<>% interannual()
+gov_expend %<>% interannual()
+gov_rev %<>% interannual()
+debt_ext %<>% interannual()
+debt_int %<>% interannual()
+```
+
+### Join and export
+
+```{r}
+banguat <- 
+  cred %>% 
+  inner_join(gov_expend) %>% 
+  inner_join(gov_rev) %>% 
+  inner_join(debt_ext) %>% 
+  inner_join(debt_int) %>%  
+  filter(between(fecha, as.Date("2005-01-01"), as.Date("2021-12-01"))) %>% 
+  write_csv(here("data", "raw", "banguat.csv"))
+```
+
+## FRED
+
+### Import dataset
+
+```{r}
+cpi <- 
+  read_csv(here("data", "raw", "fred", "cpi.csv")) %>% 
+  rename("fecha" = DATE, 
+         "consumer_price_index" = CPIAUCSL) %>% 
+  interannual() %>% 
+  filter(between(fecha, as.Date("2005-01-01"), as.Date("2021-12-01"))) %>% 
+  write_csv(here("data", "raw", "fred.csv"))
 ```
