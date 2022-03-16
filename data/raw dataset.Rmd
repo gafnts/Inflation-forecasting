@@ -77,5 +77,6 @@ secmca <-
   inner_join(exports) %>% 
   inner_join(tpm) %>% 
   inner_join(imports_hidrocarbs) %>% 
+  filter(between(fecha, as.Date("2005-01-01"), as.Date("2020-12-01"))) %>% 
   write_csv(here("data", "raw", "secmca.csv"))
 ```
