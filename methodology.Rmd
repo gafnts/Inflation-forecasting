@@ -16,18 +16,19 @@ pacman::p_load(tidyverse, kableExtra, here)
 table_one <- 
   tribble(
   ~ Variable, ~ Descripción, ~ Fuente,
-  "ipc", "Tasa de variación interanual del índice de precios al consumidor", "INE",
-  "tpm", "Tasa de interés de política monetaria", "BANGUAT",
-  "m1", "Medio circulante (en millones de quetzales)", "SECMCA",
-  "m2", "Medios de pago (en millones de quetzales)", "SECMCA",
-  "imae", "Tasa de variación interanual del índice mensual de actividad económica (tendencia-ciclo)", "SECMCA",
-  "deprate", "Tasa de interés pasiva real en moneda nacional", "SECMCA",
-  "cred", "Crédito bancario al sector privado (en millones de quetzales)", "BANGUAT",
-  "gov", "Gastos totales del gobierno central (en millones de quetzales)", "BANGUAT",
-  "cpi", "Tasa de variación interanual del índice de precios al consumidor en Estados Unidos (ajustada por estacionalidad)", "FRED",
-  "itcer", "Índice de tipo de cambio efectivo real con Estados Unidos", "SECMCA",
-  "oil", "Precio internacional del petróleo (dólares por barril)", "FRED",
-  "sugar", "Precio internacional del azúcar (centavos de dólar por libra)", "FRED"
+  "ipc", "Tasa de variación interanual del índice de precios al consumidor", "SECMCA",
+  "tpm", "Tasa de interés de política monetaria", "SECMCA",
+  "m0", "Tasa de variación interanual de la base monetaria restringida", "SECMCA",
+  "m1", "Tasa de variación interanual del medio circulante", "SECMCA",
+  "imae", "Tasa de variación interanual del índice mensual de actividad económica", "SECMCA",
+  "rev", "Tasa de variación interanual de los ingresos totales del gobierno central", "BANGUAT",
+  "debt", "Tasa de variación interanual del saldo de la deuda pública externa", "BANGUAT",
+  "exports", "Tasa de variación interanual del valor (FOB) de las exportaciones totales", "SECMCA",
+  "hydro", "Tasa de variación interanual del valor promedio (dólares por barril) de las importaciones de hidrocarburos", "SECMCA",
+  "lendrate", "Tasa de interés activa (real) en moneda nacional", "SECMCA",
+  "deprate", "Tasa de interés pasiva (nominal) en moneda nacional", "SECMCA",
+  "itcer", "Tasa de variación interanual del índice de tipo de cambio efectivo real (global)", "SECMCA",
+  "cpi", "Tasa de variación interanual del índice de precios al consumidor en Estados Unidos", "FRED"
   )
 ```
 
