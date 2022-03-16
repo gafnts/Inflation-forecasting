@@ -6,7 +6,7 @@ pacman::p_load(tidyverse, magrittr, janitor, here, readxl)
 
 ## Secmca
 
-### Importing datasets
+### Import datasets
 
 ```{r}
 secmca <- function(file, n = 5) {
@@ -38,6 +38,42 @@ for (i in filenames) {
 setwd(here())
 ```
 
+### Interannual growth rate
+
 ```{r}
-filenames
+interannual <- function(data) {
+  data %>% 
+    mutate(across(where(is.numeric), ~ 100 * (log(.x) - lag(log(.x), 12)))) %>% 
+    drop_na()
+}
+
+exports_agri %<>% interannual()
+exports %<>% interannual()
+gov %<>% interannual()
+imports_hidrocarbs %<>% interannual()
+money_base %<>% interannual()
+money %<>% interannual()
+
+imae %<>% select(fecha, imae_variacion_interanual, imae_variacion_interanual_2)
+ipc %<>% select(fecha, ipc_variacion_interanual)
+pub_debt %<>% select(fecha, deuda_total_pib, deuda_interna_bruta_pib, deuda_externa_pib)
+```
+
+### Join and export
+
+```{r}
+raw_secmca <- 
+  exchange %>% 
+  inner_join(ipc) %>% 
+  inner_join(exports_agri) %>% 
+  inner_join(pub_debt) %>% 
+  inner_join(rates) %>% 
+  inner_join(itcer) %>% 
+  inner_join(imae) %>% 
+  inner_join(money_base) %>% 
+  inner_join(money) %>% 
+  inner_join(exports) %>% 
+  inner_join(tpm) %>% 
+  inner_join(imports_hidrocarbs) %>% 
+  write_csv(here("data", "raw", "raw secmca.csv"))
 ```
