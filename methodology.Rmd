@@ -24,7 +24,7 @@ table_one <-
   "rev", "Tasa de variación interanual de los ingresos totales del gobierno central", "BANGUAT",
   "debt", "Tasa de variación interanual del saldo de la deuda pública externa", "BANGUAT",
   "exports", "Tasa de variación interanual del valor (FOB) de las exportaciones totales", "SECMCA",
-  "banana", "Tasa de variación interanual del valor promedio (dólares por tonelada) de las exportaciones de banano", "SECMCA",
+  "bananas", "Tasa de variación interanual del valor promedio (dólares por tonelada) de las exportaciones de banano", "SECMCA",
   "hydro", "Tasa de variación interanual del valor promedio (dólares por barril) de las importaciones de hidrocarburos", "SECMCA",
   "lendrate", "Tasa de interés activa (real) en moneda nacional", "SECMCA",
   "deprate", "Tasa de interés pasiva (nominal) en moneda nacional", "SECMCA",
@@ -47,7 +47,7 @@ kbl(table_one,
   column_spec(1, width = "1.9cm") %>% 
   column_spec(2, width = "11.9cm") %>% 
   group_rows(start_row = 1, 
-             end_row = 12, 
+             end_row = 14, 
              latex_align = "c",
              latex_gap_space = "-0.55cm")
 ```
@@ -110,7 +110,7 @@ kbl(table_two,
   column_spec(6, width = "1.8cm") %>% 
   column_spec(9, width = "0.8cm") %>% 
   group_rows(start_row = 1, 
-             end_row = 12, 
+             end_row = 14, 
              latex_align = "c",
              latex_gap_space = "-0.5cm")
 ```
@@ -274,12 +274,12 @@ table_three <-
 ```{r table_three, echo=FALSE}
 kbl(table_three, 
     booktabs = T,
-    align = c("c")) %>%
+    align = c("crrrrr")) %>%
   kable_styling(font_size = 9,
                 full_width = T) %>% 
   row_spec(0, bold = TRUE) %>% 
   group_rows(start_row = 1, 
-             end_row = 12, 
+             end_row = 14, 
              latex_align = "c",
              latex_gap_space = "-0.5cm") %>% 
   column_spec(1, width = "2cm") %>% 
@@ -290,9 +290,55 @@ kbl(table_three,
 
 \scriptsize
 
-$^1$ Nivel de significancia entre paréntesis.
+$^*$ Nivel de significancia entre paréntesis.
 
 \normalsize
+
+\small
+
+\textbf{Figura 1:} Variables empleadas durante el proceso de predicción
+
+\normalsize
+
+```{r include=FALSE}
+order <- table_one %>% rowid_to_column(var = "id") %>% select(id, "name" = Variable)
+
+fig1 <- 
+  main %>% 
+  pivot_longer(-fecha) %>% 
+  arrange(name, fecha) %>% 
+  left_join(order) %>% 
+  mutate(name = as_factor(name)) %>% 
+  group_by(name)
+```
+
+```{r fig_one, echo=FALSE, fig.align = 'center', fig.dim = c(11, 5)}
+fig1 %>% 
+  ggplot() +
+  geom_line(aes(x = fecha, y = value, color = fct_reorder(name, id))) + 
+  scale_y_continuous(limits = c(-99, 99)) +
+  theme_bw() +
+  theme(
+        # X axis
+        axis.title.x = element_blank(),
+        axis.text.x = element_text(size = 12),
+        # Y axis
+        axis.title.y = element_blank(),
+        axis.text.y = element_text(size = 12),
+        # Panel
+        panel.grid = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.grid.major.x = element_blank(),
+        panel.background = element_rect(fill = "white"),
+        # Legend
+        legend.title = element_blank(),
+        legend.text = element_text(size = 11),
+        legend.position = "bottom",
+        legend.justification = "center",
+        legend.margin = margin(.5, 0, 0, 0, "cm")
+    ) + 
+    guides(colour = guide_legend(nrow = 1)) 
+```
 
 ## Métodos de pre-procesamiento
 
