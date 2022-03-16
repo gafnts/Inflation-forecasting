@@ -76,5 +76,22 @@ lags
 ### Feature selection
 
 ```{r}
-
+main <- 
+  selection %>% 
+  select(
+    "ipc" = ipc_variacion_interanual,
+    "m1" = agregado_monetario_m1,
+    "m0" = base_monetaria_restringida,
+    "cpi" = consumer_price_index,
+    "debt" = deuda_externa,
+    "exports" = exportaciones_totales,
+    "rev" = gobierno_ingresos,
+    "hydro" = hidrocarburos_valor_importado,
+    "imae" = imae_variacion_interanual,
+    "itcer" = itcer_global_variacion_interanual,
+    "lendrate" = tasa_de_interes_activa_real_en_mn,
+    "deprate" = tasa_de_interes_pasiva_nominal_en_mn,
+    "tpm" = tasa_de_politica_monetaria
+  ) %>% 
+  write_csv(here("data", "main.csv"))
 ```
