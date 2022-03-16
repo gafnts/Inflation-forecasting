@@ -190,7 +190,7 @@ banguat <-
 ### Import dataset
 
 ```{r}
-cpi <- 
+fred <- 
   read_csv(here("data", "raw", "fred", "cpi.csv")) %>% 
   rename("fecha" = DATE, 
          "consumer_price_index" = CPIAUCSL) %>% 
