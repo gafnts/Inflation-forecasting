@@ -1,0 +1,43 @@
+# Raw dataset
+
+```{r}
+pacman::p_load(tidyverse, magrittr, janitor, here, readxl)
+```
+
+## Secmca
+
+### Importing datasets
+
+```{r}
+secmca <- function(file, n = 5) {
+  data <- 
+    read_csv(here("data", "raw", "secmca", file)) %>% 
+    slice(n:nrow(.)) %>% 
+    row_to_names(1) %>% 
+    clean_names() %>% 
+    select(where(~!all(is.na(.x)))) %>% 
+    rename("fecha" = na) %>% 
+    separate(fecha, c("A", "B")) %>% 
+    mutate(C = rep(1:12, length.out = nrow(.)),
+           D = 1,
+           fecha = str_c(A, C, D, sep = "-")) %>% 
+    select(-c(A, B, C, D)) %>% 
+    select(fecha, everything()) %>% 
+    mutate(fecha = as.Date(fecha),
+           across(where(is.character), as.double)) %>% 
+    replace(is.na(.), 0)
+}
+
+setwd(here("data", "raw", "secmca"))
+filenames <- gsub("\\.csv$","", list.files(pattern = "\\.csv$"))
+
+for (i in filenames) {
+  assign(i, secmca(paste(i, ".csv", sep = "")))
+}
+
+setwd(here())
+```
+
+```{r}
+filenames
+```

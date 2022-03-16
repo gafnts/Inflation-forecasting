@@ -1,0 +1,55 @@
+# Feature selection
+
+```{r}
+pacman::p_load(tidyverse, magrittr, broom, lmtest, here)
+```
+
+```{r}
+raw <- read_csv(here("data", "main dataset.csv"))
+```
+
+### Vectorized Granger causality test
+
+```{r}
+granger_test <- function(data, x, y, lag) {
+  x <- 
+    data %>% 
+    select(!!enquo(x)) %>% 
+    pull() %>% 
+    as.ts()
+  
+  y <- 
+    data %>% 
+    select(!!enquo(y)) %>% 
+    pull() %>% 
+    as.ts()
+  
+  grangertest(x, y, order = lag) %>% 
+    tidy() %>% 
+    select(3, 4) %>% 
+    na.omit()
+}
+
+granger <- function(data, x, y) {
+  list <- list()
+  df <- data.frame()
+
+  for (i in 1:24) {
+    list <- granger_test(raw, !!enquo(x), !!enquo(y), lag = i)
+    df <- rbind(df, list) 
+  } 
+  
+  df %<>% rowid_to_column(var = "lag")
+  return(df)
+}
+```
+
+```{r}
+granger(raw, cpi, cred) 
+```
+
+```{r}
+main_2 <- 
+  main %>% 
+  mutate(m2 = 100*(log(m2)-lag(log(m2),12)))
+```
