@@ -4,11 +4,17 @@
 pacman::p_load(tidyverse, magrittr, broom, lmtest, here)
 ```
 
+### Import raw datasets
+
 ```{r}
 secmca <- read_csv(here("data", "raw", "secmca.csv"))
+banguat <- read_csv(here("data", "raw", "banguat.csv"))
+fred <- read_csv(here("data", "raw", "fred.csv"))
+
+selection <- secmca %>% inner_join(banguat) %>% inner_join(fred)
 ```
 
-### Vectorized Granger causality test
+### Vectorized granger causality test
 
 ```{r}
 granger_test <- function(data, x, y, lag) {
@@ -51,7 +57,7 @@ granger <- function(data, x, y, p_value) {
 
 ```{r}
 names <- 
-  secmca %>% 
+  selection %>% 
   select(-c(fecha, ipc_variacion_interanual)) %>%
   names() %>% 
   sort()
@@ -61,8 +67,14 @@ names <-
 lags <- list()
 
 for (i in names) {
-  lags[[i]] <- granger(secmca, ipc_variacion_interanual, all_of(i), 0.05)
+  lags[[i]] <- granger(selection, ipc_variacion_interanual, all_of(i), 0.05)
 }
 
 lags
+```
+
+### Feature selection
+
+```{r}
+
 ```
