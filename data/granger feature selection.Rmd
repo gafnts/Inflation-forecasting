@@ -5,7 +5,7 @@ pacman::p_load(tidyverse, magrittr, broom, lmtest, here)
 ```
 
 ```{r}
-raw <- read_csv(here("data", "main dataset.csv"))
+secmca <- read_csv(here("data", "raw", "secmca.csv"))
 ```
 
 ### Vectorized Granger causality test
@@ -30,26 +30,39 @@ granger_test <- function(data, x, y, lag) {
     na.omit()
 }
 
-granger <- function(data, x, y) {
+granger <- function(data, x, y, p_value) {
   list <- list()
   df <- data.frame()
 
   for (i in 1:24) {
-    list <- granger_test(raw, !!enquo(x), !!enquo(y), lag = i)
+    list <- granger_test(data, !!enquo(x), !!enquo(y), lag = i)
     df <- rbind(df, list) 
   } 
   
-  df %<>% rowid_to_column(var = "lag")
+  df %<>% 
+    rowid_to_column() %>% 
+    filter(p.value < !!enquo(p_value)) %>% 
+    arrange(p.value) %>% 
+    slice(1:3)
+    
   return(df)
 }
 ```
 
 ```{r}
-granger(raw, cpi, cred) 
+names <- 
+  secmca %>% 
+  select(-c(fecha, ipc_variacion_interanual)) %>%
+  names() %>% 
+  sort()
 ```
 
 ```{r}
-main_2 <- 
-  main %>% 
-  mutate(m2 = 100*(log(m2)-lag(log(m2),12)))
+lags <- list()
+
+for (i in names) {
+  lags[[i]] <- granger(secmca, ipc_variacion_interanual, all_of(i), 0.05)
+}
+
+lags
 ```
