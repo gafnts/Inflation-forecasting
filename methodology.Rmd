@@ -6,17 +6,21 @@ bibliography: references.bib
 
 ## Análisis de datos
 
-Con el propósito de pronosticar la tasa de variación interanual del índice de precios al consumidor en Guatemala, la especificación de regresores ha sido propuesta a partir de un procedimiento en el que a 36 series de tiempo---seleccionadas considerando el canal de demanda agregada, el de tipo de cambio y las variables del sector externo del mecanismo de transmisión de política monetaria [@castillo2014]---les son aplicadas pruebas de causalidad de Granger respecto a la variable objetivo para cada uno de los rezagos de mediano plazo y en el que posteriormente son filtradas considerando (a) la cantidad de retardos que causan (en el sentido de Wiener-Granger) al ritmo inflacionario de la economía y (b) la magnitud en el nivel de significancia del estadístico F de estos últimos.
+Con el objeto de pronosticar la tasa de variación interanual del índice de precios al consumidor en Guatemala, la especificación de los regresores ha sido propuesta a partir de un procedimiento en el que a 36 series de tiempo---escogidas considerando el canal de demanda agregada, el canal de tipo de cambio y las variables del sector externo del mecanismo de transmisión de política monetaria [@castillo2014]---les son aplicadas pruebas de causalidad de Granger respecto a la variable objetivo para cada uno de los rezagos de mediano plazo y en el que, posteriormente, son filtradas tomando en cuenta (a) la cantidad de retardos que causan (en el sentido de Wiener-Granger) al ritmo inflacionario de la economía y (b) la magnitud en el nivel de significancia del estadístico $F$ de los *tests* previamente mencionados.
 
-El cuadro 1 muestra a las 13 variables cuyos valores pasados son los más útiles, dados el conjunto inicial de posibles predictores y los criterios de selección, para pronosticar los valores futuros de la variación en el nivel de precios de la economía. Los datos corresponden al periodo que abarca de enero del 2005 a diciembre del 2021.
+El cuadro 1 muestra a las 13 variables cuyos valores pasados son los más útiles, dado el conjunto inicial de posibles predictores, para pronosticar los valores futuros de la variación en el nivel de precios de la economía. Los datos corresponden al periodo que abarca de enero del 2005 a diciembre del año 2021.
 
-\vspace{5mm}
+\begin{center}
 
 \small
 
 \textbf{Cuadro 1:} Variables empleadas durante el proceso de predicción
 
 \normalsize
+
+\end{center}
+
+\vspace{-3mm}
 
 ```{r include=FALSE}
 pacman::p_load(tidyverse, kableExtra, here, e1071, stats, tseries, pracma, broom)
@@ -55,8 +59,8 @@ kbl(table_one,
   row_spec(0, align = "c", 
            bold = TRUE, 
            extra_css = 'vertical-align: middle !important;') %>% 
-  column_spec(1, width = "1.9cm") %>% 
-  column_spec(2, width = "11.9cm") %>% 
+  column_spec(1, width = "1.7cm") %>% 
+  column_spec(2, width = "12cm") %>% 
   group_rows(start_row = 1, 
              end_row = 14, 
              latex_align = "c",
@@ -65,11 +69,15 @@ kbl(table_one,
 
 \renewcommand{\arraystretch}{1}
 
+\begin{center}
+
 \small
 
-\textbf{Figura 1:} Series de tiempo (variable objetivo y predictores seleccionados)
+\textbf{Figura 1:} Variable objetivo y predictores seleccionados
 
-\vspace{-7mm}
+\end{center}
+
+\vspace{-12mm}
 
 ```{r include=FALSE}
 order <- table_one %>% rowid_to_column(var = "id") %>% select(id, "name" = Variable)
@@ -83,7 +91,7 @@ fig1 <-
   group_by(name)
 ```
 
-```{r fig_one, echo=FALSE, fig.align = 'center', fig.dim = c(11, 5)}
+```{r fig_one, echo=FALSE, fig.align = 'center', fig.dim = c(11.5, 4.7)}
 fig1 %>% 
   ggplot() +
   geom_line(aes(x = fecha, y = value, color = fct_reorder(name, id))) + 
@@ -111,13 +119,25 @@ fig1 %>%
     guides(colour = guide_legend(nrow = 1))
 ```
 
-Las estadísticas de
+\vspace{-2mm}
 
-\vspace{5mm}
+\normalsize
+
+El cuadro 2 presenta estadísticas descriptivas para cada una de las variables. En ellas se incluyen el primer, tercer y cuarto momentos de sus funciones de densidad de probabilidad (PDF), así como la raíz cuadrada del segundo---para evidenciar la volatilidad de las series. En este último sentido, es posible observar que tanto el cambio interanual en el valor promedio de las importaciones de hidrocarburos, las exportaciones totales y los ingresos del gobierno central son aquellas variables que exhiben una mayor volatilidad durante el periodo del análisis.
+
+Las estadísticas descriptivas también demuestran que esta investigación lidia mayoritariamente con variables que no se distribuyen normalmente, de las cuales 9 presentan distribuciones leptocúrticas, 2 platicúrticas y 3 una distribución aproximadamente normal, en términos de exceso de curtosis. Además, el estadístico de asimetría comprueba que 4 series se encuentran sesgadas hacia la izquierda y el resto de ellas hacia la derecha (exceptuando a la tasa de variación de los ingresos del gobierno central, cuya asimetría es cercana a 0).
+
+\begin{center}
+
+\small
 
 \textbf{Cuadro 2:} Estadísticas descriptivas
 
 \normalsize
+
+\end{center}
+
+\vspace{-4mm}
 
 ```{r include=FALSE}
 main_longer <- 
@@ -148,7 +168,7 @@ table_two <-
   as.data.frame()
 ```
 
-\renewcommand{\arraystretch}{1.3}
+\renewcommand{\arraystretch}{1.2}
 
 ```{r table_two, echo=FALSE}
 kbl(table_two, 
@@ -159,20 +179,26 @@ kbl(table_two,
   row_spec(0, bold = TRUE) %>% 
   column_spec(1, width = "1.5cm") %>% 
   column_spec(6, width = "1.8cm") %>% 
-  column_spec(9, width = "0.8cm") %>% 
+  column_spec(9, width = "1cm") %>% 
   group_rows(start_row = 1, 
              end_row = 14, 
              latex_align = "c",
-             latex_gap_space = "-0.5cm")
+             latex_gap_space = "-0.35cm")
 ```
 
 \renewcommand{\arraystretch}{1}
+
+\begin{center}
 
 \small
 
 \textbf{Cuadro 3:} Pruebas estadísticas
 
 \normalsize
+
+\end{center}
+
+\vspace{-4mm}
 
 ```{r include=FALSE}
 names <- main_longer %>% distinct(Variable) %>% pull()
@@ -236,13 +262,15 @@ white_test <- function(data, variable) {
     select(!!enquo(variable)) %>% 
     pull() %>% 
     as.ts() %>% 
-    white.test(., lag = 12, qstar = 2, q = 10, range = 4, 
+    white.test(., lag = 1, qstar = 2, q = 10, range = 4, 
             type = "F", scale = TRUE) %>% 
     tidy()
 }
 
 list <- list()
 white <- data.frame()
+
+set.seed(123)
 
 for (i in names) {
   list <- white_test(main, all_of(i))
@@ -339,12 +367,40 @@ kbl(table_three,
 
 \renewcommand{\arraystretch}{1}
 
+\vspace{-1.5mm}
+
 \scriptsize
 
 $^*$ Nivel de significancia entre paréntesis.
 
 \normalsize
 
+\vspace{3mm}
+
+El cuadro 3 muestra un panel de pruebas estadísticas en las cuales se incluyen un *test* de Ljung--Box para autocorrelación, uno de Jarque--Bera para normalidad, una prueba de red neuronal de White para comprobar si las variables exhiben comportamientos no-lineales, una prueba de Dickey--Fuller aumentada para verificar si existen raíces unitarias y la estimación del exponente de Hurst para medir la memoria de largo plazo de las series.
+
+Como es de esperarse, todas las variables exhiben autocorrelación y---tal y como demuestran las estadísticas descriptivas---la mayor parte de estas no se distribuyen normalmente. La prueba de White confirma que 5 de las series (las tasas de variación del índice mensual de actividad económica, del saldo de la deuda pública externa, de las exportaciones totales y del valor promedio de las exportaciones de banano, así como la tasa de interés pasiva nominal) presentan un comportamiento no-lineal.
+
+Además, los resultados de la prueba de raíz unitaria evidencian que 4 variables (específicamente, las tasas de variación interanual de la base monetaria restringida, del medio circulante, del índice de precios al consumidor en Estados Unidos y la tasa de interés pasiva nominal) no son estacionarias. Por último, el exponente de Hurst demuestra que todas las series exhiben memoria de largo plazo.
+
 ## Métodos a utilizar
+
+### Modelos estadísticos
+
+### Modelos de aprendizaje de máquina
+
+#### Bosque aleatorio
+
+#### Potenciación de gradiente
+
+#### Máquina de vectores de soporte
+
+#### K vecinos más cercanos
+
+#### Red neuronal multicapa
+
+#### Red neuronal profunda de larga memoria de corto plazo
+
+## Validación de modelos
 
 ## Medidas de precisión
