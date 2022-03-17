@@ -6,10 +6,11 @@ bibliography: references.bib
 
 ## Análisis de datos
 
-Con el objeto de pronosticar la tasa de variación interanual del índice de precios al consumidor en Guatemala, la especificación de los regresores ha sido propuesta a partir de un procedimiento en el que a 36 series de tiempo---escogidas considerando el canal de demanda agregada, el canal de tipo de cambio y las variables del sector externo del mecanismo de transmisión de política monetaria [@castillo2014]---les son aplicadas pruebas de causalidad de Granger respecto a la variable objetivo para cada uno de los rezagos de mediano plazo y en el que, posteriormente, son filtradas tomando en cuenta (a) la cantidad de retardos que causan (en el sentido de Wiener-Granger) al ritmo inflacionario de la economía y (b) la magnitud en el nivel de significancia del estadístico $F$ de los *tests* previamente mencionados.
+Con el objeto de pronosticar la tasa de variación interanual del índice de precios al consumidor en Guatemala, la especificación de los regresores ha sido propuesta a partir de un procedimiento en el que a 36 series de tiempo---escogidas considerando el canal de demanda agregada, el canal de tipo de cambio y las variables del sector externo del mecanismo de transmisión de política monetaria [@castillo2014]---les son aplicadas pruebas de causalidad de Wiener-Granger respecto a la variable objetivo para cada uno de los rezagos de mediano plazo y en el que, posteriormente, son filtradas tomando en cuenta (a) la cantidad de retardos que causan (en el sentido de Granger) al ritmo inflacionario de la economía y (b) la magnitud en el nivel de significancia del estadístico $F$ de los *tests* previamente mencionados.
 
 El cuadro 1 muestra a las 13 variables cuyos valores pasados son los más útiles, dado el conjunto inicial de posibles predictores, para pronosticar los valores futuros de la variación en el nivel de precios de la economía. Los datos corresponden al periodo que abarca de enero del 2005 a diciembre del año 2021.
 
+```{=tex}
 \begin{center}
 
 \small
@@ -19,7 +20,7 @@ El cuadro 1 muestra a las 13 variables cuyos valores pasados son los más útile
 \normalsize
 
 \end{center}
-
+```
 \vspace{-3mm}
 
 ```{r include=FALSE}
@@ -69,6 +70,7 @@ kbl(table_one,
 
 \renewcommand{\arraystretch}{1}
 
+```{=tex}
 \begin{center}
 
 \small
@@ -76,7 +78,7 @@ kbl(table_one,
 \textbf{Figura 1:} Variable objetivo y predictores seleccionados
 
 \end{center}
-
+```
 \vspace{-12mm}
 
 ```{r include=FALSE}
@@ -127,6 +129,7 @@ El cuadro 2 presenta estadísticas descriptivas para cada una de las variables. 
 
 Las estadísticas descriptivas también demuestran que esta investigación lidia mayoritariamente con variables que no se distribuyen normalmente, de las cuales 9 presentan distribuciones leptocúrticas, 2 platicúrticas y 3 una distribución aproximadamente normal, en términos de exceso de curtosis. Además, el estadístico de asimetría comprueba que 4 series se encuentran sesgadas hacia la izquierda y el resto de ellas hacia la derecha (exceptuando a la tasa de variación de los ingresos del gobierno central, cuya asimetría es cercana a 0).
 
+```{=tex}
 \begin{center}
 
 \small
@@ -136,7 +139,7 @@ Las estadísticas descriptivas también demuestran que esta investigación lidia
 \normalsize
 
 \end{center}
-
+```
 \vspace{-4mm}
 
 ```{r include=FALSE}
@@ -188,6 +191,7 @@ kbl(table_two,
 
 \renewcommand{\arraystretch}{1}
 
+```{=tex}
 \begin{center}
 
 \small
@@ -197,7 +201,7 @@ kbl(table_two,
 \normalsize
 
 \end{center}
-
+```
 \vspace{-4mm}
 
 ```{r include=FALSE}
@@ -383,24 +387,14 @@ Como es de esperarse, todas las variables exhiben autocorrelación y---tal y com
 
 Además, los resultados de la prueba de raíz unitaria evidencian que 4 variables (específicamente, las tasas de variación interanual de la base monetaria restringida, del medio circulante, del índice de precios al consumidor en Estados Unidos y la tasa de interés pasiva nominal) no son estacionarias. Por último, el exponente de Hurst demuestra que todas las series exhiben memoria de largo plazo.
 
-## Métodos a utilizar
-
-### Modelos estadísticos
-
-### Modelos de aprendizaje de máquina
-
-#### Bosque aleatorio
-
-#### Potenciación de gradiente
-
-#### Máquina de vectores de soporte
-
-#### K vecinos más cercanos
-
-#### Red neuronal multicapa
-
-#### Red neuronal profunda de larga memoria de corto plazo
-
 ## Validación de modelos
+
+La validación empírica de los métodos es una preocupación constante en la literatura de *machine learning*. Tal y como observan @kuhn2022, debido a que la implementación de estos modelos conlleva una serie de pasos (estimación de parámetros, calibración de hiperparámetros, selección del modelo y evaluación de su desempeño) pero una muestra finita de observaciones, es una práctica común y recomendada dividir al conjunto de datos existente en un subconjunto de observaciones de entrenamiento (el cual es utilizado para optimizar al modelo) y un subconjunto de datos de evaluación (que se mantiene en reserva hasta que el método que tiene más probabilidades de éxito sea finalmente seleccionado).
+
+Sin embargo, el investigador necesita entender qué tan efectivo es su modelo antes de poder emplear el conjunto de observaciones de evaluación. En este sentido, @gareth2013introduction mencionan que los métodos de remuestreo se han convertido en una herramienta esencial durante la aplicación de técnicas de aprendizaje estadístico modernas. Básicamente, estos procedimientos consisten en la extracción repetida de muestras aleatorias al conjunto de datos de entrenamiento con el fin de reajustar al modelo en cada una de ellas para obtener información adicional sobre el modelo en cuestión.
+
+Ahora bien, cuando los datos tienen un fuerte componente temporal, los métodos usuales de remuestreo tales como validación cruzada, validación cruzada de k iteraciones, *leave-one-out cross-validation* o *bootstraping* no pueden emplearse debido a que el orden de las observaciones tiene que ser preservado, puesto que las variables se encuentran autocorrelacionadas y el modelo necesitar estimar los distintos patrones temporales que subyacen en la información: una versión más sofisticada de métodos de remuestreo es necesaria.
+
+En este estudio, la metodología de remuestreo empleada será *rolling forecast origin resampling*. Este es un proceso en el que el conjunto de datos de entrenamiento es nuevamente dividido en dos subconjuntos de análisis/evaluación con tamaños específicos. Una primera iteración utiliza estos tamaños, comenzando desde el inicio de la serie. La segunda iteración utiliza los mismos tamaños pero se desplaza por un número determinado de muestras. Por lo que el "origen" en el que se basa el pronóstico va avanzando en el tiempo [@hyndman2018forecasting]. De esta manera, el método entrena iterativamente al modelo con datos históricos y lo evalúa con datos recientes.
 
 ## Medidas de precisión
