@@ -1,6 +1,14 @@
+---
+bibliography: references.bib
+---
+
 # Datos y metodología
 
 ## Análisis de datos
+
+Con el propósito de pronosticar la tasa de variación interanual del índice de precios al consumidor en Guatemala desde enero del 2005 a diciembre del 2021, la especificación de los regresores ha sido propuesta a partir de la implementación de un programa en el que a 36 series de tiempo, seleccionadas considerando los canales de demanda agregada, tipo de cambio y variables del sector externo del mecanismo de transmisión de política monetaria [@castillo2014], les son aplicadas pruebas de causalidad de Granger respecto a la variable objetivo para cada uno de los rezagos de mediano plazo y en el que posteriormente son filtradas considerando la cantidad de rezagos que causan en el sentido de Granger al ritmo inflacionario de la economía y la magnitud en el nivel de significancia de dichas pruebas estadísticas. El cuadro 1 muestra a las 13 variables cuyos rezagos son los más útiles para predecir los valores futuros de la variación del nivel de precios en la economía.
+
+\vspace{5mm}
 
 \small
 
@@ -10,6 +18,7 @@
 
 ```{r include=FALSE}
 pacman::p_load(tidyverse, kableExtra, here, e1071, stats, tseries, pracma, broom)
+main <- read_csv(here("data", "main.csv"))
 ```
 
 ```{r include=FALSE}
@@ -54,11 +63,51 @@ kbl(table_one,
 
 \renewcommand{\arraystretch}{1}
 
-\scriptsize
+\small
 
-$^*$ FRED: Federal Reserve Bank of St. Louis
+\textbf{Figura 1:} Series de tiempo de los predictores y la variable objetivo
 
 \normalsize
+
+```{r include=FALSE}
+order <- table_one %>% rowid_to_column(var = "id") %>% select(id, "name" = Variable)
+
+fig1 <- 
+  main %>% 
+  pivot_longer(-fecha) %>% 
+  arrange(name, fecha) %>% 
+  left_join(order) %>% 
+  mutate(name = as_factor(name)) %>% 
+  group_by(name)
+```
+
+```{r fig_one, echo=FALSE, fig.align = 'center', fig.dim = c(11, 5)}
+fig1 %>% 
+  ggplot() +
+  geom_line(aes(x = fecha, y = value, color = fct_reorder(name, id))) + 
+  scale_y_continuous(limits = c(-99, 99)) +
+  theme_bw() +
+  theme(
+        # X axis
+        axis.title.x = element_blank(),
+        axis.text.x = element_text(size = 12),
+        # Y axis
+        axis.title.y = element_blank(),
+        axis.text.y = element_text(size = 12),
+        # Panel
+        panel.grid = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.grid.major.x = element_blank(),
+        panel.background = element_rect(fill = "white"),
+        # Legend
+        legend.title = element_blank(),
+        legend.text = element_text(size = 11),
+        legend.position = "bottom",
+        legend.justification = "center",
+        legend.margin = margin(.5, 0, 0, 0, "cm")
+    ) + 
+    guides(colour = guide_legend(nrow = 1)) 
+```
 
 \small
 
@@ -67,8 +116,6 @@ $^*$ FRED: Federal Reserve Bank of St. Louis
 \normalsize
 
 ```{r include=FALSE}
-main <- read_csv(here("data", "main.csv"))
-
 main_longer <- 
   main %>% 
   pivot_longer(-fecha, names_to = "Variable", values_to = "value") %>% 
@@ -293,52 +340,6 @@ kbl(table_three,
 $^*$ Nivel de significancia entre paréntesis.
 
 \normalsize
-
-\small
-
-\textbf{Figura 1:} Variables empleadas durante el proceso de predicción
-
-\normalsize
-
-```{r include=FALSE}
-order <- table_one %>% rowid_to_column(var = "id") %>% select(id, "name" = Variable)
-
-fig1 <- 
-  main %>% 
-  pivot_longer(-fecha) %>% 
-  arrange(name, fecha) %>% 
-  left_join(order) %>% 
-  mutate(name = as_factor(name)) %>% 
-  group_by(name)
-```
-
-```{r fig_one, echo=FALSE, fig.align = 'center', fig.dim = c(11, 5)}
-fig1 %>% 
-  ggplot() +
-  geom_line(aes(x = fecha, y = value, color = fct_reorder(name, id))) + 
-  scale_y_continuous(limits = c(-99, 99)) +
-  theme_bw() +
-  theme(
-        # X axis
-        axis.title.x = element_blank(),
-        axis.text.x = element_text(size = 12),
-        # Y axis
-        axis.title.y = element_blank(),
-        axis.text.y = element_text(size = 12),
-        # Panel
-        panel.grid = element_blank(),
-        panel.grid.minor = element_blank(),
-        panel.grid.major.x = element_blank(),
-        panel.background = element_rect(fill = "white"),
-        # Legend
-        legend.title = element_blank(),
-        legend.text = element_text(size = 11),
-        legend.position = "bottom",
-        legend.justification = "center",
-        legend.margin = margin(.5, 0, 0, 0, "cm")
-    ) + 
-    guides(colour = guide_legend(nrow = 1)) 
-```
 
 ## Métodos de pre-procesamiento
 
