@@ -6,7 +6,9 @@ bibliography: references.bib
 
 ## Análisis de datos
 
-Con el propósito de pronosticar la tasa de variación interanual del índice de precios al consumidor en Guatemala desde enero del 2005 a diciembre del 2021, la especificación de los regresores ha sido propuesta a partir de la implementación de un programa en el que a 36 series de tiempo, seleccionadas considerando los canales de demanda agregada, tipo de cambio y variables del sector externo del mecanismo de transmisión de política monetaria [@castillo2014], les son aplicadas pruebas de causalidad de Granger respecto a la variable objetivo para cada uno de los rezagos de mediano plazo y en el que posteriormente son filtradas considerando la cantidad de rezagos que causan en el sentido de Granger al ritmo inflacionario de la economía y la magnitud en el nivel de significancia de dichas pruebas estadísticas. El cuadro 1 muestra a las 13 variables cuyos rezagos son los más útiles para predecir los valores futuros de la variación del nivel de precios en la economía.
+Con el propósito de pronosticar la tasa de variación interanual del índice de precios al consumidor en Guatemala, la especificación de regresores ha sido propuesta a partir de un procedimiento en el que a 36 series de tiempo---seleccionadas considerando el canal de demanda agregada, el de tipo de cambio y las variables del sector externo del mecanismo de transmisión de política monetaria [@castillo2014]---les son aplicadas pruebas de causalidad de Granger respecto a la variable objetivo para cada uno de los rezagos de mediano plazo y en el que posteriormente son filtradas considerando (a) la cantidad de retardos que causan (en el sentido de Wiener-Granger) al ritmo inflacionario de la economía y (b) la magnitud en el nivel de significancia del estadístico F de estos últimos.
+
+El cuadro 1 muestra a las 13 variables cuyos valores pasados son los más útiles, dados el conjunto inicial de posibles predictores y los criterios de selección, para pronosticar los valores futuros de la variación en el nivel de precios de la economía. Los datos corresponden al periodo que abarca de enero del 2005 a diciembre del 2021.
 
 \vspace{5mm}
 
@@ -42,7 +44,7 @@ table_one <-
   )
 ```
 
-\renewcommand{\arraystretch}{1.5}
+\renewcommand{\arraystretch}{1.35}
 
 ```{r table_one, echo=FALSE}
 kbl(table_one, 
@@ -58,16 +60,16 @@ kbl(table_one,
   group_rows(start_row = 1, 
              end_row = 14, 
              latex_align = "c",
-             latex_gap_space = "-0.55cm")
+             latex_gap_space = "-0.50cm")
 ```
 
 \renewcommand{\arraystretch}{1}
 
 \small
 
-\textbf{Figura 1:} Series de tiempo de los predictores y la variable objetivo
+\textbf{Figura 1:} Series de tiempo (variable objetivo y predictores seleccionados)
 
-\normalsize
+\vspace{-7mm}
 
 ```{r include=FALSE}
 order <- table_one %>% rowid_to_column(var = "id") %>% select(id, "name" = Variable)
@@ -106,10 +108,12 @@ fig1 %>%
         legend.justification = "center",
         legend.margin = margin(.5, 0, 0, 0, "cm")
     ) + 
-    guides(colour = guide_legend(nrow = 1)) 
+    guides(colour = guide_legend(nrow = 1))
 ```
 
-\small
+Las estadísticas de
+
+\vspace{5mm}
 
 \textbf{Cuadro 2:} Estadísticas descriptivas
 
@@ -341,8 +345,6 @@ $^*$ Nivel de significancia entre paréntesis.
 
 \normalsize
 
-## Métodos de pre-procesamiento
-
-## Modelos, hiperparámetros y validación
+## Métodos a utilizar
 
 ## Medidas de precisión
