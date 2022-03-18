@@ -202,7 +202,7 @@ kbl(table_two,
 
 \end{center}
 ```
-\vspace{-4mm}
+\vspace{-2.7mm}
 
 ```{r include=FALSE}
 names <- main_longer %>% distinct(Variable) %>% pull()
@@ -371,7 +371,7 @@ kbl(table_three,
 
 \renewcommand{\arraystretch}{1}
 
-\vspace{-1.5mm}
+\vspace{-1.6mm}
 
 \scriptsize
 
