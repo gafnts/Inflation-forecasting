@@ -383,9 +383,9 @@ $^*$ Nivel de significancia entre paréntesis.
 
 El cuadro 3 muestra un panel de pruebas estadísticas en las cuales se incluyen un *test* de Ljung--Box para autocorrelación, uno de Jarque--Bera para normalidad, una prueba de red neuronal de White para comprobar si las variables exhiben comportamientos no-lineales, una prueba de Dickey--Fuller aumentada para verificar si existen raíces unitarias y la estimación del exponente de Hurst para medir la memoria de largo plazo de las series.
 
-Como es de esperarse, todas las variables exhiben autocorrelación y---tal y como demuestran las estadísticas descriptivas---la mayor parte de estas no se distribuyen normalmente. La prueba de White confirma que 5 de las series (las tasas de variación del índice mensual de actividad económica, del saldo de la deuda pública externa, de las exportaciones totales y del valor promedio de las exportaciones de banano, así como la tasa de interés pasiva nominal) presentan un comportamiento no-lineal.
+Como es de esperar, todas las variables exhiben correlación serial y---tal como demuestra el cuadro de estadísticas descriptivas---la mayor parte de estas no se distribuyen normalmente. La prueba de White confirma que 5 de las series (la tasa de interés pasiva nominal y las tasas de variación del índice mensual de actividad económica, del saldo de la deuda pública externa, de las exportaciones totales y del valor promedio de las exportaciones de banano) presentan un comportamiento no-lineal.
 
-Además, los resultados de la prueba de raíz unitaria evidencian que 4 variables (específicamente, las tasas de variación interanual de la base monetaria restringida, del medio circulante, del índice de precios al consumidor en Estados Unidos y la tasa de interés pasiva nominal) no son estacionarias. Por último, el exponente de Hurst demuestra que todas las series exhiben memoria de largo plazo.
+Además, los resultados de la prueba de raíz unitaria evidencian que la variación de la base monetaria restringida, del medio circulante, del índice de precios al consumidor en Estados Unidos, así como la tasa de interés pasiva nominal, no son estacionarias. Por último, el exponente de Hurst demuestra que todas las series exhiben memoria de largo plazo.
 
 ## Validación de modelos
 
@@ -395,6 +395,16 @@ Sin embargo, el investigador necesita entender qué tan efectivo es su modelo an
 
 Ahora bien, cuando los datos tienen un fuerte componente temporal, los métodos usuales de remuestreo tales como validación cruzada y *bootstraping* no pueden emplearse debido a que el orden de las observaciones tiene que ser preservado ya que las series se encuentran autocorrelacionadas y el modelo necesitar aprender los distintos patrones cíclicos y tendenciales que subyacen en la información: una versión más sofisticada de métodos de remuestreo es necesaria.
 
-En este estudio, la metodología de remuestreo empleada será *rolling forecast origin resampling*. Este es un procedimiento en el que el conjunto de datos de entrenamiento es nuevamente dividido en dos subconjuntos de análisis/evaluación con tamaños específicos. Una primera iteración utiliza estos tamaños, comenzando desde el inicio de la serie. La segunda iteración utiliza los mismos tamaños pero se desplaza por un número determinado de muestras. Por lo que el "origen" en el que se basa el pronóstico va avanzando en el tiempo [@hyndman2018forecasting]. Así, el método entrena iterativamente al modelo con datos históricos y lo evalúa con datos cada vez más recientes.
+En este estudio la metodología de remuestreo empleada será *rolling forecast origin resampling*. Este es un procedimiento en el que el conjunto de datos de entrenamiento es nuevamente dividido en dos subconjuntos de análisis/evaluación con tamaños específicos. Una primera iteración utiliza estos tamaños, comenzando desde el inicio de la serie. La segunda iteración utiliza los mismos tamaños pero se desplaza por un número determinado de muestras. El proceso continúa hasta que el conjunto de datos de entrenamiento es agotado por completo, por lo que el origen en el que se basan los pronósticos va avanzando en el tiempo [@hyndman2018forecasting]. Así, el método entrena iterativamente al modelo con datos históricos, lo evalúa con datos cada vez más recientes y la precisión en el pronóstico es calculada promediando los subconjuntos de evaluación.
 
 ## Medidas de precisión
+
+$$
+RMSE = \sqrt{\frac{1}{n}\Sigma_{i=1}^{n}{(y_{t}-\hat{y}_{t})^2}}
+$$
+
+$$sMAPE=\frac{2}{k}\sum_{t=1}^{k}\frac{y_{t}-\hat{y}_{t}}{|y_{t}|+|\hat{y}_{t}|}*100\%
+$$
+
+$$MASE=\frac{1}{k}\frac{\sum_{t=1}^{k}|y_{t}-\hat{y}_{t}|}{\frac{1}{n-m}\sum_{t=1}^{k}|y_{t}-\hat{y}_{t-m}|}
+$$
