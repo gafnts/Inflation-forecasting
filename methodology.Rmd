@@ -405,7 +405,7 @@ En este estudio la metodología de remuestreo empleada es conocida como *rolling
 
 ## Procedimiento de pronóstico
 
-Aunque la estimación de los futuros valores de una serie puede ser llevada a cabo de diversas maneras---por ejemplo, @taieb2011 hacen un análisis teórico-comparativo de cinco estrategias que pueden ser utilizadas para generar pronósticos de varios pasos hacia adelante (*multi-step ahead*)---existen dos métodos particulares que sobresalen en la literatura.
+Aunque la estimación de los valores futuros de una serie puede ser llevada a cabo de diversas maneras---por ejemplo, @taieb2011 hacen un análisis teórico-comparativo de cinco estrategias que pueden ser utilizadas para generar pronósticos de varios pasos hacia adelante (*multi-step ahead*)---existen dos métodos particulares que sobresalen en la literatura.
 
 El primero y el más antiguo de ellos es el método iterativo (también llamado recursivo o *multi-stage*). Con esta estrategia, un modelo $f$ es entrenado para pronosticar un único periodo hacia adelante. Subsecuentemente, un segundo pronóstico $h+2$ es obtenido utilizando la predicción $h +1$ producida por el modelo y el proceso se repite hasta llegar al final del horizonte de pronóstico $H$ [@hamzaçebi2009].
 
@@ -413,7 +413,7 @@ Mientras tanto, el segundo procedimiento es llamado método directo y consiste e
 
 Ambas estrategias cuentan con ventajas y desventajas. Dependiendo de las características de la serie, el método recursivo puede tener un peor *performance* dado a que dicha estrategia es sensible a la acumulación de errores durante la iteración de los pronósticos, propagándolos hacia adelante y teniendo un efecto negativo sobre el resto de las predicciones $h+i$. Por otro lado, el procedimiento directo induce independencia condicional a lo largo de las predicciones individuales del horizonte $H$, aspecto que afecta a la precisión de los pronósticos al impedir que el modelo tome en cuenta la complejidad entre las relaciones de la variable objetivo y el resto de sus predictores [@taieb2011].
 
-Tal y como mencionan @marcellino2006, la cuestión sobre cuál procedimiento elegir es más bien una pregunta empírica. Por lo general, la literatura se encuentra dividida entre estudios que encuentran que uno de estos métodos supera en términos de eficiencia de pronóstico al otro. Esta investigación optará por utilizar el método recursivo durante el procedimiento de predicción de los métodos econométricos (en línea con la metodología Box-Jenkins) y la estrategia directa para los modelos de aprendizaje estadístico.
+Tal y como mencionan @marcellino2006, la cuestión sobre cuál procedimiento elegir es más bien una pregunta empírica. Por lo general, la literatura se mantiene dividida entre estudios que encuentran que uno de estos métodos supera en términos de eficiencia de pronóstico al otro. Esta investigación optará por utilizar el método recursivo durante el procedimiento de predicción de los métodos econométricos (en línea con la metodología Box-Jenkins) y la estrategia directa para los modelos de aprendizaje estadístico.
 
 ## Medidas de precisión
 
