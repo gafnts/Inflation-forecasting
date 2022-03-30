@@ -1,0 +1,83 @@
+```{r}
+pacman::p_load(tidyverse, here, magrittr, janitor, readxl, lubridate)
+```
+
+## b. Consumer price index: INE
+
+```{r}
+setwd(here("INE"))
+Sys.setlocale("LC_TIME", "es_ES")
+```
+
+```{r}
+ine_raw <- 
+  dir(pattern = "*.xls") %>% 
+  map_df(~ read_excel(., col_types = "text")) %>% 
+  clean_names() %>% 
+  mutate_if(is.character, list(str_to_lower)) %>% 
+  arrange(ano)
+
+ine_raw %<>% 
+  mutate_at(vars(starts_with("re")), list(parse_number)) %>% 
+  mutate_if(~ any(is.na(.)), ~ if_else(is.na(.), 0, .)) %>%
+  mutate(reg_i = reg_i + region_i,
+         reg_ii = reg_ii + region_ii,
+         reg_iii = reg_iii + region_iii,
+         reg_iv = reg_iv + region_vi,
+         reg_v = reg_v + region_v,
+         reg_v = reg_v + region_vi,
+         reg_vii = reg_vii + region_vii,
+         reg_viii = reg_viii + region_viii) %>% 
+  select(1:13)
+
+meses <- 
+  ine_raw %>% 
+  filter(ano == 2012) %>% 
+  distinct(mes) %>% 
+  mutate(mes = as.factor(mes),
+         num = 1:12,
+         dia = rep(1))
+
+ine_tidy <- 
+  left_join(ine_raw, meses) %>% 
+  select(ano, mes, num, dia, everything()) %>% 
+  mutate(fecha = (as.Date(str_c(ano, "-", num, "-", dia)))) %>% 
+  select(fecha, codigo:reg_viii)
+```
+
+```{r}
+general <- 
+  ine_tidy %>% 
+  filter(codigo == "0")
+
+ine_tidy %>% 
+  rowwise() %>% 
+  mutate(rep_2 = mean(reg_i:reg_viii)) %>% View
+
+#
+ine_tidy %>% 
+  slice(2) %>% 
+  select(descripcion, rep) %>% pull()
+
+ine_tidy %>% 
+  slice(3:76) %>% 
+  select(descripcion, rep) %>% 
+  summarise(mean = mean(rep)) %>% pull()
+```
+
+```{r}
+division <- read_excel(here("division.xlsx"))
+
+division %<>% 
+  row_to_names(3) %>% 
+  clean_names() 
+
+division %>% 
+  rowwise() %>% 
+  mutate(rep = mean(alimentos_y_bebidas_no_alcoholicas:bienes_y_servicios_diversos)) %>% 
+  select(ano, mes, rep)
+```
+
+```{r}
+
+```
