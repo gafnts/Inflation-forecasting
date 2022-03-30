@@ -1,0 +1,20 @@
+# Safety checks
+
+```{r}
+pacman::p_load(tidyverse, magrittr, here)
+```
+
+```{r}
+data <- read_csv(here("data", "main.csv"))
+```
+
+## Table 2
+
+```{r}
+data %>% 
+  pivot_longer(-fecha) %>% 
+  arrange(name) %>% 
+  ggplot(aes(x = value)) +
+  geom_density() +
+  facet_wrap(~ name, scales = "free")
+```
