@@ -5,7 +5,7 @@ pacman::p_load(tidyverse, tidymodels, timetk, here, randomForest, tictoc, vip)
 data <- read_csv(here("data", "main.csv")) %>% rename("date" = fecha)
 ```
 
-## Forecast function
+### Forecast function
 
 ```{r}
 randomforest <-
@@ -85,6 +85,8 @@ randomforest <-
   }
 ```
 
+### Forecast horizons
+
 ```{r}
 rf_3 <- randomforest("3 months")
 
@@ -104,9 +106,26 @@ rf_9[[3]][[1]] %>% as_tibble() %>% write_csv(here("results", "rf_9_time"))
 ```{r}
 rf_12 <- randomforest("12 months")
 
-rf_9[[1]] %>% write_csv(here("results", "rf_9_forecast"))
-rf_9[[2]] %>% write_csv(here("results", "rf_9_metrics"))
-rf_9[[3]][[1]] %>% as_tibble() %>% write_csv(here("results", "rf_9_time"))
+rf_12[[1]] %>% write_csv(here("results", "rf_12_forecast"))
+rf_12[[2]] %>% write_csv(here("results", "rf_12_metrics"))
+rf_12[[3]][[1]] %>% as_tibble() %>% write_csv(here("results", "rf_12_time"))
+```
+
+```{r}
+rf_24 <- randomforest("24 months")
+
+rf_24[[1]] %>% write_csv(here("results", "rf_24_forecast"))
+rf_24[[2]] %>% write_csv(here("results", "rf_24_metrics"))
+rf_24[[3]][[1]] %>% as_tibble() %>% write_csv(here("results", "rf_24_time"))
+```
+
+### Safety checks
+
+```{r}
+rf_24[[1]] %>% 
+  pivot_longer(-.row) %>% 
+  ggplot(aes(.row, value, color = name)) +
+  geom_line()
 ```
 
 ## Detailed process
