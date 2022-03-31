@@ -1,20 +1,121 @@
 # Random forest
 
 ```{r}
-pacman::p_load(tidyverse, tidymodels, modeltime, timetk, 
-               randomForest, lubridate, magrittr, here, vip)
+pacman::p_load(tidyverse, tidymodels, timetk, here, randomForest, tictoc, vip)
+data <- read_csv(here("data", "main.csv")) %>% rename("date" = fecha)
+```
+
+## Forecast function
+
+```{r}
+randomforest <-
+  function(assess) {
+    tic("Random forest")
+    
+    # Training and testing partitions
+    splits <- data %>% time_series_split(date, assess = assess, cumulative = TRUE)
+    train <- training(splits)
+    
+    # Model specification
+    rf <-
+      rand_forest(trees = 1000,
+                  min_n = tune(),
+                  mtry = tune()) %>%
+      set_engine("randomForest") %>%
+      set_mode("regression")
+    
+    # Feature engineering
+    recipe <- train %>% recipe(ipc ~ .) %>% step_rm(date)
+    
+    # Workflow
+    workflow <- workflow() %>% add_model(rf) %>% add_recipe(recipe)
+    
+    # Hyperparameter tuning
+    resamples <-
+      train %>%
+      rolling_origin(
+        initial = (8 * 12),
+        assess = (2 * 12),
+        skip = 10,
+        cumulative = TRUE
+      )
+    
+    grid <-
+      grid_latin_hypercube(min_n(),
+                           finalize(mtry(), train),
+                           size = 100)
+    
+    metrics <- metric_set(mae, mase)
+    
+    doParallel::registerDoParallel()
+    
+    set.seed(123)
+    tune <-
+      tune_grid(
+        workflow,
+        resamples = resamples,
+        grid = grid,
+        metrics = metrics,
+        control = control_grid(save_pred = TRUE)
+      )
+    
+    best_mae <- select_best(tune, "mae")
+    
+    # Final workflow
+    final_workflow <-
+      finalize_workflow(workflow,
+                        best_mae)
+    
+    # Final model
+    model <- last_fit(final_workflow, splits, metrics = metrics)
+    metrics <- collect_metrics(model)
+    
+    # Forecast
+    forecast <-
+      model %>% collect_predictions() %>% select(.pred, .row, ipc)
+    
+    # Time elapsed
+    toc(log = TRUE)
+    time <- tic.log(format = TRUE)
+    tic.clearlog()
+    
+    # Collect results
+    results <- list(forecast, metrics, time)
+    return(results)
+  }
 ```
 
 ```{r}
-data <- read_csv(here("data", "main.csv")) %>% rename("date" = fecha)
+rf_3 <- randomforest("3 months")
+
+rf_3[[1]] %>% write_csv(here("results", "rf_3_forecast"))
+rf_3[[2]] %>% write_csv(here("results", "rf_3_metrics"))
+rf_3[[3]][[1]] %>% as_tibble() %>% write_csv(here("results", "rf_3_time"))
 ```
+
+```{r}
+rf_9 <- randomforest("9 months")
+
+rf_9[[1]] %>% write_csv(here("results", "rf_9_forecast"))
+rf_9[[2]] %>% write_csv(here("results", "rf_9_metrics"))
+rf_9[[3]][[1]] %>% as_tibble() %>% write_csv(here("results", "rf_9_time"))
+```
+
+```{r}
+rf_12 <- randomforest("12 months")
+
+rf_9[[1]] %>% write_csv(here("results", "rf_9_forecast"))
+rf_9[[2]] %>% write_csv(here("results", "rf_9_metrics"))
+rf_9[[3]][[1]] %>% as_tibble() %>% write_csv(here("results", "rf_9_time"))
+```
+
+## Detailed process
 
 ### Train and test sets
 
 ```{r}
 splits <- data %>% time_series_split(date, assess = "24 months", cumulative = TRUE)
 train <- training(splits)
-test <- testing(splits)
 ```
 
 ### Model specification
@@ -30,10 +131,9 @@ rf <-
 
 ```{r}
 recipe <- 
-  recipe(ipc ~ ., data = train) %>% 
-  step_rm(date) # %>% 
-  #step_lag(all_predictors(), lag = 1:24) %>% 
-  #step_naomit(all_predictors())
+  train %>% 
+  recipe(ipc ~ .) %>% 
+  step_rm(date)
 ```
 
 ```{r}
@@ -73,7 +173,7 @@ grid <-
   grid_latin_hypercube(
   min_n(),
   finalize(mtry(), train),
-  size = 15
+  size = 100
 )
 ```
 
@@ -81,6 +181,8 @@ grid <-
 doParallel::registerDoParallel()
 
 metrics <- metric_set(mae, mase)
+
+tic("Random forest")
 
 set.seed(123)
 tune <- tune_grid(
@@ -90,6 +192,10 @@ tune <- tune_grid(
   metrics = metrics,
   control = control_grid(save_pred = TRUE)
 )
+
+toc(log = TRUE)
+time <- tic.log(format = TRUE)
+tic.clearlog()
 ```
 
 ```{r}
