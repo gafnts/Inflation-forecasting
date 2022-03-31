@@ -1,7 +1,7 @@
 # **K-nearest neighbors**
 
 ```{r}
-pacman::p_load(tidyverse, tidymodels, timetk, here, kernlab, tictoc, vip)
+pacman::p_load(tidyverse, tidymodels, timetk, here, kknn, tictoc, vip)
 data <- read_csv(here("data", "main.csv")) %>% rename("date" = fecha)
 ```
 
@@ -10,27 +10,29 @@ data <- read_csv(here("data", "main.csv")) %>% rename("date" = fecha)
 ### Forecast function
 
 ```{r}
-svm <-
+k_nearest <-
   function(assess) {
-    tic("SVM")
+    tic("KNN")
     
     # Training and testing partitions
     splits <- data %>% time_series_split(date, assess = assess, cumulative = TRUE)
     train <- training(splits)
     
     # Model specification
-    svm <-
-      svm_poly(cost = tune(),
-               degree = tune(),
-               scale_factor = tune()) %>%
-      set_engine("kernlab") %>%
+    knn <-
+      nearest_neighbor(
+        neighbors = tune(),
+        weight_func = tune(),
+        dist_power = tune()
+      ) %>%
+      set_engine("kknn") %>%
       set_mode("regression")
     
     # Feature engineering
     recipe <- train %>% recipe(ipc ~ .) %>% step_rm(date)
     
     # Workflow
-    workflow <- workflow() %>% add_model(svm) %>% add_recipe(recipe)
+    workflow <- workflow() %>% add_model(knn) %>% add_recipe(recipe)
     
     # Hyperparameter tuning
     resamples <-
@@ -43,11 +45,10 @@ svm <-
       )
     
     grid <-
-      grid_latin_hypercube(
-        cost(),
-        degree(),
-        scale_factor(),
-        size = 100)
+      grid_latin_hypercube(neighbors(),
+                           weight_func(),
+                           dist_power(),
+                           size = 15)
     
     metrics <- metric_set(mae, mase)
     
@@ -91,41 +92,41 @@ svm <-
 ### Forecast horizons
 
 ```{r}
-svm_3 <- svm("3 months")
+knn_3 <- k_nearest("3 months")
 
-svm_3[[1]] %>% write_csv(here("results", "svm_3_forecast.csv"))
-svm_3[[2]] %>% write_csv(here("results", "svm_3_metrics.csv"))
-svm_3[[3]][[1]] %>% as_tibble() %>% write_csv(here("results", "svm_3_time.csv"))
+knn_3[[1]] %>% write_csv(here("results", "knn_3_forecast.csv"))
+knn_3[[2]] %>% write_csv(here("results", "knn_3_metrics.csv"))
+knn_3[[3]][[1]] %>% as_tibble() %>% write_csv(here("results", "knn_3_time.csv"))
 ```
 
 ```{r}
-svm_9 <- svm("9 months")
+knn_9 <- k_nearest("9 months")
 
-svm_9[[1]] %>% write_csv(here("results", "svm_9_forecast.csv"))
-svm_9[[2]] %>% write_csv(here("results", "svm_9_metrics.csv"))
-svm_9[[3]][[1]] %>% as_tibble() %>% write_csv(here("results", "svm_9_time.csv"))
+knn_9[[1]] %>% write_csv(here("results", "knn_9_forecast.csv"))
+knn_9[[2]] %>% write_csv(here("results", "knn_9_metrics.csv"))
+knn_9[[3]][[1]] %>% as_tibble() %>% write_csv(here("results", "knn_9_time.csv"))
 ```
 
 ```{r}
-svm_12 <- svm("12 months")
+knn_12 <- k_nearest("12 months")
 
-svm_12[[1]] %>% write_csv(here("results", "svm_12_forecast.csv"))
-svm_12[[2]] %>% write_csv(here("results", "svm_12_metrics.csv"))
-svm_12[[3]][[1]] %>% as_tibble() %>% write_csv(here("results", "svm_12_time.csv"))
+knn_12[[1]] %>% write_csv(here("results", "knn_12_forecast.csv"))
+knn_12[[2]] %>% write_csv(here("results", "knn_12_metrics.csv"))
+knn_12[[3]][[1]] %>% as_tibble() %>% write_csv(here("results", "knn_12_time.csv"))
 ```
 
 ```{r}
-svm_24 <- svm("24 months")
+knn_24 <- k_nearest("24 months")
 
-svm_24[[1]] %>% write_csv(here("results", "svm_24_forecast.csv"))
-svm_24[[2]] %>% write_csv(here("results", "svm_24_metrics.csv"))
-svm_24[[3]][[1]] %>% as_tibble() %>% write_csv(here("results", "svm_24_time.csv"))
+knn_24[[1]] %>% write_csv(here("results", "knn_24_forecast.csv"))
+knn_24[[2]] %>% write_csv(here("results", "knn_24_metrics.csv"))
+knn_24[[3]][[1]] %>% as_tibble() %>% write_csv(here("results", "knn_24_time.csv"))
 ```
 
 ### Safety checks
 
 ```{r}
-svm_24[[1]] %>% 
+knn_24[[1]]%>% 
   pivot_longer(-.row) %>% 
   ggplot(aes(.row, value, color = name)) +
   geom_line()
@@ -143,11 +144,11 @@ train <- training(splits)
 ### Model specification
 
 ```{r}
-svm <-
-  svm_poly(cost = tune(),
-          degree = tune(),
-          scale_factor = tune()) %>%
-  set_engine("kernlab") %>% 
+knn <-
+  nearest_neighbor(neighbors = tune(),
+                   weight_func = tune(),
+                   dist_power = tune()) %>%
+  set_engine("kknn") %>% 
   set_mode("regression")
 ```
 
@@ -169,7 +170,7 @@ recipe %>% prep() %>% juice()
 ```{r}
 workflow <- 
   workflow() %>% 
-  add_model(svm) %>% 
+  add_model(knn) %>% 
   add_recipe(recipe)
 ```
 
@@ -195,9 +196,9 @@ resamples %>%
 ```{r}
 grid <- 
   grid_latin_hypercube(
-    cost(),
-    degree(),
-    scale_factor(),
+    neighbors(),
+    weight_func(),
+    dist_power(),
     size = 15
 )
 ```
@@ -207,7 +208,7 @@ doParallel::registerDoParallel()
 
 metrics <- metric_set(mae, mase)
 
-tic("SVM")
+tic("KNN")
 
 set.seed(123)
 tune <- tune_grid(
@@ -232,8 +233,8 @@ best_mae <- select_best(tune, "mae"); best_mae
 tune %>%
   collect_metrics() %>%
   filter(.metric == "mae") %>%
-  select(mean, cost:scale_factor) %>%
-  pivot_longer(cost:scale_factor,
+  select(mean, neighbors, dist_power) %>%
+  pivot_longer(c(neighbors, dist_power),
                values_to = "value",
                names_to = "parameter"
   ) %>%
