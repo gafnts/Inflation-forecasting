@@ -1,7 +1,7 @@
 # **Multilayer perceptron**
 
 ```{r}
-pacman::p_load(tidyverse, tidymodels, timetk, here, keras, tictoc, vip)
+pacman::p_load(tidyverse, tidymodels, timetk, here, keras, tictoc)
 data <- read_csv(here("data", "main.csv")) %>% rename("date" = fecha)
 ```
 
@@ -52,8 +52,6 @@ perceptron <-
         size = 15)
     
     metrics <- metric_set(mae, mase)
-    
-    doParallel::registerDoParallel()
     
     set.seed(123)
     tune <- 
@@ -128,7 +126,7 @@ mlp_24[[3]][[1]] %>% as_tibble() %>% write_csv(here("results", "mlp_24_time.csv"
 ### Safety checks
 
 ```{r}
-mlp_24[[1]]%>% 
+mlp_24[[1]] %>% 
   pivot_longer(-.row) %>% 
   ggplot(aes(.row, value, color = name)) +
   geom_line()
@@ -161,7 +159,10 @@ mlp <-
 recipe <- 
   train %>% 
   recipe(ipc ~ .) %>% 
-  step_rm(date)
+  step_rm(date) %>% 
+  step_sqrt(all_predictors()) %>% 
+  step_center(all_predictors()) %>% 
+  step_scale(all_predictors())
 ```
 
 ```{r}
