@@ -31,13 +31,13 @@ rf <-
 ```{r}
 recipe <- 
   recipe(ipc ~ ., data = train) %>% 
-  step_rm(date) %>% 
-  step_lag(all_predictors(), lag = 1:24) %>% 
-  step_naomit(all_predictors())
+  step_rm(date) # %>% 
+  #step_lag(all_predictors(), lag = 1:24) %>% 
+  #step_naomit(all_predictors())
 ```
 
 ```{r}
-recipe %>% prep() %>% bake(new_data = NULL)
+recipe %>% prep() %>% juice()
 ```
 
 ### Workflow
@@ -52,6 +52,23 @@ workflow <-
 ### Hyperparameter tuning
 
 ```{r}
+resamples <- 
+  train %>% 
+  rolling_origin(
+    initial = 8 * 12,
+    assess = 2 * 12,
+    skip = 10,
+    cumulative = TRUE)
+```
+
+```{r}
+resamples %>%
+  tk_time_series_cv_plan() %>%
+  plot_time_series_cv_plan(date, ipc, 
+                           .facet_ncol = 2, .interactive = F)
+```
+
+```{r}
 grid <- 
   grid_latin_hypercube(
   min_n(),
@@ -61,19 +78,67 @@ grid <-
 ```
 
 ```{r}
-resamples <- rolling_origin(train, initial = 8 * 12, assess = 2 * 12)
-```
-
-```{r}
 doParallel::registerDoParallel()
-set.seed(123)
 
+metrics <- metric_set(mae, mase)
+
+set.seed(123)
 tune <- tune_grid(
   workflow,
   resamples = resamples,
   grid = grid,
+  metrics = metrics,
   control = control_grid(save_pred = TRUE)
 )
+```
 
-tune
+```{r}
+tune %>% collect_metrics() %>% print(n = Inf)
+best_mae <- select_best(tune, "mae"); best_auc
+```
+
+```{r}
+tune %>%
+  collect_metrics() %>%
+  filter(.metric == "mae") %>%
+  select(mean, mtry:min_n) %>%
+  pivot_longer(mtry:min_n,
+               values_to = "value",
+               names_to = "parameter"
+  ) %>%
+  ggplot(aes(value, mean, color = parameter)) +
+  geom_point(alpha = 0.8, show.legend = FALSE) +
+  facet_wrap(~parameter, scales = "free_x") +
+  labs(x = NULL, y = "MAE")
+```
+
+```{r}
+final <- 
+  finalize_workflow(
+  workflow,
+  best_mae
+)
+```
+
+```{r}
+library(vip)
+
+final %>%
+  fit(data = train) %>%
+  extract_fit_parsnip() %>%
+  vip(geom = "col")
+```
+
+```{r}
+final_res <- last_fit(final, splits)
+collect_metrics(final_res)
+```
+
+```{r}
+final_res %>%
+  collect_predictions() %>% 
+  select(.pred, .row, ipc) %>% 
+  pivot_longer(-.row) %>% 
+  ggplot(aes(.row, value, color = name)) +
+  geom_line()
 ```
