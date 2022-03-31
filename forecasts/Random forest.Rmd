@@ -1,0 +1,79 @@
+# Random forest
+
+```{r}
+pacman::p_load(tidyverse, tidymodels, modeltime, timetk, 
+               randomForest, lubridate, magrittr, here)
+```
+
+```{r}
+data <- read_csv(here("data", "main.csv")) %>% rename("date" = fecha)
+```
+
+### Train and test sets
+
+```{r}
+splits <- data %>% time_series_split(date, assess = "24 months", cumulative = TRUE)
+train <- training(splits)
+test <- testing(splits)
+```
+
+### Model specification
+
+```{r}
+rf <- 
+  rand_forest(trees = 1000, min_n = tune(), mtry = tune()) %>% 
+  set_engine("randomForest") %>% 
+  set_mode("regression")
+```
+
+### Feature engineering
+
+```{r}
+recipe <- 
+  recipe(ipc ~ ., data = train) %>% 
+  step_rm(date) %>% 
+  step_lag(all_predictors(), lag = 1:24) %>% 
+  step_naomit(all_predictors())
+```
+
+```{r}
+recipe %>% prep() %>% bake(new_data = NULL)
+```
+
+### Workflow
+
+```{r}
+workflow <- 
+  workflow() %>% 
+  add_model(rf) %>% 
+  add_recipe(recipe)
+```
+
+### Hyperparameter tuning
+
+```{r}
+grid <- 
+  grid_latin_hypercube(
+  min_n(),
+  finalize(mtry(), train),
+  size = 15
+)
+```
+
+```{r}
+resamples <- rolling_origin(train, initial = 8 * 12, assess = 2 * 12)
+```
+
+```{r}
+doParallel::registerDoParallel()
+set.seed(123)
+
+tune <- tune_grid(
+  workflow,
+  resamples = resamples,
+  grid = grid,
+  control = control_grid(save_pred = TRUE)
+)
+
+tune
+```
