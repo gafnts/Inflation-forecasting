@@ -8,9 +8,9 @@ pacman::p_load(tidyverse, here)
 
 ```{r}
 data <- 
-  read_csv("database.csv") %>% 
+  read_csv(here("data", "main.csv")) %>% 
   select(-fecha) %>% 
-  relocate(inf = "ipc_variacion_interanual")
+  relocate(inf = "ipc")
 
 data
 ```
@@ -23,7 +23,7 @@ pacman::p_load(forecastML, glmnet, randomForest, xgboost)
 
 ```{r}
 date_frequency <- "1 month"
-dates <- seq(as.Date("2010-01-01"), as.Date("2021-10-01"), by = date_frequency)
+dates <- seq(as.Date("2005-01-01"), as.Date("2021-12-01"), by = date_frequency)
 ```
 
 ```{r}
