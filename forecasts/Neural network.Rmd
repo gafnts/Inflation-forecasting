@@ -1,7 +1,7 @@
-# **K-nearest neighbors**
+# **Multilayer perceptron**
 
 ```{r}
-pacman::p_load(tidyverse, tidymodels, timetk, here, kknn, tictoc, vip)
+pacman::p_load(tidyverse, tidymodels, timetk, here, keras, tictoc, vip)
 data <- read_csv(here("data", "main.csv")) %>% rename("date" = fecha)
 ```
 
@@ -144,11 +144,12 @@ train <- training(splits)
 ### Model specification
 
 ```{r}
-knn <-
-  nearest_neighbor(neighbors = tune(),
-                   weight_func = tune(),
-                   dist_power = tune()) %>%
-  set_engine("kknn") %>% 
+mlp <-
+  mlp(hidden_units = tune(),
+      dropout = tune(),
+      epochs = 100,
+      activation = "relu") %>%
+  set_engine("keras") %>% 
   set_mode("regression")
 ```
 
@@ -170,7 +171,7 @@ recipe %>% prep() %>% juice()
 ```{r}
 workflow <- 
   workflow() %>% 
-  add_model(knn) %>% 
+  add_model(mlp) %>% 
   add_recipe(recipe)
 ```
 
@@ -180,9 +181,9 @@ workflow <-
 resamples <- 
   train %>% 
   rolling_origin(
-    initial = 8 * 12,
+    initial = 10 * 12,
     assess = 2 * 12,
-    skip = 10,
+    skip = 18,
     cumulative = TRUE)
 ```
 
@@ -196,19 +197,16 @@ resamples %>%
 ```{r}
 grid <- 
   grid_latin_hypercube(
-    neighbors(),
-    weight_func(),
-    dist_power(),
-    size = 15
+    hidden_units(),
+    dropout(),
+    size = 5
 )
 ```
 
 ```{r}
-doParallel::registerDoParallel()
-
 metrics <- metric_set(mae, mase)
 
-tic("KNN")
+tic("MLP")
 
 set.seed(123)
 tune <- tune_grid(
@@ -233,8 +231,8 @@ best_mae <- select_best(tune, "mae"); best_mae
 tune %>%
   collect_metrics() %>%
   filter(.metric == "mae") %>%
-  select(mean, neighbors, dist_power) %>%
-  pivot_longer(c(neighbors, dist_power),
+  select(mean, hidden_units:dropout) %>%
+  pivot_longer(hidden_units:dropout,
                values_to = "value",
                names_to = "parameter"
   ) %>%
@@ -252,13 +250,6 @@ final <-
   workflow,
   best_mae
 )
-```
-
-```{r}
-final %>%
-  fit(data = train) %>%
-  extract_fit_parsnip() %>%
-  vip(geom = "col")
 ```
 
 ```{r}
