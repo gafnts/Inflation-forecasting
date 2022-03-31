@@ -1,7 +1,7 @@
 # XGB
 
 ```{r}
-pacman::p_load(tidyverse, tidymodels, timetk, here, randomForest, tictoc, vip)
+pacman::p_load(tidyverse, tidymodels, timetk, here, xgboost, tictoc, vip)
 data <- read_csv(here("data", "main.csv")) %>% rename("date" = fecha)
 ```
 
@@ -10,9 +10,9 @@ data <- read_csv(here("data", "main.csv")) %>% rename("date" = fecha)
 ### Forecast function
 
 ```{r}
-gradientboost <-
+xg_boost <-
   function(assess) {
-    tic("Random forest")
+    tic("XGBoost")
     
     # Training and testing partitions
     splits <- data %>% time_series_split(date, assess = assess, cumulative = TRUE)
@@ -20,10 +20,16 @@ gradientboost <-
     
     # Model specification
     xgb <-
-      rand_forest(trees = 1000,
-                  min_n = tune(),
-                  mtry = tune()) %>%
-      set_engine("randomForest") %>%
+      boost_tree(
+        trees = 1000,
+        tree_depth = tune(),
+        min_n = tune(),
+        loss_reduction = tune(),
+        sample_size = tune(),
+        mtry = tune(),
+        learn_rate = tune(),
+      ) %>%
+      set_engine("xgboost") %>%
       set_mode("regression")
     
     # Feature engineering
@@ -43,16 +49,22 @@ gradientboost <-
       )
     
     grid <-
-      grid_latin_hypercube(min_n(),
-                           finalize(mtry(), train),
-                           size = 100)
+      grid_latin_hypercube(
+        tree_depth(),
+        min_n(),
+        loss_reduction(),
+        sample_size = sample_prop(),
+        finalize(mtry(), train),
+        learn_rate(),
+        size = 100
+      )
     
     metrics <- metric_set(mae, mase)
     
     doParallel::registerDoParallel()
     
     set.seed(123)
-    tune <-
+    tune <- 
       tune_grid(
         workflow,
         resamples = resamples,
@@ -73,8 +85,7 @@ gradientboost <-
     metrics <- collect_metrics(model)
     
     # Forecast
-    forecast <-
-      model %>% collect_predictions() %>% select(.pred, .row, ipc)
+    forecast <- model %>% collect_predictions() %>% select(.pred, .row, ipc)
     
     # Time elapsed
     toc(log = TRUE)
@@ -90,7 +101,7 @@ gradientboost <-
 ### Forecast horizons
 
 ```{r}
-xgb_3 <- gradientboost("3 months")
+xgb_3 <- xg_boost("3 months")
 
 xgb_3[[1]] %>% write_csv(here("results", "xgb_3_forecast.csv"))
 xgb_3[[2]] %>% write_csv(here("results", "xgb_3_metrics.csv"))
@@ -98,7 +109,7 @@ xgb_3[[3]][[1]] %>% as_tibble() %>% write_csv(here("results", "xgb_3_time.csv"))
 ```
 
 ```{r}
-xgb_9 <- gradientboost("9 months")
+xgb_9 <- xg_boost("9 months")
 
 xgb_9[[1]] %>% write_csv(here("results", "xgb_9_forecast.csv"))
 xgb_9[[2]] %>% write_csv(here("results", "xgb_9_metrics.csv"))
@@ -106,7 +117,7 @@ xgb_9[[3]][[1]] %>% as_tibble() %>% write_csv(here("results", "xgb_9_time.csv"))
 ```
 
 ```{r}
-xgb_12 <- gradientboost("12 months")
+xgb_12 <- xg_boost("12 months")
 
 xgb_12[[1]] %>% write_csv(here("results", "xgb_12_forecast.csv"))
 xgb_12[[2]] %>% write_csv(here("results", "xgb_12_metrics.csv"))
@@ -114,7 +125,7 @@ xgb_12[[3]][[1]] %>% as_tibble() %>% write_csv(here("results", "xgb_12_time.csv"
 ```
 
 ```{r}
-xgb_24 <- gradientboost("24 months")
+xgb_24 <- xg_boost("24 months")
 
 xgb_24[[1]] %>% write_csv(here("results", "xgb_24_forecast.csv"))
 xgb_24[[2]] %>% write_csv(here("results", "xgb_24_metrics.csv"))
@@ -143,8 +154,14 @@ train <- training(splits)
 
 ```{r}
 xgb <- 
-  rand_forest(trees = 1000, min_n = tune(), mtry = tune()) %>% 
-  set_engine("randomForest") %>% 
+  boost_tree(
+      trees = 1000, 
+      tree_depth = tune(), min_n = tune(), 
+      loss_reduction = tune(),
+      sample_size = tune(), mtry = tune(),
+      learn_rate = tune(),   
+    ) %>% 
+  set_engine("xgboost") %>% 
   set_mode("regression")
 ```
 
@@ -192,9 +209,13 @@ resamples %>%
 ```{r}
 grid <- 
   grid_latin_hypercube(
-  min_n(),
-  finalize(mtry(), train),
-  size = 100
+    tree_depth(),
+    min_n(),
+    loss_reduction(),
+    sample_size = sample_prop(),
+    finalize(mtry(), train),
+    learn_rate(),
+    size = 15
 )
 ```
 
@@ -203,7 +224,7 @@ doParallel::registerDoParallel()
 
 metrics <- metric_set(mae, mase)
 
-tic("Random forest")
+tic("XGBoost")
 
 set.seed(123)
 tune <- tune_grid(
@@ -228,8 +249,8 @@ best_mae <- select_best(tune, "mae"); best_mae
 tune %>%
   collect_metrics() %>%
   filter(.metric == "mae") %>%
-  select(mean, mtry:min_n) %>%
-  pivot_longer(mtry:min_n,
+  select(mean, mtry:sample_size) %>%
+  pivot_longer(mtry:sample_size,
                values_to = "value",
                names_to = "parameter"
   ) %>%
