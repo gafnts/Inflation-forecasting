@@ -10,45 +10,46 @@ data <- read_csv(here("data", "main.csv")) %>% rename("date" = fecha)
 ### Forecast function
 
 ```{r}
-k_nearest <-
+perceptron <-
   function(assess) {
-    tic("KNN")
+    tic("MLP")
     
     # Training and testing partitions
     splits <- data %>% time_series_split(date, assess = assess, cumulative = TRUE)
     train <- training(splits)
     
     # Model specification
-    knn <-
-      nearest_neighbor(
-        neighbors = tune(),
-        weight_func = tune(),
-        dist_power = tune()
+    mlp <-
+      mlp(
+        hidden_units = tune(),
+        dropout = tune(),
+        epochs = 200,
+        activation = "relu"
       ) %>%
-      set_engine("kknn") %>%
+      set_engine("keras") %>%
       set_mode("regression")
     
     # Feature engineering
     recipe <- train %>% recipe(ipc ~ .) %>% step_rm(date)
     
     # Workflow
-    workflow <- workflow() %>% add_model(knn) %>% add_recipe(recipe)
+    workflow <- workflow() %>% add_model(mlp) %>% add_recipe(recipe)
     
     # Hyperparameter tuning
     resamples <-
       train %>%
       rolling_origin(
-        initial = (8 * 12),
+        initial = (10 * 12),
         assess = (2 * 12),
-        skip = 10,
+        skip = 16,
         cumulative = TRUE
       )
     
-    grid <-
-      grid_latin_hypercube(neighbors(),
-                           weight_func(),
-                           dist_power(),
-                           size = 15)
+    grid <- 
+      grid_latin_hypercube(
+        hidden_units(),
+        dropout(),
+        size = 15)
     
     metrics <- metric_set(mae, mase)
     
@@ -72,6 +73,7 @@ k_nearest <-
                         best_mae)
     
     # Final model
+    set.seed(234)
     model <- last_fit(final_workflow, splits, metrics = metrics)
     metrics <- collect_metrics(model)
     
@@ -92,41 +94,41 @@ k_nearest <-
 ### Forecast horizons
 
 ```{r}
-knn_3 <- k_nearest("3 months")
+mlp_3 <- perceptron("3 months")
 
-knn_3[[1]] %>% write_csv(here("results", "knn_3_forecast.csv"))
-knn_3[[2]] %>% write_csv(here("results", "knn_3_metrics.csv"))
-knn_3[[3]][[1]] %>% as_tibble() %>% write_csv(here("results", "knn_3_time.csv"))
+mlp_3[[1]] %>% write_csv(here("results", "mlp_3_forecast.csv"))
+mlp_3[[2]] %>% write_csv(here("results", "mlp_3_metrics.csv"))
+mlp_3[[3]][[1]] %>% as_tibble() %>% write_csv(here("results", "mlp_3_time.csv"))
 ```
 
 ```{r}
-knn_9 <- k_nearest("9 months")
+mlp_9 <- perceptron("9 months")
 
-knn_9[[1]] %>% write_csv(here("results", "knn_9_forecast.csv"))
-knn_9[[2]] %>% write_csv(here("results", "knn_9_metrics.csv"))
-knn_9[[3]][[1]] %>% as_tibble() %>% write_csv(here("results", "knn_9_time.csv"))
+mlp_9[[1]] %>% write_csv(here("results", "mlp_9_forecast.csv"))
+mlp_9[[2]] %>% write_csv(here("results", "mlp_9_metrics.csv"))
+mlp_9[[3]][[1]] %>% as_tibble() %>% write_csv(here("results", "mlp_9_time.csv"))
 ```
 
 ```{r}
-knn_12 <- k_nearest("12 months")
+mlp_12 <- perceptron("12 months")
 
-knn_12[[1]] %>% write_csv(here("results", "knn_12_forecast.csv"))
-knn_12[[2]] %>% write_csv(here("results", "knn_12_metrics.csv"))
-knn_12[[3]][[1]] %>% as_tibble() %>% write_csv(here("results", "knn_12_time.csv"))
+mlp_12[[1]] %>% write_csv(here("results", "mlp_12_forecast.csv"))
+mlp_12[[2]] %>% write_csv(here("results", "mlp_12_metrics.csv"))
+mlp_12[[3]][[1]] %>% as_tibble() %>% write_csv(here("results", "mlp_12_time.csv"))
 ```
 
 ```{r}
-knn_24 <- k_nearest("24 months")
+mlp_24 <- perceptron("24 months")
 
-knn_24[[1]] %>% write_csv(here("results", "knn_24_forecast.csv"))
-knn_24[[2]] %>% write_csv(here("results", "knn_24_metrics.csv"))
-knn_24[[3]][[1]] %>% as_tibble() %>% write_csv(here("results", "knn_24_time.csv"))
+mlp_24[[1]] %>% write_csv(here("results", "mlp_24_forecast.csv"))
+mlp_24[[2]] %>% write_csv(here("results", "mlp_24_metrics.csv"))
+mlp_24[[3]][[1]] %>% as_tibble() %>% write_csv(here("results", "mlp_24_time.csv"))
 ```
 
 ### Safety checks
 
 ```{r}
-knn_24[[1]]%>% 
+mlp_24[[1]]%>% 
   pivot_longer(-.row) %>% 
   ggplot(aes(.row, value, color = name)) +
   geom_line()
@@ -147,7 +149,7 @@ train <- training(splits)
 mlp <-
   mlp(hidden_units = tune(),
       dropout = tune(),
-      epochs = 100,
+      epochs = 200,
       activation = "relu") %>%
   set_engine("keras") %>% 
   set_mode("regression")
@@ -183,7 +185,7 @@ resamples <-
   rolling_origin(
     initial = 10 * 12,
     assess = 2 * 12,
-    skip = 18,
+    skip = 16,
     cumulative = TRUE)
 ```
 
@@ -199,13 +201,13 @@ grid <-
   grid_latin_hypercube(
     hidden_units(),
     dropout(),
-    size = 5
+    size = 15
 )
+
+metrics <- metric_set(mae, mase)
 ```
 
 ```{r}
-metrics <- metric_set(mae, mase)
-
 tic("MLP")
 
 set.seed(123)
