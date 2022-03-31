@@ -92,33 +92,33 @@ randomforest <-
 ```{r}
 rf_3 <- randomforest("3 months")
 
-rf_3[[1]] %>% write_csv(here("results", "rf_3_forecast"))
-rf_3[[2]] %>% write_csv(here("results", "rf_3_metrics"))
-rf_3[[3]][[1]] %>% as_tibble() %>% write_csv(here("results", "rf_3_time"))
+rf_3[[1]] %>% write_csv(here("results", "rf_3_forecast.csv"))
+rf_3[[2]] %>% write_csv(here("results", "rf_3_metrics.csv"))
+rf_3[[3]][[1]] %>% as_tibble() %>% write_csv(here("results", "rf_3_time.csv"))
 ```
 
 ```{r}
 rf_9 <- randomforest("9 months")
 
-rf_9[[1]] %>% write_csv(here("results", "rf_9_forecast"))
-rf_9[[2]] %>% write_csv(here("results", "rf_9_metrics"))
-rf_9[[3]][[1]] %>% as_tibble() %>% write_csv(here("results", "rf_9_time"))
+rf_9[[1]] %>% write_csv(here("results", "rf_9_forecast.csv"))
+rf_9[[2]] %>% write_csv(here("results", "rf_9_metrics.csv"))
+rf_9[[3]][[1]] %>% as_tibble() %>% write_csv(here("results", "rf_9_time.csv"))
 ```
 
 ```{r}
 rf_12 <- randomforest("12 months")
 
-rf_12[[1]] %>% write_csv(here("results", "rf_12_forecast"))
-rf_12[[2]] %>% write_csv(here("results", "rf_12_metrics"))
-rf_12[[3]][[1]] %>% as_tibble() %>% write_csv(here("results", "rf_12_time"))
+rf_12[[1]] %>% write_csv(here("results", "rf_12_forecast.csv"))
+rf_12[[2]] %>% write_csv(here("results", "rf_12_metrics.csv"))
+rf_12[[3]][[1]] %>% as_tibble() %>% write_csv(here("results", "rf_12_time.csv"))
 ```
 
 ```{r}
 rf_24 <- randomforest("24 months")
 
-rf_24[[1]] %>% write_csv(here("results", "rf_24_forecast"))
-rf_24[[2]] %>% write_csv(here("results", "rf_24_metrics"))
-rf_24[[3]][[1]] %>% as_tibble() %>% write_csv(here("results", "rf_24_time"))
+rf_24[[1]] %>% write_csv(here("results", "rf_24_forecast.csv"))
+rf_24[[2]] %>% write_csv(here("results", "rf_24_metrics.csv"))
+rf_24[[3]][[1]] %>% as_tibble() %>% write_csv(here("results", "rf_24_time.csv"))
 ```
 
 ### Safety checks
