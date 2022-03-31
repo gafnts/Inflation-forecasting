@@ -1,4 +1,4 @@
-# Polynomial support vector machines
+# **K-nearest neighbors**
 
 ```{r}
 pacman::p_load(tidyverse, tidymodels, timetk, here, kernlab, tictoc, vip)
