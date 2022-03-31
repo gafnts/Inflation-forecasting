@@ -2,7 +2,7 @@
 
 ```{r}
 pacman::p_load(tidyverse, tidymodels, modeltime, timetk, 
-               randomForest, lubridate, magrittr, here)
+               randomForest, lubridate, magrittr, here, vip)
 ```
 
 ```{r}
@@ -94,7 +94,7 @@ tune <- tune_grid(
 
 ```{r}
 tune %>% collect_metrics() %>% print(n = Inf)
-best_mae <- select_best(tune, "mae"); best_auc
+best_mae <- select_best(tune, "mae"); best_mae
 ```
 
 ```{r}
@@ -112,6 +112,8 @@ tune %>%
   labs(x = NULL, y = "MAE")
 ```
 
+### Final model
+
 ```{r}
 final <- 
   finalize_workflow(
@@ -121,8 +123,6 @@ final <-
 ```
 
 ```{r}
-library(vip)
-
 final %>%
   fit(data = train) %>%
   extract_fit_parsnip() %>%
@@ -130,9 +130,11 @@ final %>%
 ```
 
 ```{r}
-final_res <- last_fit(final, splits)
+final_res <- last_fit(final, splits, metrics = metrics)
 collect_metrics(final_res)
 ```
+
+### Forecast
 
 ```{r}
 final_res %>%
