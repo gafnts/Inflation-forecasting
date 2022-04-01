@@ -21,16 +21,25 @@ perceptron <-
     # Model specification
     mlp <-
       mlp(
-        hidden_units = tune(),
+        hidden_units = 32,
         dropout = tune(),
-        epochs = 200,
+        epochs = 100,
         activation = "relu"
       ) %>%
       set_engine("keras") %>%
       set_mode("regression")
     
     # Feature engineering
-    recipe <- train %>% recipe(ipc ~ .) %>% step_rm(date)
+    recipe <- 
+      train %>% 
+      recipe(ipc ~ .) %>% 
+      step_rm(date) %>% 
+      step_center(ipc, all_predictors()) %>% 
+      step_scale(ipc, all_predictors()) %>% 
+      prep()
+    
+    center <- recipe$steps[[2]]$means["ipc"]
+    scale  <- recipe$steps[[3]]$sds["ipc"]
     
     # Workflow
     workflow <- workflow() %>% add_model(mlp) %>% add_recipe(recipe)
@@ -47,8 +56,7 @@ perceptron <-
     
     grid <- 
       grid_latin_hypercube(
-        hidden_units(),
-        dropout(),
+        dropout(c(0.1, 0.4)),
         size = 15)
     
     metrics <- metric_set(mae, mase)
@@ -73,10 +81,15 @@ perceptron <-
     # Final model
     set.seed(234)
     model <- last_fit(final_workflow, splits, metrics = metrics)
-    metrics <- collect_metrics(model)
+    metrics <- collect_metrics(model) %>% mutate(.estimate = .estimate * scale)
     
     # Forecast
-    forecast <- model %>% collect_predictions() %>% select(.pred, .row, ipc)
+    forecast <- 
+      model %>% 
+      collect_predictions() %>% 
+      select(.pred, .row, ipc) %>%
+      mutate(.pred = .pred * scale + center,
+             ipc = ipc * scale + center)
     
     # Time elapsed
     toc(log = TRUE)
@@ -145,9 +158,9 @@ train <- training(splits)
 
 ```{r}
 mlp <-
-  mlp(hidden_units = tune(),
+  mlp(hidden_units = 32,
       dropout = tune(),
-      epochs = 200,
+      epochs = 100,
       activation = "relu") %>%
   set_engine("keras") %>% 
   set_mode("regression")
@@ -160,13 +173,12 @@ recipe <-
   train %>% 
   recipe(ipc ~ .) %>% 
   step_rm(date) %>% 
-  step_sqrt(all_predictors()) %>% 
-  step_center(all_predictors()) %>% 
-  step_scale(all_predictors())
-```
+  step_center(ipc, all_predictors()) %>% 
+  step_scale(ipc, all_predictors()) %>% 
+  prep()
 
-```{r}
-recipe %>% prep() %>% juice()
+center <- recipe$steps[[2]]$means["ipc"]
+scale  <- recipe$steps[[3]]$sds["ipc"]
 ```
 
 ### Workflow
@@ -191,17 +203,9 @@ resamples <-
 ```
 
 ```{r}
-resamples %>%
-  tk_time_series_cv_plan() %>%
-  plot_time_series_cv_plan(date, ipc, 
-                           .facet_ncol = 2, .interactive = F)
-```
-
-```{r}
 grid <- 
   grid_latin_hypercube(
-    hidden_units(),
-    dropout(),
+    dropout(c(0.1, 0.4)),
     size = 15
 )
 
@@ -234,8 +238,8 @@ best_mae <- select_best(tune, "mae"); best_mae
 tune %>%
   collect_metrics() %>%
   filter(.metric == "mae") %>%
-  select(mean, hidden_units:dropout) %>%
-  pivot_longer(hidden_units:dropout,
+  select(mean, dropout) %>%
+  pivot_longer(dropout,
                values_to = "value",
                names_to = "parameter"
   ) %>%
@@ -265,7 +269,9 @@ collect_metrics(final_res)
 ```{r}
 final_res %>%
   collect_predictions() %>% 
-  select(.pred, .row, ipc) %>% 
+  select(.pred, .row, ipc) %>%
+  mutate(.pred = .pred * scale + center,
+         ipc = ipc * scale + center) %>% 
   pivot_longer(-.row) %>% 
   ggplot(aes(.row, value, color = name)) +
   geom_line()
