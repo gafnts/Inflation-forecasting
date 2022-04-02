@@ -1,145 +1,144 @@
 # Long short-term memory
 
 ```{r}
-pacman::p_load(tidyverse, tidymodels, timetk, here, keras, tictoc)
+pacman::p_load(tidyverse, tidymodels, timetk, tibbletime, here, keras, tictoc)
 ```
 
-```{r}
-data <- read_csv(here("data", "main.csv")) %>% rename("date" = fecha)
-```
+## (b) Model construction
 
 ```{r}
-data <- data.matrix(data[,-1])
-train_data <- data[1:180,]
+data <- read_csv(here("data", "main.csv")) %>% rename("index" = fecha)
+```
+
+### Train and test sets
+
+```{r}
+splits <- data %>% time_series_split(index, assess = "24 months", cumulative = TRUE)
+```
+
+### Model validation
+
+```{r}
+resamples <- 
+  rolling_origin(
+    data,
+    initial = 12 * 10,
+    assess = 12 * 2,
+    cumulative = FALSE,
+    skip = 12
+)
+```
+
+### Single LSTM
+
+```{r}
+split <- resamples$splits[[5]]
+split_id <- resamples$id[[5]]
+```
+
+### Data setup
+
+```{r}
+train <- training(split)
+test <- testing(split)
+
+df <- bind_rows(
+    train %>% add_column(key = "training"),
+    test %>% add_column(key = "testing")
+) %>% 
+    as_tbl_time(index = index)
+
+df
 ```
 
 ### Feature engineering
 
 ```{r}
-mean <- apply(train_data, 2, mean)
-std <- apply(train_data, 2, sd)
-data <- scale(data, center = mean, scale = std)
+recipe <- 
+  recipe(ipc ~ ., df) %>% 
+  step_center(ipc, all_numeric_predictors()) %>%
+  step_scale(ipc, all_numeric_predictors()) %>%
+  #step_lag(all_numeric_predictors(), -ipc, lag = 24) %>% 
+  prep()
+
+df_processed <- bake(recipe, df)
+
+center <- recipe$steps[[1]]$means["ipc"]
+scale  <- recipe$steps[[2]]$sds["ipc"]
 ```
 
-### Generator function
+### Model inputs
 
 ```{r}
-generator <- function(data, lookback, delay, min_index, max_index,
-                      shuffle = FALSE, batch_size = 96, step = 1) {
-  if (is.null(max_index))
-    max_index <- nrow(data) - delay - 1
-  i <- min_index + lookback
-  function() {
-    if (shuffle) {
-      rows <- sample(c((min_index+lookback):max_index), size = batch_size)
-    } else {
-      if (i + batch_size >= max_index)
-        i <<- min_index + lookback
-      rows <- c(i:min(i+batch_size-1, max_index))
-      i <<- i + length(rows)
-    }
+lag_setting <- 24
+batch_size <- 12
+train_length <- 120
+tsteps <- 1
+epochs <- 50
+```
 
-    samples <- array(0, dim = c(length(rows),
-                                lookback / step,
-                                dim(data)[[-1]]))
-    targets <- array(0, dim = c(length(rows)))
-                      
-    for (j in 1:length(rows)) {
-      indices <- seq(rows[[j]] - lookback, rows[[j]]-1,
-                     length.out = dim(samples)[[2]])
-      samples[j,,] <- data[indices,]
-      targets[[j]] <- data[rows[[j]] + delay,2]
-    }           
-    list(samples, targets)
-  }
+### 2D and 3D train/test array
+
+```{r}
+# Training set
+lag_train_tbl <- 
+  df_processed %>%
+  filter(key == "training") %>%
+  tail(train_length)
+
+x_train_mat <- as.matrix(lag_train_tbl %>% select(-key, -ipc, -index))
+x_train_arr <- array(data = x_train_mat, dim = c(length(x_train_mat), 1, 13))
+
+y_train_vec <- lag_train_tbl$ipc
+y_train_arr <- array(data = y_train_vec, dim = c(length(y_train_vec), 1))
+
+# Testing set
+lag_test_tbl <- 
+  df_processed %>%
+  filter(key == "testing") %>%
+  tail(train_length)
+
+x_test_mat <- as.matrix(lag_test_tbl %>% select(-key, -ipc, -index))
+x_test_arr <- array(data = x_test_mat, dim = c(length(x_test_mat), 1, 13))
+
+y_test_vec <- lag_test_tbl$ipc
+y_test_arr <- array(data = y_test_vec, dim = c(length(y_test_vec), 1))
+```
+
+### Building the model
+
+```{r}
+model <- keras_model_sequential()
+
+model %>% 
+  layer_lstm(units = 35, 
+             input_shape = c(tsteps, 1), 
+             batch_size = batch_size,
+             return_sequences = TRUE, 
+             stateful = TRUE) %>% 
+  layer_lstm(units = 35, 
+             return_sequences = FALSE, 
+             stateful = TRUE) %>% 
+    layer_dense(units = 1)
+
+model %>% 
+    compile(loss = 'mae', optimizer = 'adam')
+
+model
+```
+
+### Fitting the model
+
+```{r}
+for (i in 1:epochs) {
+    model %>% fit(x = x_train_arr, 
+                  y = y_train_arr, 
+                  batch_size = batch_size,
+                  epochs = 1, 
+                  verbose = 1, 
+                  shuffle = FALSE)
+    
+    model %>% reset_states()
+    cat("Epoch: ", i)
 }
-```
-
-```{r}
-lookback <- 12
-step <- 1
-delay <- 24
-batch_size <- 36
-
-train_gen <- generator(
-  data,
-  lookback = lookback,
-  delay = delay,
-  min_index = 1,
-  max_index = 68,
-  shuffle = TRUE,
-  step = step, 
-  batch_size = batch_size
-)
-
-val_gen = generator(
-  data,
-  lookback = lookback,
-  delay = delay,
-  min_index = 69,
-  max_index = 137,
-  step = step,
-  batch_size = batch_size
-)
-
-test_gen <- generator(
-  data,
-  lookback = lookback,
-  delay = delay,
-  min_index = 138,
-  max_index = NULL,
-  step = step,
-  batch_size = batch_size
-)
-
-# How many steps to draw from val_gen in order to see the entire validation set
-val_steps <- (137 - 69 - lookback) / batch_size
-
-# How many steps to draw from test_gen in order to see the entire test set
-test_steps <- (nrow(data) - 138 - lookback) / batch_size
-```
-
-### Näive method
-
-```{r}
-evaluate_naive_method <- function() {
-  batch_maes <- c()
-  for (step in 1:val_steps) {
-    c(samples, targets) %<-% val_gen()
-    preds <- samples[,dim(samples)[[2]],2]
-    mae <- mean(abs(preds - targets))
-    batch_maes <- c(batch_maes, mae)
-  }
-  print(mean(batch_maes))
-}
-
-evaluate_naive_method()
-ipc_mae <- 0.29 * std[[1]]
-```
-
-```{r}
-model <- 
-  keras_model_sequential() %>% 
-  layer_flatten(input_shape = c(lookback / step, dim(data)[-1])) %>% 
-  layer_dense(units = 32, activation = "relu") %>% 
-  layer_dense(units = 1)
-
-model %>% compile(
-  optimizer = optimizer_rmsprop(),
-  loss = "mae"
-)
-
-history <- model %>% fit(
-  train_gen,
-  steps_per_epoch = 500,
-  epochs = 20,
-  validation_data = val_gen,
-  validation_steps = val_steps
-)
-```
-
-### My way
-
-```{r}
-
 ```
