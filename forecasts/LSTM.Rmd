@@ -47,58 +47,61 @@ data %>%
   labs(title = "ACF: Inflation")
 ```
 
-### Train and test sets
+### Time series cross validation
 
 ```{r}
-splits <- data %>% time_series_split(index, assess = "24 months", cumulative = TRUE)
-```
+periods_train <- 12 * 10
+periods_test  <- 12 * 2
+skip_span <- 12
 
-### Model validation
-
-```{r}
-resamples <- 
+rolling_origin_resamples <- 
   rolling_origin(
     data,
-    initial = 12 * 10,
-    assess = 12 * 2,
+    initial = periods_train,
+    assess = periods_test,
     cumulative = FALSE,
-    skip = 12
+    skip = skip_span
 )
+
+rolling_origin_resamples
 ```
 
-### Single LSTM
-
 ```{r}
-split <- resamples$splits[[5]]
-split_id <- resamples$id[[5]]
+split <- rolling_origin_resamples$splits[[5]]
+split_id <- rolling_origin_resamples$id[[5]]
 ```
 
 ### Data setup
 
 ```{r}
-train <- training(split)
-test <- testing(split)
+df_trn <- training(split)
+df_tst <- testing(split)
+
 df <- bind_rows(
-    train %>% add_column(key = "training"),
-    test %>% add_column(key = "testing")
+    df_trn %>% add_column(key = "training"),
+    df_tst %>% add_column(key = "testing")
 ) %>% 
     as_tbl_time(index = index)
+
 df
 ```
 
 ### Feature engineering
 
 ```{r}
-recipe <- 
-  recipe(ipc ~ ., df) %>% 
-  step_center(ipc, all_numeric_predictors()) %>%
-  step_scale(ipc, all_numeric_predictors()) %>%
-  #step_lag(all_numeric_predictors(), -ipc, lag = 24) %>% 
-  prep()
-df_processed <- bake(recipe, df)
-center <- recipe$steps[[1]]$means["ipc"]
-scale  <- recipe$steps[[2]]$sds["ipc"]
+rec_obj <- recipe(value ~ ., df) %>%
+    step_center(value) %>%
+    step_scale(value) %>%
+    prep()
+
+df_processed_tbl <- bake(rec_obj, df)
+df_processed_tbl
+
+center_history <- rec_obj$steps[[1]]$means["value"]
+scale_history  <- rec_obj$steps[[2]]$sds["value"]
 ```
+
+## Building the model
 
 ### Model inputs
 
@@ -110,52 +113,62 @@ tsteps <- 1
 epochs <- 50
 ```
 
-### 2D and 3D train/test array
+### 2D and 3D train/test arrays
 
 ```{r}
-# Training set
-lag_train_tbl <- 
-  df_processed %>%
-  filter(key == "training") %>%
-  tail(train_length)
-x_train_mat <- as.matrix(lag_train_tbl %>% select(-key, -ipc, -index))
-x_train_arr <- array(data = x_train_mat, dim = c(length(x_train_mat), 1, 13))
-y_train_vec <- lag_train_tbl$ipc
+# Training Set
+lag_train_tbl <- df_processed_tbl %>%
+    mutate(value_lag = lag(value, n = lag_setting)) %>%
+    filter(!is.na(value_lag)) %>%
+    filter(key == "training") %>%
+    tail(train_length)
+
+x_train_vec <- lag_train_tbl$value_lag
+x_train_arr <- array(data = x_train_vec, dim = c(length(x_train_vec), 1, 1))
+
+y_train_vec <- lag_train_tbl$value
 y_train_arr <- array(data = y_train_vec, dim = c(length(y_train_vec), 1))
-# Testing set
-lag_test_tbl <- 
-  df_processed %>%
-  filter(key == "testing") %>%
-  tail(train_length)
-x_test_mat <- as.matrix(lag_test_tbl %>% select(-key, -ipc, -index))
-x_test_arr <- array(data = x_test_mat, dim = c(length(x_test_mat), 1, 13))
-y_test_vec <- lag_test_tbl$ipc
+
+# Testing Set
+lag_test_tbl <- df_processed_tbl %>%
+    mutate(
+        value_lag = lag(value, n = lag_setting)
+    ) %>%
+    filter(!is.na(value_lag)) %>%
+    filter(key == "testing")
+
+x_test_vec <- lag_test_tbl$value_lag
+x_test_arr <- array(data = x_test_vec, dim = c(length(x_test_vec), 1, 1))
+
+y_test_vec <- lag_test_tbl$value
 y_test_arr <- array(data = y_test_vec, dim = c(length(y_test_vec), 1))
 ```
 
-### Building the model
+### Neural network architecture
 
 ```{r}
 model <- keras_model_sequential()
-model %>% 
-  layer_lstm(units = 35, 
-             input_shape = c(tsteps, 1), 
-             batch_size = batch_size,
-             return_sequences = TRUE, 
-             stateful = TRUE) %>% 
-  layer_lstm(units = 35, 
-             return_sequences = FALSE, 
-             stateful = TRUE) %>% 
+
+model %>%
+    layer_lstm(units = 50, 
+               input_shape = c(tsteps, 1), 
+               batch_size = batch_size,
+               return_sequences = TRUE, 
+               stateful = TRUE) %>% 
+    layer_lstm(units = 50, 
+               return_sequences = FALSE, 
+               stateful = TRUE) %>% 
     layer_dense(units = 1)
-model %>% 
-    compile(loss = 'mae', optimizer = 'adam')
+
+model %>% compile(loss = 'mae', optimizer = 'adam')
+
 model
 ```
 
 ### Fitting the model
 
 ```{r}
-lfor (i in 1:epochs) {
+for (i in 1:epochs) {
     model %>% fit(x = x_train_arr, 
                   y = y_train_arr, 
                   batch_size = batch_size,
@@ -168,4 +181,203 @@ lfor (i in 1:epochs) {
 }
 ```
 
-© 2022 GitHub, Inc. Terms Privacy
+### Making predictions
+
+```{r}
+# Make Predictions
+pred_out <- model %>% 
+    predict(x_test_arr, batch_size = batch_size) %>%
+    .[,1] 
+
+# Retransform values
+pred_tbl <- tibble(
+    index   = lag_test_tbl$index,
+    value   = (pred_out * scale_history + center_history)
+)
+
+# Combine actual data with predictions
+tbl_1 <- df_trn %>%
+    add_column(key = "actual")
+
+tbl_2 <- df_tst %>%
+    add_column(key = "actual")
+
+tbl_3 <- pred_tbl %>%
+    add_column(key = "predict")
+
+# Create time_bind_rows() to solve dplyr issue
+time_bind_rows <- function(data_1, data_2, index) {
+    index_expr <- enquo(index)
+    bind_rows(data_1, data_2) %>%
+        as_tbl_time(index = !! index_expr)
+}
+
+ret <- list(tbl_1, tbl_2, tbl_3) %>%
+    reduce(time_bind_rows, index = index) %>%
+    arrange(key, index) %>%
+    mutate(key = as_factor(key))
+```
+
+```{r}
+ret %>% 
+  ggplot(aes(index, value, color = key)) +
+  geom_line()
+```
+
+```{r}
+tbl_2 %>% 
+  select(value) %>% 
+  bind_cols(tbl_3 %>% select(value)) %>% 
+  rename("truth" = value...1, "estimate" = value...2) %>% 
+  mae(truth = truth, estimate = estimate)
+```
+
+## Prediction function
+
+```{r}
+lstm <- function(split, epochs = 300, ...) {
+    
+    lstm_prediction <- function(split, epochs, ...) {
+        
+        # Data Setup
+        df_trn <- training(split)
+        df_tst <- testing(split)
+        
+        df <- bind_rows(
+            df_trn %>% add_column(key = "training"),
+            df_tst %>% add_column(key = "testing")
+        ) %>% 
+            as_tbl_time(index = index)
+        
+        # Feature engineering
+        rec_obj <- recipe(value ~ ., df) %>% 
+          step_center(value) %>%
+          step_scale(value) %>%
+          prep()
+        
+        df_processed_tbl <- bake(rec_obj, df)
+        
+        center_history <- rec_obj$steps[[1]]$means["value"]
+        scale_history  <- rec_obj$steps[[2]]$sds["value"]
+        
+        # LSTM Plan
+        lag_setting <- 24
+        batch_size <- 12
+        train_length <- 120
+        tsteps <- 1
+        epochs <- 50
+        
+        # Train/Test setup
+        lag_train_tbl <- df_processed_tbl %>%
+            mutate(value_lag = lag(value, n = lag_setting)) %>%
+            filter(!is.na(value_lag)) %>%
+            filter(key == "training") %>%
+            tail(train_length)
+        
+        x_train_vec <- lag_train_tbl$value_lag
+        x_train_arr <- array(data = x_train_vec, dim = c(length(x_train_vec), 1, 1))
+        
+        y_train_vec <- lag_train_tbl$value
+        y_train_arr <- array(data = y_train_vec, dim = c(length(y_train_vec), 1))
+        
+        lag_test_tbl <- df_processed_tbl %>%
+            mutate(value_lag = lag(value, n = lag_setting)) %>%
+            filter(!is.na(value_lag)) %>%
+            filter(key == "testing")
+        
+        x_test_vec <- lag_test_tbl$value_lag
+        x_test_arr <- array(data = x_test_vec, dim = c(length(x_test_vec), 1, 1))
+        
+        y_test_vec <- lag_test_tbl$value
+        y_test_arr <- array(data = y_test_vec, dim = c(length(y_test_vec), 1))
+                
+        # LSTM architecture
+        model <- keras_model_sequential()
+        
+        model %>%
+            layer_lstm(units = 50, 
+                       input_shape = c(tsteps, 1), 
+                       batch_size = batch_size,
+                       return_sequences = TRUE, 
+                       stateful = TRUE) %>% 
+            layer_lstm(units  = 50, 
+                       return_sequences = FALSE, 
+                       stateful = TRUE) %>% 
+            layer_dense(units = 1)
+        
+        model %>% compile(loss = 'mae', optimizer = 'adam')
+        
+        # Fitting the model
+        for (i in 1:epochs) {
+            model %>% fit(x = x_train_arr, 
+                          y = y_train_arr, 
+                          batch_size = batch_size,
+                          epochs = 1, 
+                          verbose = 1, 
+                          shuffle = FALSE)
+            
+            model %>% reset_states()
+            cat("Epoch: ", i)
+        }
+        
+        # Predict and return tidy data
+        # Make Predictions
+        pred_out <- model %>% 
+            predict(x_test_arr, batch_size = batch_size) %>%
+            .[,1] 
+        
+        # Retransform values
+        pred_tbl <- tibble(
+            index = lag_test_tbl$index,
+            value = (pred_out * scale_history + center_history)
+        ) 
+        
+        # Combine actual data with predictions
+        tbl_1 <- df_trn %>%
+            add_column(key = "actual")
+        
+        tbl_2 <- df_tst %>%
+            add_column(key = "actual")
+        
+        tbl_3 <- pred_tbl %>%
+            add_column(key = "predict")
+        
+        # Create time_bind_rows() to solve dplyr issue
+        time_bind_rows <- function(data_1, data_2, index) {
+            index_expr <- enquo(index)
+            bind_rows(data_1, data_2) %>%
+                as_tbl_time(index = !! index_expr)
+        }
+        
+        ret <- list(tbl_1, tbl_2, tbl_3) %>%
+            reduce(time_bind_rows, index = index) %>%
+            arrange(key, index) %>%
+            mutate(key = as_factor(key))
+        return(ret)
+        
+    }
+    
+    safe_lstm <- possibly(lstm_prediction, otherwise = NA)
+    
+    safe_lstm(split, epochs, ...)
+}
+```
+
+```{r}
+lstm(split, epochs = 10)
+```
+
+```{r}
+sample_predictions_lstm_tbl <- rolling_origin_resamples %>%
+     mutate(predict = map(splits, lstm, epochs = 300))
+```
+
+```{r}
+sample_predictions_lstm_tbl$predict[[5]] %>% 
+  ggplot(aes(index, value, color = key)) +
+  geom_line()
+```
+
+```{r}
+
+```
