@@ -1,1 +1,6 @@
 # Long short-term memory neural network
+
+```{r}
+pacman::p_load(tidyverse, tidymodels, timetk, here, keras, tictoc)
+data <- read_csv(here("data", "main.csv")) %>% rename("date" = fecha)
+```
