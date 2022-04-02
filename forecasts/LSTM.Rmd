@@ -50,6 +50,10 @@ data %>%
 ### Time series cross validation
 
 ```{r}
+splits <- data %>% time_series_split(index, assess = "24 months", cumulative = TRUE)
+```
+
+```{r}
 periods_train <- 12 * 10
 periods_test  <- 12 * 2
 skip_span <- 12
@@ -66,16 +70,11 @@ rolling_origin_resamples <-
 rolling_origin_resamples
 ```
 
-```{r}
-split <- rolling_origin_resamples$splits[[5]]
-split_id <- rolling_origin_resamples$id[[5]]
-```
-
 ### Data setup
 
 ```{r}
-df_trn <- training(split)
-df_tst <- testing(split)
+df_trn <- training(splits)
+df_tst <- testing(splits)
 
 df <- bind_rows(
     df_trn %>% add_column(key = "training"),
@@ -106,11 +105,11 @@ scale_history  <- rec_obj$steps[[2]]$sds["value"]
 ### Model inputs
 
 ```{r}
-lag_setting <- 24
-batch_size <- 12
+lag_setting <- 35
+batch_size <- 24
 train_length <- 120
 tsteps <- 1
-epochs <- 50
+epochs <- 300
 ```
 
 ### 2D and 3D train/test arrays
@@ -150,15 +149,20 @@ y_test_arr <- array(data = y_test_vec, dim = c(length(y_test_vec), 1))
 model <- keras_model_sequential()
 
 model %>%
-    layer_lstm(units = 50, 
-               input_shape = c(tsteps, 1), 
-               batch_size = batch_size,
-               return_sequences = TRUE, 
-               stateful = TRUE) %>% 
-    layer_lstm(units = 50, 
-               return_sequences = FALSE, 
-               stateful = TRUE) %>% 
-    layer_dense(units = 1)
+  layer_lstm(units = 50, 
+             input_shape = c(tsteps, 1), 
+             batch_size = batch_size,
+             return_sequences = TRUE,
+             stateful = TRUE) %>% 
+  layer_gru(units = 50, 
+             input_shape = c(tsteps, 1), 
+             batch_size = batch_size,
+             return_sequences = TRUE,
+             stateful = TRUE) %>% 
+  layer_lstm(units = 50, 
+             return_sequences = FALSE,
+             stateful = TRUE) %>% 
+  layer_dense(units = 1)
 
 model %>% compile(loss = 'mae', optimizer = 'adam')
 
@@ -168,17 +172,14 @@ model
 ### Fitting the model
 
 ```{r}
-for (i in 1:epochs) {
-    model %>% fit(x = x_train_arr, 
-                  y = y_train_arr, 
-                  batch_size = batch_size,
-                  epochs = 1, 
-                  verbose = 1, 
-                  shuffle = FALSE)
-    
-    model %>% reset_states()
-    cat("Epoch: ", i)
-}
+model %>% 
+  fit(x = x_train_arr, 
+      y = y_train_arr, 
+      batch_size = batch_size,
+      steps_per_epochs = 300,
+      epochs = 300, 
+      verbose = 1, 
+      shuffle = FALSE)
 ```
 
 ### Making predictions
@@ -189,21 +190,18 @@ pred_out <- model %>%
     predict(x_test_arr, batch_size = batch_size) %>%
     .[,1] 
 
-# Retransform values
+# Denormalize values
 pred_tbl <- tibble(
-    index   = lag_test_tbl$index,
-    value   = (pred_out * scale_history + center_history)
+    index = lag_test_tbl$index,
+    value = (pred_out * scale_history + center_history)
 )
 
 # Combine actual data with predictions
-tbl_1 <- df_trn %>%
-    add_column(key = "actual")
+tbl_1 <- df_trn %>% add_column(key = "actual")
 
-tbl_2 <- df_tst %>%
-    add_column(key = "actual")
+tbl_2 <- df_tst %>% add_column(key = "actual")
 
-tbl_3 <- pred_tbl %>%
-    add_column(key = "predict")
+tbl_3 <- pred_tbl %>% add_column(key = "predict")
 
 # Create time_bind_rows() to solve dplyr issue
 time_bind_rows <- function(data_1, data_2, index) {
@@ -265,7 +263,6 @@ lstm <- function(split, epochs = 300, ...) {
         batch_size <- 12
         train_length <- 120
         tsteps <- 1
-        epochs <- 50
         
         # Train/Test setup
         lag_train_tbl <- df_processed_tbl %>%
@@ -376,8 +373,4 @@ sample_predictions_lstm_tbl <- rolling_origin_resamples %>%
 sample_predictions_lstm_tbl$predict[[5]] %>% 
   ggplot(aes(index, value, color = key)) +
   geom_line()
-```
-
-```{r}
-
 ```
