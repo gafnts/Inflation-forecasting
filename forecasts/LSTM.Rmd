@@ -1,13 +1,50 @@
 # Long short-term memory
 
 ```{r}
-pacman::p_load(tidyverse, tidymodels, timetk, tibbletime, here, keras, tictoc)
+pacman::p_load(tidyverse, tidymodels, lubridate, timetk, tibbletime, here, keras, tictoc)
 ```
 
-## (b) Model construction
+### Initial data wrangling
 
 ```{r}
-data <- read_csv(here("data", "main.csv")) %>% rename("index" = fecha)
+data <- 
+  read_csv(here("data", "main.csv")) %>%
+  select(fecha, ipc) %>% 
+  rename("index" = fecha, "value" = ipc) %>%
+  as_tbl_time(index = index)
+```
+
+### Evaluating the ACF
+
+```{r}
+tidy_acf <- function(data, value, lags = 0:20) {
+    
+    value_expr <- enquo(value)
+    
+    acf_values <- 
+      data %>%
+      pull(value) %>%
+      acf(lag.max = tail(lags, 1), plot = FALSE) %>%
+      .$acf %>%
+      .[,,1]
+    
+    ret <- tibble(acf = acf_values) %>%
+      rowid_to_column(var = "lag") %>%
+      mutate(lag = lag - 1) %>%
+      filter(lag %in% lags)
+    
+    return(ret)
+}
+```
+
+```{r}
+max_lag <- 12 * 5
+
+data %>%
+  tidy_acf(value, lags = 0:max_lag) %>%
+  ggplot(aes(lag, acf)) +
+  geom_segment(aes(xend = lag, yend = 0)) +
+  labs(title = "ACF: Inflation")
 ```
 
 ### Train and test sets
@@ -41,13 +78,11 @@ split_id <- resamples$id[[5]]
 ```{r}
 train <- training(split)
 test <- testing(split)
-
 df <- bind_rows(
     train %>% add_column(key = "training"),
     test %>% add_column(key = "testing")
 ) %>% 
     as_tbl_time(index = index)
-
 df
 ```
 
@@ -60,9 +95,7 @@ recipe <-
   step_scale(ipc, all_numeric_predictors()) %>%
   #step_lag(all_numeric_predictors(), -ipc, lag = 24) %>% 
   prep()
-
 df_processed <- bake(recipe, df)
-
 center <- recipe$steps[[1]]$means["ipc"]
 scale  <- recipe$steps[[2]]$sds["ipc"]
 ```
@@ -85,22 +118,17 @@ lag_train_tbl <-
   df_processed %>%
   filter(key == "training") %>%
   tail(train_length)
-
 x_train_mat <- as.matrix(lag_train_tbl %>% select(-key, -ipc, -index))
 x_train_arr <- array(data = x_train_mat, dim = c(length(x_train_mat), 1, 13))
-
 y_train_vec <- lag_train_tbl$ipc
 y_train_arr <- array(data = y_train_vec, dim = c(length(y_train_vec), 1))
-
 # Testing set
 lag_test_tbl <- 
   df_processed %>%
   filter(key == "testing") %>%
   tail(train_length)
-
 x_test_mat <- as.matrix(lag_test_tbl %>% select(-key, -ipc, -index))
 x_test_arr <- array(data = x_test_mat, dim = c(length(x_test_mat), 1, 13))
-
 y_test_vec <- lag_test_tbl$ipc
 y_test_arr <- array(data = y_test_vec, dim = c(length(y_test_vec), 1))
 ```
@@ -109,7 +137,6 @@ y_test_arr <- array(data = y_test_vec, dim = c(length(y_test_vec), 1))
 
 ```{r}
 model <- keras_model_sequential()
-
 model %>% 
   layer_lstm(units = 35, 
              input_shape = c(tsteps, 1), 
@@ -120,17 +147,15 @@ model %>%
              return_sequences = FALSE, 
              stateful = TRUE) %>% 
     layer_dense(units = 1)
-
 model %>% 
     compile(loss = 'mae', optimizer = 'adam')
-
 model
 ```
 
 ### Fitting the model
 
 ```{r}
-for (i in 1:epochs) {
+lfor (i in 1:epochs) {
     model %>% fit(x = x_train_arr, 
                   y = y_train_arr, 
                   batch_size = batch_size,
@@ -142,3 +167,5 @@ for (i in 1:epochs) {
     cat("Epoch: ", i)
 }
 ```
+
+© 2022 GitHub, Inc. Terms Privacy
