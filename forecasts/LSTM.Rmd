@@ -13,7 +13,7 @@ data <- read_csv(here("data", "main.csv")) %>%
 
 ```{r}
 lstm <- 
-  function(assess) {
+  function(assess, batch_size = 24) {
     tic("LSTM")
     
     # Time series cross validation
@@ -21,127 +21,135 @@ lstm <-
     train <- training(splits)
     test <- testing(splits)
     
-    df <- 
+    df <-
       bind_rows(train %>% add_column(key = "training"),
-                test %>% add_column(key = "testing")) %>% 
+                test %>% add_column(key = "testing")) %>%
       as_tbl_time(index = index)
     
     # Feature engineering
-    recipe <- 
-  recipe(value ~ ., df) %>%
-  step_center(value) %>%
-  step_scale(value) %>%
-  prep()
+    recipe <-
+      recipe(value ~ ., df) %>%
+      step_center(value) %>%
+      step_scale(value) %>%
+      prep()
+    
+    processed <- bake(recipe, df)
+    
+    center <- recipe$steps[[1]]$means["value"]
+    scale  <- recipe$steps[[2]]$sds["value"]
 
-processed <- bake(recipe, df)
-processed
+    # Model inputs
+    lag_setting <- 35
+    batch_size <- batch_size
+    train_length <- 120
+    tsteps <- 1
+    epochs <- 300
+    steps_per_epochs <- 300
 
-center <- recipe$steps[[1]]$means["value"]
-scale  <- recipe$steps[[2]]$sds["value"]
-
-# Model inputs
-lag_setting <- 35
-batch_size <- 24
-train_length <- 120
-tsteps <- 1
-epochs <- 300
-steps_per_epochs <- 300
-
-# Train/test arrays
-train_lag <- 
-  processed %>%
-  mutate(value_lag = lag(value, n = lag_setting)) %>%
-  filter(!is.na(value_lag)) %>%
-  filter(key == "training") %>%
-  tail(train_length)
-
-x_train_vec <- train_lag$value_lag
-x_train_arr <- array(data = x_train_vec, dim = c(length(x_train_vec), 1, 1))
-
-y_train_vec <- train_lag$value
-y_train_arr <- array(data = y_train_vec, dim = c(length(y_train_vec), 1))
-
-test_lag <- 
-  processed %>%
-  mutate(value_lag = lag(value, n = lag_setting)) %>%
-  filter(!is.na(value_lag)) %>%
-  filter(key == "testing")
-
-x_test_vec <- test_lag$value_lag
-x_test_arr <- array(data = x_test_vec, dim = c(length(x_test_vec), 1, 1))
-
-y_test_vec <- test_lag$value
-y_test_arr <- array(data = y_test_vec, dim = c(length(y_test_vec), 1))
-
-# Neural network architecture
-model <- keras_model_sequential()
-
-model %>%
-  layer_lstm(units = 50, 
-             input_shape = c(tsteps, 1), 
-             batch_size = batch_size,
-             return_sequences = TRUE,
-             stateful = TRUE) %>% 
-  layer_gru(units = 50, 
-             input_shape = c(tsteps, 1), 
-             batch_size = batch_size,
-             return_sequences = TRUE,
-             stateful = TRUE) %>% 
-  layer_lstm(units = 50, 
-             return_sequences = FALSE,
-             stateful = TRUE) %>% 
-  layer_dense(units = 1)
-
-model %>% compile(loss = 'mae', optimizer = 'adam')
-
-# Model fitting
-set.seed(123)
-model %>% 
-  fit(x = x_train_arr, 
-      y = y_train_arr, 
-      batch_size = batch_size,
-      steps_per_epochs = steps_per_epochs,
-      epochs = epochs, 
-      verbose = 1, 
-      shuffle = FALSE)
-
-# Forecasting
-set.seed(234)
-predictions <- model %>% predict(x_test_arr, batch_size = batch_size) %>% .[,1] 
-
-# Denormalize values
-predictions_denorm <- tibble(index = test_lag$index,
-                    value = (predictions * scale + center))
-
-  # Time elapsed
+    # Train/test arrays
+    train_lag <- 
+      processed %>%
+      mutate(value_lag = lag(value, n = lag_setting)) %>%
+      filter(!is.na(value_lag)) %>%
+      filter(key == "training") %>%
+      tail(train_length)
+    
+    x_train_vec <- train_lag$value_lag
+    x_train_arr <- array(data = x_train_vec, dim = c(length(x_train_vec), 1, 1))
+    
+    y_train_vec <- train_lag$value
+    y_train_arr <- array(data = y_train_vec, dim = c(length(y_train_vec), 1))
+    
+    test_lag <- 
+      processed %>%
+      mutate(value_lag = lag(value, n = lag_setting)) %>%
+      filter(!is.na(value_lag)) %>%
+      filter(key == "testing")
+    
+    x_test_vec <- test_lag$value_lag
+    x_test_arr <- array(data = x_test_vec, dim = c(length(x_test_vec), 1, 1))
+    
+    y_test_vec <- test_lag$value
+    y_test_arr <- array(data = y_test_vec, dim = c(length(y_test_vec), 1))
+    
+    # Neural network architecture
+    model <- keras_model_sequential()
+    
+    model %>%
+      layer_lstm(
+        units = 50,
+        input_shape = c(tsteps, 1),
+        batch_size = batch_size,
+        return_sequences = TRUE,
+        stateful = TRUE
+      ) %>%
+      layer_gru(
+        units = 50,
+        input_shape = c(tsteps, 1),
+        batch_size = batch_size,
+        return_sequences = TRUE,
+        stateful = TRUE
+      ) %>%
+      layer_lstm(
+        units = 50,
+        return_sequences = FALSE,
+        stateful = TRUE) %>%
+      layer_dense(units = 1)
+    
+    model %>% compile(loss = 'mae', optimizer = 'adam')
+    
+    # Model fitting
+    set.seed(123)
+    model %>% 
+      fit(x = x_train_arr, 
+          y = y_train_arr, 
+          batch_size = batch_size,
+          steps_per_epochs = steps_per_epochs,
+          epochs = epochs, 
+          verbose = 1, 
+          shuffle = FALSE)
+    
+    # Forecasting
+    set.seed(234)
+    predictions <- model %>% predict(x_test_arr, batch_size = batch_size) %>% .[,1] 
+    
+    # Denormalize values
+    predictions_denorm <- tibble(index = test_lag$index,
+                                 value = (predictions * scale + center))
+    
+    # Time elapsed
     toc(log = TRUE)
     time <- tic.log(format = TRUE)
     tic.clearlog()
-
-# Combine actuals with predictions
-tbl_1 <- test %>% add_column(key = "actual")
-tbl_2 <- predictions_denorm %>% add_column(key = "predict")
-
-forecast <- tbl_1 %>% select("ipc" = value) %>% bind_cols(tbl_2 %>% select(".pred" = value))
-
-# Metrics
-mae <- 
-  tbl_1 %>% 
-  select(value) %>% 
-  bind_cols(tbl_2 %>% select(value)) %>% 
-  rename("truth" = value...1, "estimate" = value...2) %>% 
-  mae(truth = truth, estimate = estimate)
-
-mase <- 
-  tbl_1 %>% 
-  select(value) %>% 
-  bind_cols(tbl_2 %>% select(value)) %>% 
-  rename("truth" = value...1, "estimate" = value...2) %>% 
-  mase(truth = truth, estimate = estimate)
-
-metrics <- bind_rows(mae, mase)
-
-# Collect results
+    
+    # Combine actuals with predictions
+    tbl_1 <- test %>% add_column(key = "actual")
+    tbl_2 <- predictions_denorm %>% add_column(key = "predict")
+    
+    forecast <- 
+      tbl_1 %>% 
+      select("ipc" = value) %>% 
+      bind_cols(tbl_2 %>% 
+                  select(".pred" = value))
+    
+    # Metrics
+    mae <- 
+      tbl_1 %>% 
+      select(value) %>% 
+      bind_cols(tbl_2 %>% select(value)) %>% 
+      rename("truth" = value...1, "estimate" = value...2) %>% 
+      mae(truth = truth, estimate = estimate)
+    
+    mase <- 
+      tbl_1 %>% 
+      select(value) %>% 
+      bind_cols(tbl_2 %>% select(value)) %>% 
+      rename("truth" = value...1, "estimate" = value...2) %>% 
+      mase(truth = truth, estimate = estimate)
+    
+    metrics <- bind_rows(mae, mase)
+    
+    # Collect results
     results <- list(forecast, metrics, time)
     
     return(results)
@@ -149,7 +157,15 @@ metrics <- bind_rows(mae, mase)
 ```
 
 ```{r}
-lstm_12 <- lstm("12 months")
+lstm_3 <- lstm("3 months", batch_size = 3)
+
+lstm_3[[1]] %>% write_csv(here("results", "lstm_3_forecast.csv"))
+lstm_3[[2]] %>% write_csv(here("results", "lstm_3_metrics.csv"))
+lstm_3[[3]][[1]] %>% as_tibble() %>% write_csv(here("results", "lstm_3_time.csv"))
+```
+
+```{r}
+lstm_12 <- lstm("12 months", batch_size = 3)
 
 lstm_12[[1]] %>% write_csv(here("results", "lstm_12_forecast.csv"))
 lstm_12[[2]] %>% write_csv(here("results", "lstm_12_metrics.csv"))
@@ -167,7 +183,7 @@ lstm_24[[3]][[1]] %>% as_tibble() %>% write_csv(here("results", "lstm_24_time.cs
 ### Safety checks
 
 ```{r}
-lstm_24[[1]] %>% 
+lstm_3[[1]] %>% 
   rowid_to_column() %>% 
   pivot_longer(-rowid) %>% 
   ggplot(aes(rowid, value, color = name)) +
@@ -175,16 +191,6 @@ lstm_24[[1]] %>%
 ```
 
 ## (b) Model construction
-
-### Initial data wrangling
-
-```{r}
-data <- 
-  read_csv(here("data", "main.csv")) %>%
-  select(fecha, ipc) %>% 
-  rename("index" = fecha, "value" = ipc) %>%
-  as_tbl_time(index = index)
-```
 
 ### Evaluating the ACF
 
@@ -382,4 +388,6 @@ mase <-
   mase(truth = truth, estimate = estimate)
 
 metrics <- bind_rows(mae, mase)
+
+metrics
 ```
