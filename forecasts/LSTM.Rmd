@@ -18,6 +18,7 @@ lstm <-
     
     # Time series cross validation
     splits <- data %>% time_series_split(index, assess = assess, cumulative = TRUE)
+    
     train <- training(splits)
     test <- testing(splits)
     
@@ -165,6 +166,14 @@ lstm_3[[3]][[1]] %>% as_tibble() %>% write_csv(here("results", "lstm_3_time.csv"
 ```
 
 ```{r}
+lstm_9 <- lstm("9 months", batch_size = 3)
+
+lstm_9[[1]] %>% write_csv(here("results", "lstm_9_forecast.csv"))
+lstm_9[[2]] %>% write_csv(here("results", "lstm_9_metrics.csv"))
+lstm_9[[3]][[1]] %>% as_tibble() %>% write_csv(here("results", "lstm_9_time.csv"))
+```
+
+```{r}
 lstm_12 <- lstm("12 months", batch_size = 3)
 
 lstm_12[[1]] %>% write_csv(here("results", "lstm_12_forecast.csv"))
@@ -183,7 +192,7 @@ lstm_24[[3]][[1]] %>% as_tibble() %>% write_csv(here("results", "lstm_24_time.cs
 ### Safety checks
 
 ```{r}
-lstm_3[[1]] %>% 
+lstm_9[[1]] %>% 
   rowid_to_column() %>% 
   pivot_longer(-rowid) %>% 
   ggplot(aes(rowid, value, color = name)) +
@@ -228,7 +237,9 @@ data %>%
 ### Time series cross validation
 
 ```{r}
-splits <- data %>% time_series_split(index, assess = "24 months", cumulative = TRUE)
+splits <- data %>% 
+  slice(7:204) %>% 
+  time_series_split(index, assess = "9 months", cumulative = TRUE)
 ```
 
 ```{r}
@@ -265,7 +276,7 @@ scale  <- recipe$steps[[2]]$sds["value"]
 
 ```{r}
 lag_setting <- 35
-batch_size <- 24
+batch_size <- 3
 train_length <- 120
 tsteps <- 1
 epochs <- 300
