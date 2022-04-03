@@ -72,7 +72,7 @@ var <- function(last, lag, horizon) {
 ```
 
 ```{r}
-var_3 <- var(last = "2021-09-01", lag = 24, horizon = 3)
+var_3 <- var(last = "2021-09-01", lag = 9, horizon = 3)
 
 var_3[[1]] %>% write_csv(here("results", "var_3_forecast.csv"))
 var_3[[2]] %>% write_csv(here("results", "var_3_metrics.csv"))
@@ -80,7 +80,7 @@ var_3[[3]][[1]] %>% as_tibble() %>% write_csv(here("results", "var_3_time.csv"))
 ```
 
 ```{r}
-var_9 <- var(last = "2021-03-01", lag = 24, horizon = 9)
+var_9 <- var(last = "2021-03-01", lag = 18, horizon = 9)
 
 var_9[[1]] %>% write_csv(here("results", "var_9_forecast.csv"))
 var_9[[2]] %>% write_csv(here("results", "var_9_metrics.csv"))
@@ -106,8 +106,8 @@ var_24[[3]][[1]] %>% as_tibble() %>% write_csv(here("results", "var_24_time.csv"
 ### Safety checks
 
 ```{r}
-var_3[[1]] %>% 
-  bind_cols(data %>% dplyr::select(ipc) %>% tail(3)) %>% 
+var_24[[1]] %>% 
+  bind_cols(data %>% dplyr::select(ipc) %>% tail(24)) %>% 
   dplyr::select(-key) %>% 
   pivot_longer(-.row) %>% 
   ggplot(aes(.row, value, color = name)) +
