@@ -6,6 +6,101 @@ data <- read_csv(here("data", "main.csv")) %>% rename("date" = fecha)
 ipc <- ts(data %>% select(ipc), start = c(2005, 1), frequency = 12)
 ```
 
+## (a) Forecast function
+
+```{r}
+sarima <- function(last, horizon) {
+  
+  last <- enquo(last)
+  
+  train <- 
+    ts(data %>% 
+         filter(between(date, as.Date("2005-01-01"), as.Date(!!last))) %>% 
+         select(ipc), start = c(2005, 1), frequency = 12)
+  
+  test <- data %>% select(ipc) %>% tail(horizon)
+  
+  tic("SARIMA")
+  
+  forecast <- 
+    auto.arima(train, stepwise = FALSE, approximation = FALSE, trace = TRUE) %>% 
+    forecast(horizon) %>% 
+    as_tibble() %>% 
+    rename(".pred" = `Point Forecast`) %>% 
+    mutate(key = "sarima") %>% 
+    rowid_to_column(".row") %>% 
+    select(.pred, .row, key)
+  
+   toc(log = TRUE)
+   time <- tic.log(format = TRUE)
+   tic.clearlog()
+  
+  mae <-
+    forecast %>% 
+    select(.pred) %>% 
+    bind_cols(test %>% select(ipc)) %>% 
+    rename("truth" = ipc, "estimate" = .pred) %>% 
+    mae(truth = truth, estimate = estimate)
+  
+  mase <-
+    forecast %>% 
+    select(.pred) %>% 
+    bind_cols(test %>% select(ipc)) %>% 
+    rename("truth" = ipc, "estimate" = .pred) %>% 
+    mase(truth = truth, estimate = estimate)
+  
+  metrics <- bind_rows(mae, mase)
+  
+  results <- list(forecast, metrics, time)
+  return(results)
+}
+```
+
+```{r}
+sarima_3 <- sarima(last = "2021-09-02", horizon = 3)
+
+sarima_3[[1]] %>% write_csv(here("results", "sarima_3_forecast.csv"))
+sarima_3[[2]] %>% write_csv(here("results", "sarima_3_metrics.csv"))
+sarima_3[[3]][[1]] %>% as_tibble() %>% write_csv(here("results", "sarima_3_time.csv"))
+```
+
+```{r}
+sarima_9 <- sarima(last = "2021-03-02", horizon = 9)
+
+sarima_9[[1]] %>% write_csv(here("results", "sarima_9_forecast.csv"))
+sarima_9[[2]] %>% write_csv(here("results", "sarima_9_metrics.csv"))
+sarima_9[[3]][[1]] %>% as_tibble() %>% write_csv(here("results", "sarima_9_time.csv"))
+```
+
+```{r}
+sarima_12 <- sarima(last = "2020-12-02", horizon = 12)
+
+sarima_12[[1]] %>% write_csv(here("results", "sarima_12_forecast.csv"))
+sarima_12[[2]] %>% write_csv(here("results", "sarima_12_metrics.csv"))
+sarima_12[[3]][[1]] %>% as_tibble() %>% write_csv(here("results", "sarima_12_time.csv"))
+```
+
+```{r}
+sarima_24 <- sarima(last = "2019-12-02", horizon = 24)
+
+sarima_24[[1]] %>% write_csv(here("results", "sarima_24_forecast.csv"))
+sarima_24[[2]] %>% write_csv(here("results", "sarima_24_metrics.csv"))
+sarima_24[[3]][[1]] %>% as_tibble() %>% write_csv(here("results", "sarima_24_time.csv"))
+```
+
+### Safety checks
+
+```{r}
+sarima_24[[1]] %>% 
+  bind_cols(data %>% select(ipc) %>% tail(24)) %>% 
+  select(-key) %>% 
+  pivot_longer(-.row) %>% 
+  ggplot(aes(.row, value, color = name)) +
+  geom_line()
+```
+
+## (b) Model building
+
 ```{r}
 train <- 
     ts(data %>% 
@@ -23,11 +118,4 @@ sarima %>% forecast(24) %>% autoplot()
 arfima <- arfima(ipc)
 arfima %>% checkresiduals()
 arfima %>% forecast(24) %>% autoplot()
-```
-
-```{r}
-ar <- auto.arima(ipc, max.p = 10, max.q = 0, max.P = 0, max.Q = 0, max.d = 0, max.D = 0,
-                     stepwise = FALSE, approximation = FALSE, trace = TRUE)
-ar %>% checkresiduals()
-ar %>% forecast(24) %>% autoplot()
 ```
