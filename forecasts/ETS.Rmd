@@ -6,6 +6,101 @@ data <- read_csv(here("data", "main.csv")) %>% rename("date" = fecha)
 ipc <- ts(data %>% select(ipc), start = c(2005, 1), frequency = 12)
 ```
 
+## (a) Forecast function
+
+```{r}
+holt_winters <- function(last, horizon) {
+  
+  last <- enquo(last)
+  
+  train <- 
+    ts(data %>% 
+         filter(between(date, as.Date("2005-01-01"), as.Date(!!last))) %>% 
+         select(ipc), start = c(2005, 1), frequency = 12)
+  
+  test <- data %>% select(ipc) %>% tail(horizon)
+  
+  tic("HW")
+  
+  forecast <- 
+    hw(train, seasonal = "additive") %>% 
+    forecast(horizon) %>% 
+    as_tibble() %>% 
+    rename(".pred" = `Point Forecast`) %>% 
+    mutate(key = "holt-winters") %>% 
+    rowid_to_column(".row") %>% 
+    select(.pred, .row, key)
+  
+   toc(log = TRUE)
+   time <- tic.log(format = TRUE)
+   tic.clearlog()
+  
+  mae <-
+    forecast %>% 
+    select(.pred) %>% 
+    bind_cols(test %>% select(ipc)) %>% 
+    rename("truth" = ipc, "estimate" = .pred) %>% 
+    mae(truth = truth, estimate = estimate)
+  
+  mase <-
+    forecast %>% 
+    select(.pred) %>% 
+    bind_cols(test %>% select(ipc)) %>% 
+    rename("truth" = ipc, "estimate" = .pred) %>% 
+    mase(truth = truth, estimate = estimate)
+  
+  metrics <- bind_rows(mae, mase)
+  
+  results <- list(forecast, metrics, time)
+  return(results)
+}
+```
+
+```{r}
+hw_3 <- holt_winters(last = "2021-09-01", horizon = 3)
+
+hw_3[[1]] %>% write_csv(here("results", "hw_3_forecast.csv"))
+hw_3[[2]] %>% write_csv(here("results", "hw_3_metrics.csv"))
+hw_3[[3]][[1]] %>% as_tibble() %>% write_csv(here("results", "hw_3_time.csv"))
+```
+
+```{r}
+hw_9 <- holt_winters(last = "2021-03-01", horizon = 9)
+
+hw_9[[1]] %>% write_csv(here("results", "hw_9_forecast.csv"))
+hw_9[[2]] %>% write_csv(here("results", "hw_9_metrics.csv"))
+hw_9[[3]][[1]] %>% as_tibble() %>% write_csv(here("results", "hw_9_time.csv"))
+```
+
+```{r}
+hw_12 <- holt_winters(last = "2020-12-01", horizon = 12)
+
+hw_12[[1]] %>% write_csv(here("results", "hw_12_forecast.csv"))
+hw_12[[2]] %>% write_csv(here("results", "hw_12_metrics.csv"))
+hw_12[[3]][[1]] %>% as_tibble() %>% write_csv(here("results", "hw_12_time.csv"))
+```
+
+```{r}
+hw_24 <- holt_winters(last = "2019-12-01", horizon = 24)
+
+hw_24[[1]] %>% write_csv(here("results", "hw_24_forecast.csv"))
+hw_24[[2]] %>% write_csv(here("results", "hw_24_metrics.csv"))
+hw_24[[3]][[1]] %>% as_tibble() %>% write_csv(here("results", "hw_24_time.csv"))
+```
+
+### Safety checks
+
+```{r}
+hw_24[[1]] %>% 
+  bind_cols(data %>% select(ipc) %>% tail(24)) %>% 
+  select(-key) %>% 
+  pivot_longer(-.row) %>% 
+  ggplot(aes(.row, value, color = name)) +
+  geom_line()
+```
+
+## (b) Model building
+
 ```{r}
 train <- 
     ts(data %>% 

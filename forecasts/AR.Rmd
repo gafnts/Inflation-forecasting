@@ -60,7 +60,7 @@ ar <- function(last, horizon) {
 ```
 
 ```{r}
-ar_3 <- ar(last = "2021-09-02", horizon = 3)
+ar_3 <- ar(last = "2021-09-01", horizon = 3)
 
 ar_3[[1]] %>% write_csv(here("results", "ar_3_forecast.csv"))
 ar_3[[2]] %>% write_csv(here("results", "ar_3_metrics.csv"))
@@ -68,7 +68,7 @@ ar_3[[3]][[1]] %>% as_tibble() %>% write_csv(here("results", "ar_3_time.csv"))
 ```
 
 ```{r}
-ar_9 <- ar(last = "2021-03-02", horizon = 9)
+ar_9 <- ar(last = "2021-03-01", horizon = 9)
 
 ar_9[[1]] %>% write_csv(here("results", "ar_9_forecast.csv"))
 ar_9[[2]] %>% write_csv(here("results", "ar_9_metrics.csv"))
@@ -76,7 +76,7 @@ ar_9[[3]][[1]] %>% as_tibble() %>% write_csv(here("results", "ar_9_time.csv"))
 ```
 
 ```{r}
-ar_12 <- ar(last = "2020-12-02", horizon = 12)
+ar_12 <- ar(last = "2020-12-01", horizon = 12)
 
 ar_12[[1]] %>% write_csv(here("results", "ar_12_forecast.csv"))
 ar_12[[2]] %>% write_csv(here("results", "ar_12_metrics.csv"))
@@ -84,7 +84,7 @@ ar_12[[3]][[1]] %>% as_tibble() %>% write_csv(here("results", "ar_12_time.csv"))
 ```
 
 ```{r}
-ar_24 <- ar(last = "2019-12-02", horizon = 24)
+ar_24 <- ar(last = "2019-12-01", horizon = 24)
 
 ar_24[[1]] %>% write_csv(here("results", "ar_24_forecast.csv"))
 ar_24[[2]] %>% write_csv(here("results", "ar_24_metrics.csv"))

@@ -57,7 +57,7 @@ sarima <- function(last, horizon) {
 ```
 
 ```{r}
-sarima_3 <- sarima(last = "2021-09-02", horizon = 3)
+sarima_3 <- sarima(last = "2021-09-01", horizon = 3)
 
 sarima_3[[1]] %>% write_csv(here("results", "sarima_3_forecast.csv"))
 sarima_3[[2]] %>% write_csv(here("results", "sarima_3_metrics.csv"))
@@ -65,7 +65,7 @@ sarima_3[[3]][[1]] %>% as_tibble() %>% write_csv(here("results", "sarima_3_time.
 ```
 
 ```{r}
-sarima_9 <- sarima(last = "2021-03-02", horizon = 9)
+sarima_9 <- sarima(last = "2021-03-01", horizon = 9)
 
 sarima_9[[1]] %>% write_csv(here("results", "sarima_9_forecast.csv"))
 sarima_9[[2]] %>% write_csv(here("results", "sarima_9_metrics.csv"))
@@ -73,7 +73,7 @@ sarima_9[[3]][[1]] %>% as_tibble() %>% write_csv(here("results", "sarima_9_time.
 ```
 
 ```{r}
-sarima_12 <- sarima(last = "2020-12-02", horizon = 12)
+sarima_12 <- sarima(last = "2020-12-01", horizon = 12)
 
 sarima_12[[1]] %>% write_csv(here("results", "sarima_12_forecast.csv"))
 sarima_12[[2]] %>% write_csv(here("results", "sarima_12_metrics.csv"))
@@ -81,7 +81,7 @@ sarima_12[[3]][[1]] %>% as_tibble() %>% write_csv(here("results", "sarima_12_tim
 ```
 
 ```{r}
-sarima_24 <- sarima(last = "2019-12-02", horizon = 24)
+sarima_24 <- sarima(last = "2019-12-01", horizon = 24)
 
 sarima_24[[1]] %>% write_csv(here("results", "sarima_24_forecast.csv"))
 sarima_24[[2]] %>% write_csv(here("results", "sarima_24_metrics.csv"))
