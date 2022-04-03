@@ -1,0 +1,38 @@
+# Exponential smoothing
+
+```{r}
+pacman::p_load(tidyverse, tidymodels, here, forecast, tseries, tictoc)
+data <- read_csv(here("data", "main.csv")) %>% rename("date" = fecha)
+ipc <- ts(data %>% select(ipc), start = c(2005, 1), frequency = 12)
+```
+
+```{r}
+train <- 
+    ts(data %>% 
+         filter(between(date, as.Date("2005-01-01"), as.Date("2019-12-02"))) %>% 
+         select(ipc), start = c(2005, 1), frequency = 12)
+```
+
+```{r}
+ets(ipc)
+ets(ipc) %>% checkresiduals()
+ets(ipc) %>% forecast(24) %>% autoplot()
+```
+
+```{r}
+holt(ipc, damped = TRUE)
+holt(ipc, damped = TRUE) %>% checkresiduals()
+holt(ipc, damped = TRUE) %>% forecast(24) %>% autoplot()
+```
+
+```{r}
+hw(ipc, seasonal = "additive")
+hw(ipc, seasonal = "additive") %>% checkresiduals()
+hw(ipc, seasonal = "additive") %>% forecast(24) %>% autoplot()
+```
+
+```{r}
+thetaf(ipc)
+thetaf(ipc) %>% checkresiduals()
+thetaf(ipc) %>% forecast(24) %>% autoplot()
+```
