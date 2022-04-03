@@ -2,18 +2,80 @@
 
 ```{r}
 pacman::p_load(tidyverse, tidymodels, magrittr, here, vars, forecast, tseries, tictoc)
+data <- read_csv(here("data", "main.csv")) %>% rename("date" = fecha)
+```
+
+## (a) Forecast function
+
+```{r}
+var <- function(last, lag, horizon) {
+  
+  last <- enquo(last)
+  
+  diffs <- 
+    data %>% 
+    dplyr::select(date, m1) %>% 
+    filter(between(date, as.Date("2005-01-01"), as.Date(!!last))) %>% 
+    dplyr::select(-date) %>% 
+    ts(start = c(2005, 01), frequency = 12) %>% 
+    diff(lag = 12)
+  
+  vars <- 
+    data %>% 
+    filter(between(date, as.Date("2006-01-01"), as.Date(!!last))) %>% 
+    dplyr::select(ipc, imae) %>% 
+    ts(start = c(2006, 01), frequency = 12)
+  
+  train <- cbind(vars, diffs)
+  colnames(train) <- c("ipc", "imae", "m1")
+  
+  test <- data %>% 
+    rowid_to_column(".row") %>% 
+    tail(horizon) %>% 
+    dplyr::select(ipc, .row)
+  
+  tic("VAR")
+  selection <- VARselect(train, lag.max = lag, type = "const")
+  model <- VAR(train, p = selection$selection[[1]], 
+               type = "const", season = NULL, exog = NULL)
+  
+  forecast <- 
+    predict(model, n.ahead = horizon, ci = 0.95)[[1]]$ipc %>% 
+    as_tibble() %>% 
+    dplyr::select(".pred" = fcst) %>% 
+    mutate(key = "var") %>% 
+    rowid_to_column(".row")
+  
+  toc(log = TRUE)
+  time <- tic.log(format = TRUE)
+  tic.clearlog()
+
+  mae <-
+    forecast %>% 
+    dplyr::select(.pred) %>% 
+    bind_cols(test %>% dplyr::select(ipc)) %>% 
+    rename("truth" = ipc, "estimate" = .pred) %>% 
+    mae(truth = truth, estimate = estimate)
+  
+  mase <-
+    forecast %>% 
+    dplyr::select(.pred) %>% 
+    bind_cols(test %>% dplyr::select(ipc)) %>% 
+    rename("truth" = ipc, "estimate" = .pred) %>% 
+    mase(truth = truth, estimate = estimate)
+  
+  metrics <- bind_rows(mae, mase)
+  
+  results <- list(forecast, metrics, time)
+  return(results)
+}
 ```
 
 ```{r}
-data <- read_csv(here("data", "main.csv")) %>% rename("date" = fecha) %>% glimpse()
+var(last = "2019-12-01", lag = 24, horizon = 24) -> try
 ```
 
 ## (b) Model building
-
-```{r}
-m0, m1, cpi, lendrate
-debt, exports, rev, itcer, deprate, tpm, bananas
-```
 
 ```{r}
 diffs <- 
@@ -29,16 +91,16 @@ diffs <-
 vars <- 
   data %>% 
   filter(between(date, as.Date("2006-01-01"), as.Date("2019-12-01"))) %>% 
-  dplyr::select(ipc, bananas) %>% 
+  dplyr::select(ipc, imae) %>% 
   ts(start = c(2006, 01), frequency = 12)
 
 df <- cbind(vars, diffs)
-colnames(df) <- c("ipc", "bananas", "m1")
+colnames(df) <- c("ipc", "imae", "m1")
 head(df)
 ```
 
 ```{r}
-lag <- 36
+lag <- 24
 selection <- VARselect(df, lag.max = lag, type = "const")
 selection$selection[[1]]
 
@@ -53,8 +115,8 @@ normality.test(model, multivariate.only = TRUE) # > 0.05
 ```
 
 ```{r}
-irf(model, impulse = "hydro", response = "ipc", n.ahead = lag, boot = TRUE) %>% plot()
-irf(model, impulse = "ipc", response = "hydro", n.ahead = lag, boot = TRUE) %>% plot()
+irf(model, impulse = "m1", response = "ipc", n.ahead = lag, boot = TRUE) %>% plot()
+irf(model, impulse = "ipc", response = "m1", n.ahead = lag, boot = TRUE) %>% plot()
 ```
 
 ```{r}
@@ -64,7 +126,7 @@ fevd(model, n.ahead = lag) %>% plot()
 
 ```{r}
 par(mar = rep(2,4))
-prediction <- predict(model, n.ahead = 24, ci = 0.95)
+prediction <- predict(model, n.ahead = 24, ci = 0.95)[[1]]$ipc
 prediction %>% fanchart()
 ```
 
