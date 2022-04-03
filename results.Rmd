@@ -5,6 +5,10 @@ pacman::p_load(tidyverse, kableExtra, magrittr, here)
 ```
 
 ```{r include=FALSE}
+main <- read_csv(here("data", "main.csv")) %>% select(fecha, ipc) %>% rowid_to_column(".row")
+```
+
+```{r include=FALSE}
 setwd(here("results"))
 knn <- read_csv("knn_24_forecast.csv") %>% mutate(key = "knn")
 lstm <- read_csv("lstm_24_forecast.csv") %>% mutate(key = "lstm")
@@ -16,11 +20,7 @@ setwd(here())
 ```
 
 ```{r include=FALSE}
-main <- read_csv(here("data", "main.csv")) %>% 
-  select(fecha, ipc) %>% 
-  rowid_to_column(".row")
-
-ml_forecasts <- 
+ml_bind <- 
   list(knn, mlp, rf, svm, xgb) %>% 
   reduce(bind_rows) %>% 
   select(-ipc) %>% 
@@ -42,14 +42,17 @@ ml_forecasts <-
 \vspace{-12mm}
 
 ```{r fig_three, echo=FALSE, warning=FALSE, message=FALSE, fig.align = 'center', fig.dim = c(11.5, 4.7)}
-main %>% 
-  left_join(ml_forecasts) %>% 
+ml_forecasts <- 
+  main %>% 
+  left_join(ml_bind) %>% 
   select(-.row) %>% 
-  filter(between(fecha, as.Date("2017-01-01"), as.Date("2021-12-01"))) %>% 
+  filter(between(fecha, as.Date("2018-01-01"), as.Date("2021-12-01"))) %>% 
   pivot_longer(!fecha, names_to = "model", values_to = "value") %>% 
-  arrange(model, fecha) %>% 
-  ggplot() +
+  arrange(model, fecha)
+
+ggplot(filter(ml_forecasts, model != "ipc"), aes(fecha, value, color = model)) +
   geom_line(aes(fecha, value, color = model)) +
+  geom_line(data = filter(ml_forecasts, model == "ipc"), linetype = "dashed") +
   theme_bw() +
   theme(
         # X axis
