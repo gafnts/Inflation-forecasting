@@ -5,9 +5,7 @@ pacman::p_load(tidyverse, tidymodels, timetk, here, keras, tictoc)
 data <- read_csv(here("data", "main.csv")) %>% rename("date" = fecha)
 ```
 
-## (a) Multiple forecasting horizons
-
-### Forecast function
+## (a) Forecast function
 
 ```{r}
 perceptron <-
@@ -102,8 +100,6 @@ perceptron <-
   }
 ```
 
-### Forecast horizons
-
 ```{r}
 mlp_3 <- perceptron("3 months")
 
@@ -145,7 +141,7 @@ mlp_24[[1]] %>%
   geom_line()
 ```
 
-## (b) Model construction
+## (b) Model building
 
 ### Train and test sets
 

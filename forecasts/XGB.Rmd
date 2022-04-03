@@ -5,9 +5,7 @@ pacman::p_load(tidyverse, tidymodels, timetk, here, xgboost, tictoc, vip)
 data <- read_csv(here("data", "main.csv")) %>% rename("date" = fecha)
 ```
 
-## (a) Multiple forecasting horizons
-
-### Forecast function
+## (a) Forecast function
 
 ```{r}
 xg_boost <-
@@ -98,8 +96,6 @@ xg_boost <-
   }
 ```
 
-### Forecast horizons
-
 ```{r}
 xgb_3 <- xg_boost("3 months")
 
@@ -141,7 +137,7 @@ xgb_24[[1]] %>%
   geom_line()
 ```
 
-## (b) Model construction
+## (b) Model building
 
 ### Train and test sets
 

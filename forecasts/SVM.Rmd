@@ -5,9 +5,7 @@ pacman::p_load(tidyverse, tidymodels, timetk, here, kernlab, tictoc, vip)
 data <- read_csv(here("data", "main.csv")) %>% rename("date" = fecha)
 ```
 
-## (a) Multiple forecasting horizons
-
-### Forecast function
+## (a) Forecast function
 
 ```{r}
 svm <-
@@ -88,8 +86,6 @@ svm <-
   }
 ```
 
-### Forecast horizons
-
 ```{r}
 svm_3 <- svm("3 months")
 
@@ -131,7 +127,7 @@ svm_24[[1]] %>%
   geom_line()
 ```
 
-## (b) Model construction
+## (b) Model building
 
 ### Train and test sets
 

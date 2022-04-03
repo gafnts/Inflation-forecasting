@@ -5,9 +5,7 @@ pacman::p_load(tidyverse, tidymodels, timetk, here, kknn, tictoc, vip)
 data <- read_csv(here("data", "main.csv")) %>% rename("date" = fecha)
 ```
 
-## (a) Multiple forecasting horizons
-
-### Forecast function
+## (a) Forecast function
 
 ```{r}
 k_nearest <-
@@ -97,8 +95,6 @@ k_nearest <-
   }
 ```
 
-### Forecast horizons
-
 ```{r}
 knn_3 <- k_nearest("3 months")
 
@@ -140,7 +136,7 @@ knn_12[[1]] %>%
   geom_line()
 ```
 
-## (b) Model construction
+## (b) Model building
 
 ### Train and test sets
 

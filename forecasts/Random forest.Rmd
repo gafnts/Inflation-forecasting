@@ -5,9 +5,7 @@ pacman::p_load(tidyverse, tidymodels, timetk, here, randomForest, tictoc, vip)
 data <- read_csv(here("data", "main.csv")) %>% rename("date" = fecha)
 ```
 
-## (a) Multiple forecasting horizons
-
-### Forecast function
+## (a) Forecast function
 
 ```{r}
 randomforest <-
@@ -87,8 +85,6 @@ randomforest <-
   }
 ```
 
-### Forecast horizons
-
 ```{r}
 rf_3 <- randomforest("3 months")
 
@@ -130,7 +126,7 @@ rf_24[[1]] %>%
   geom_line()
 ```
 
-## (b) Model construction
+## (b) Model building
 
 ### Train and test sets
 

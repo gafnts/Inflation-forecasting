@@ -9,7 +9,7 @@ data <- read_csv(here("data", "main.csv")) %>%
   as_tbl_time(index = index)
 ```
 
-## (a) Multiple forecasting horizons
+## (a) Forecast function
 
 ```{r}
 lstm <- 
@@ -199,7 +199,7 @@ lstm_9[[1]] %>%
   geom_line()
 ```
 
-## (b) Model construction
+## (b) Model building
 
 ### Evaluating the ACF
 
