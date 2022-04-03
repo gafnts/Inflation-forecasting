@@ -5,17 +5,11 @@ pacman::p_load(tidyverse, tidymodels, here, forecast, tseries, tictoc)
 data <- read_csv(here("data", "main.csv")) %>% rename("date" = fecha)
 ```
 
+### Exploratory data analysis
+
 ```{r}
 ipc <- ts(data %>% select(ipc), start = c(2005, 1), frequency = 12)
-
-  train <- ts(data %>% 
-              filter(between(date, as.Date("2005-01-01"), as.Date("2019-12-01"))) %>% 
-              select(ipc), start = c(2005, 1), frequency = 12)
-  
-  test <- data %>% select(ipc) %>% tail(24) 
 ```
-
-### Exploratory data analysis
 
 ```{r}
 ipc %>% ggtsdisplay()
@@ -24,12 +18,24 @@ ipc %>% ggseasonplot()
 ipc %>% adf.test()
 ```
 
+### Seasonal naïve
+
 ```{r}
-snaïve <- function(h) {
+snaïve <- function(last, horizon) {
+  
+  last <- enquo(last)
+  
+  train <- 
+    ts(data %>% 
+         filter(between(date, as.Date("2005-01-01"), as.Date(!!last))) %>% 
+         select(ipc), start = c(2005, 1), frequency = 12)
+  
+  test <- data %>% select(ipc) %>% tail(horizon) 
+  
   tic("snaive")
   
   forecast <- 
-    snaive(train, h = h) %>% 
+    snaive(train, h = horizon) %>% 
     as_tibble() %>% 
     rename(".pred" = `Point Forecast`) %>% 
     mutate(key = "snaïve") %>% 
@@ -60,8 +66,6 @@ snaïve <- function(h) {
   return(results)
 }
 ```
-
-### Seasonal naïve
 
 ```{r}
 snaive <- 
