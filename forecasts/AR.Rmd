@@ -5,3 +5,13 @@ pacman::p_load(tidyverse, tidymodels, here, forecast, tseries, tictoc)
 data <- read_csv(here("data", "main.csv")) %>% rename("date" = fecha)
 ipc <- ts(data %>% select(ipc), start = c(2005, 1), frequency = 12)
 ```
+
+```{r}
+ar <- auto.arima(ipc, 
+                 max.p = 10, max.q = 0, max.d = 0, 
+                 max.P = 0, max.Q = 0, max.D = 0,
+                 stepwise = FALSE, approximation = FALSE, trace = TRUE)
+
+ar %>% checkresiduals()
+ar %>% forecast(24) %>% autoplot()
+```
