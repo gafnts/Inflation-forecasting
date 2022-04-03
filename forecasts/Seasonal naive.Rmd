@@ -1,0 +1,136 @@
+# Seasonal naïve
+
+```{r}
+pacman::p_load(tidyverse, tidymodels, here, forecast, tseries, tictoc)
+data <- read_csv(here("data", "main.csv")) %>% rename("date" = fecha)
+ipc <- ts(data %>% select(ipc), start = c(2005, 1), frequency = 12)
+```
+
+### Exploratory data analysis
+
+```{r}
+ipc %>% ggtsdisplay()
+ipc %>% decompose() %>% autoplot()
+ipc %>% ggseasonplot()
+ipc %>% adf.test()
+```
+
+## Seasonal naïve
+
+```{r}
+snaïve <- function(last, horizon) {
+  
+  last <- enquo(last)
+  
+  train <- 
+    ts(data %>% 
+         filter(between(date, as.Date("2005-01-01"), as.Date(!!last))) %>% 
+         select(ipc), start = c(2005, 1), frequency = 12)
+  
+  test <- data %>% select(ipc) %>% tail(horizon)
+  
+  tic("snaive")
+  
+  forecast <- 
+    snaive(train, h = horizon) %>% 
+    as_tibble() %>% 
+    rename(".pred" = `Point Forecast`) %>% 
+    mutate(key = "snaïve") %>% 
+    rowid_to_column(".row") %>% 
+    select(.pred, .row, key)
+  
+   toc(log = TRUE)
+   time <- tic.log(format = TRUE)
+   tic.clearlog()
+  
+  mae <-
+    forecast %>% 
+    select(.pred) %>% 
+    bind_cols(test %>% select(ipc)) %>% 
+    rename("truth" = ipc, "estimate" = .pred) %>% 
+    mae(truth = truth, estimate = estimate)
+  
+  mase <-
+    forecast %>% 
+    select(.pred) %>% 
+    bind_cols(test %>% select(ipc)) %>% 
+    rename("truth" = ipc, "estimate" = .pred) %>% 
+    mase(truth = truth, estimate = estimate)
+  
+  metrics <- bind_rows(mae, mase)
+  
+  results <- list(forecast, metrics, time)
+  return(results)
+}
+```
+
+```{r}
+snaive_3 <- snaïve(last = "2021-09-02", horizon = 3)
+
+snaive_3[[1]] %>% write_csv(here("results", "snaive_3_forecast.csv"))
+snaive_3[[2]] %>% write_csv(here("results", "snaive_3_metrics.csv"))
+snaive_3[[3]][[1]] %>% as_tibble() %>% write_csv(here("results", "snaive_3_time.csv"))
+```
+
+```{r}
+snaive_9 <- snaïve(last = "2021-03-02", horizon = 9)
+
+snaive_9[[1]] %>% write_csv(here("results", "snaive_9_forecast.csv"))
+snaive_9[[2]] %>% write_csv(here("results", "snaive_9_metrics.csv"))
+snaive_9[[3]][[1]] %>% as_tibble() %>% write_csv(here("results", "snaive_9_time.csv"))
+```
+
+```{r}
+snaive_12 <- snaïve(last = "2020-12-02", horizon = 12)
+
+snaive_12[[1]] %>% write_csv(here("results", "snaive_12_forecast.csv"))
+snaive_12[[2]] %>% write_csv(here("results", "snaive_12_metrics.csv"))
+snaive_12[[3]][[1]] %>% as_tibble() %>% write_csv(here("results", "snaive_12_time.csv"))
+```
+
+```{r}
+snaive_24 <- snaïve(last = "2019-12-02", horizon = 24)
+
+snaive_24[[1]] %>% write_csv(here("results", "snaive_24_forecast.csv"))
+snaive_24[[2]] %>% write_csv(here("results", "snaive_24_metrics.csv"))
+snaive_24[[3]][[1]] %>% as_tibble() %>% write_csv(here("results", "snaive_24_time.csv"))
+```
+
+### Safety checks
+
+```{r}
+snaive_3[[1]] %>% 
+  bind_cols(data %>% select(ipc) %>% tail(3)) %>% 
+  select(-key) %>% 
+  pivot_longer(-.row) %>% 
+  ggplot(aes(.row, value, color = name)) +
+  geom_line()
+```
+
+## Model building
+
+```{r}
+snaive <- 
+  snaive(train, h = 24) %>% 
+  as_tibble() %>% 
+  rename(".pred" = `Point Forecast`) %>% 
+  mutate(key = "snaïve") %>% 
+  rowid_to_column(".row") %>% 
+  select(.pred, .row, key)
+```
+
+```{r}
+mae <-
+  snaive %>% 
+  select(.pred) %>% 
+      bind_cols(test %>% select(ipc)) %>% 
+      rename("truth" = ipc, "estimate" = .pred) %>% 
+      mae(truth = truth, estimate = estimate)
+
+mase <-
+  snaive %>% 
+  select(.pred) %>% 
+      bind_cols(test %>% select(ipc)) %>% 
+      rename("truth" = ipc, "estimate" = .pred) %>% 
+      mase(truth = truth, estimate = estimate)
+```
