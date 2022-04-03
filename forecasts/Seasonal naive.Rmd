@@ -110,8 +110,15 @@ snaive_3[[1]] %>%
 ## Model building
 
 ```{r}
+horizon <- 3
+
+train <- 
+    ts(data %>% 
+         filter(between(date, as.Date("2005-01-01"), as.Date("2021-09-02"))) %>% 
+         select(ipc), start = c(2005, 1), frequency = 12)
+
 snaive <- 
-  snaive(train, h = 24) %>% 
+  snaive(train, h = horizon) %>% 
   as_tibble() %>% 
   rename(".pred" = `Point Forecast`) %>% 
   mutate(key = "snaïve") %>% 
@@ -120,6 +127,8 @@ snaive <-
 ```
 
 ```{r}
+test <- data %>% select(ipc) %>% tail(horizon)
+
 mae <-
   snaive %>% 
   select(.pred) %>% 
@@ -133,4 +142,15 @@ mase <-
       bind_cols(test %>% select(ipc)) %>% 
       rename("truth" = ipc, "estimate" = .pred) %>% 
       mase(truth = truth, estimate = estimate)
+
+metrics <- bind_rows(mae, mase); metrics
+```
+
+```{r}
+snaive %>% 
+  bind_cols(data %>% select(ipc) %>% tail(horizon)) %>% 
+  select(-key) %>% 
+  pivot_longer(-.row) %>% 
+  ggplot(aes(.row, value, color = name)) +
+  geom_line()
 ```
