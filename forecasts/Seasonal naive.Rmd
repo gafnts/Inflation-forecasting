@@ -110,11 +110,11 @@ snaive_3[[1]] %>%
 ## Model building
 
 ```{r}
-horizon <- 3
+horizon <- 24
 
 train <- 
     ts(data %>% 
-         filter(between(date, as.Date("2005-01-01"), as.Date("2021-09-02"))) %>% 
+         filter(between(date, as.Date("2005-01-01"), as.Date("2019-12-02"))) %>% 
          select(ipc), start = c(2005, 1), frequency = 12)
 
 snaive <- 
@@ -124,6 +124,10 @@ snaive <-
   mutate(key = "snaïve") %>% 
   rowid_to_column(".row") %>% 
   select(.pred, .row, key)
+```
+
+```{r}
+snaive(train, h = horizon) %>% checkresiduals()
 ```
 
 ```{r}
