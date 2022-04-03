@@ -72,7 +72,46 @@ var <- function(last, lag, horizon) {
 ```
 
 ```{r}
-var(last = "2019-12-01", lag = 24, horizon = 24) -> try
+var_3 <- var(last = "2021-09-01", lag = 24, horizon = 3)
+
+var_3[[1]] %>% write_csv(here("results", "var_3_forecast.csv"))
+var_3[[2]] %>% write_csv(here("results", "var_3_metrics.csv"))
+var_3[[3]][[1]] %>% as_tibble() %>% write_csv(here("results", "var_3_time.csv"))
+```
+
+```{r}
+var_9 <- var(last = "2021-03-01", lag = 24, horizon = 9)
+
+var_9[[1]] %>% write_csv(here("results", "var_9_forecast.csv"))
+var_9[[2]] %>% write_csv(here("results", "var_9_metrics.csv"))
+var_9[[3]][[1]] %>% as_tibble() %>% write_csv(here("results", "var_9_time.csv"))
+```
+
+```{r}
+var_12 <- var(last = "2020-12-01", lag = 24, horizon = 12)
+
+var_12[[1]] %>% write_csv(here("results", "var_12_forecast.csv"))
+var_12[[2]] %>% write_csv(here("results", "var_12_metrics.csv"))
+var_12[[3]][[1]] %>% as_tibble() %>% write_csv(here("results", "var_12_time.csv"))
+```
+
+```{r}
+var_24 <- var(last = "2019-12-01", lag = 24, horizon = 24)
+
+var_24[[1]] %>% write_csv(here("results", "var_24_forecast.csv"))
+var_24[[2]] %>% write_csv(here("results", "var_24_metrics.csv"))
+var_24[[3]][[1]] %>% as_tibble() %>% write_csv(here("results", "var_24_time.csv"))
+```
+
+### Safety checks
+
+```{r}
+var_3[[1]] %>% 
+  bind_cols(data %>% dplyr::select(ipc) %>% tail(3)) %>% 
+  dplyr::select(-key) %>% 
+  pivot_longer(-.row) %>% 
+  ggplot(aes(.row, value, color = name)) +
+  geom_line()
 ```
 
 ## (b) Model building
