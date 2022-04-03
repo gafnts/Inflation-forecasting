@@ -1,0 +1,48 @@
+# Vector autoregression
+
+```{r}
+pacman::p_load(tidyverse, tidymodels, magrittr, here, vars, forecast, tseries, tictoc)
+```
+
+```{r}
+data <- read_csv(here("data", "main.csv")) %>% glimpse()
+```
+
+## (b) Model building
+
+```{r}
+lag <- 12
+
+var <- 
+  data %>% 
+  dplyr::select(ipc, imae) %>% 
+  ts(start = c(2005, 01), frequency = 12)
+
+selection <- VARselect(var, lag.max = lag, type = "const")
+selection$selection[[1]]
+```
+
+```{r}
+model <- VAR(var, p = selection$selection[[1]], type = "const", season = NULL, exog = NULL)
+summary(model)
+```
+
+```{r}
+serial.test(model, lags.pt = lag, type = "PT.asymptotic") # > 0.05
+arch.test(model, lags.multi = lag, multivariate.only = TRUE) # < 0.05
+normality.test(model, multivariate.only = TRUE) # > 0.05
+```
+
+```{r}
+irf(model, impulse = "imae", response = "ipc", n.ahead = lag, boot = TRUE) %>% plot()
+irf(model, impulse = "ipc", response = "imae", n.ahead = lag, boot = TRUE) %>% plot()
+```
+
+```{r}
+par(mar = rep(2,4))
+fevd(model, n.ahead = lag) %>% plot()
+```
+
+```{r}
+predict(model, n.ahead = 24, ci = 0.95) %>% fanchart()
+```
