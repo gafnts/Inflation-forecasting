@@ -6,6 +6,8 @@ data <- read_csv(here("data", "main.csv")) %>% rename("date" = fecha)
 ipc <- ts(data %>% select(ipc), start = c(2005, 1), frequency = 12)
 ```
 
+## (a) Forecast function
+
 ```{r}
 ar <- function(last, horizon) {
   
@@ -100,7 +102,7 @@ ar_3[[1]] %>%
   geom_line()
 ```
 
-## Model building
+## (b) Model building
 
 ```{r}
 ar <- auto.arima(ipc, 
