@@ -5,25 +5,44 @@ pacman::p_load(tidyverse, tidymodels, magrittr, here, vars, forecast, tseries, t
 ```
 
 ```{r}
-data <- read_csv(here("data", "main.csv")) %>% glimpse()
+data <- read_csv(here("data", "main.csv")) %>% rename("date" = fecha) %>% glimpse()
 ```
 
 ## (b) Model building
 
 ```{r}
-lag <- 12
-
-var <- 
-  data %>% 
-  dplyr::select(ipc, imae) %>% 
-  ts(start = c(2005, 01), frequency = 12)
-
-selection <- VARselect(var, lag.max = lag, type = "const")
-selection$selection[[1]]
+m0, m1, cpi, lendrate
+debt, exports, rev, itcer, deprate, tpm, bananas
 ```
 
 ```{r}
-model <- VAR(var, p = selection$selection[[1]], type = "const", season = NULL, exog = NULL)
+diffs <- 
+  data %>% 
+  dplyr::select(date, m1) %>% 
+  filter(between(date, as.Date("2005-01-01"), as.Date("2019-12-01"))) %>% 
+  dplyr::select(-date) %>% 
+  ts(start = c(2005, 01), frequency = 12) %>% 
+  diff(lag = 12)
+```
+
+```{r}
+vars <- 
+  data %>% 
+  filter(between(date, as.Date("2006-01-01"), as.Date("2019-12-01"))) %>% 
+  dplyr::select(ipc, bananas) %>% 
+  ts(start = c(2006, 01), frequency = 12)
+
+df <- cbind(vars, diffs)
+colnames(df) <- c("ipc", "bananas", "m1")
+head(df)
+```
+
+```{r}
+lag <- 36
+selection <- VARselect(df, lag.max = lag, type = "const")
+selection$selection[[1]]
+
+model <- VAR(df, p = selection$selection[[1]], type = "const", season = NULL, exog = NULL)
 summary(model)
 ```
 
@@ -34,8 +53,8 @@ normality.test(model, multivariate.only = TRUE) # > 0.05
 ```
 
 ```{r}
-irf(model, impulse = "imae", response = "ipc", n.ahead = lag, boot = TRUE) %>% plot()
-irf(model, impulse = "ipc", response = "imae", n.ahead = lag, boot = TRUE) %>% plot()
+irf(model, impulse = "hydro", response = "ipc", n.ahead = lag, boot = TRUE) %>% plot()
+irf(model, impulse = "ipc", response = "hydro", n.ahead = lag, boot = TRUE) %>% plot()
 ```
 
 ```{r}
@@ -44,5 +63,26 @@ fevd(model, n.ahead = lag) %>% plot()
 ```
 
 ```{r}
-predict(model, n.ahead = 24, ci = 0.95) %>% fanchart()
+par(mar = rep(2,4))
+prediction <- predict(model, n.ahead = 24, ci = 0.95)
+prediction %>% fanchart()
+```
+
+```{r}
+forecast <- prediction[[1]]$ipc
+test <- data %>% rowid_to_column(".row") %>% tail(24) %>% dplyr::select(ipc, .row)
+
+forecast %<>% 
+  as_tibble() %>% 
+  dplyr::select(".pred" = fcst) %>% 
+  bind_cols(test)
+
+forecast %>% 
+  pivot_longer(-.row) %>% 
+  ggplot(aes(.row, value, color = name)) +
+  geom_line()
+
+forecast %>% 
+  rename("truth" = ipc, "estimate" = .pred) %>% 
+    mae(truth = truth, estimate = estimate)
 ```
