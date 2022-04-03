@@ -1,4 +1,4 @@
-# AR
+# AR(2)
 
 ```{r}
 pacman::p_load(tidyverse, tidymodels, here, forecast, tseries, tictoc)
@@ -28,7 +28,7 @@ ar <- function(last, horizon) {
     forecast(horizon) %>% 
     as_tibble() %>% 
     rename(".pred" = `Point Forecast`) %>% 
-    mutate(key = "snaïve") %>% 
+    mutate(key = "ar") %>% 
     rowid_to_column(".row") %>% 
     select(.pred, .row, key)
   
