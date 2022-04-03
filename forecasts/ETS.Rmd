@@ -23,11 +23,12 @@ holt_winters <- function(last, horizon) {
   tic("HW")
   
   forecast <- 
-    hw(train, seasonal = "additive") %>% 
+    HoltWinters(train, beta = FALSE, gamma = TRUE, 
+                seasonal = "additive") %>% 
     forecast(horizon) %>% 
     as_tibble() %>% 
     rename(".pred" = `Point Forecast`) %>% 
-    mutate(key = "holt-winters") %>% 
+    mutate(key = "HW") %>% 
     rowid_to_column(".row") %>% 
     select(.pred, .row, key)
   
@@ -102,6 +103,34 @@ hw_24[[1]] %>%
 ## (b) Model building
 
 ```{r}
+last <- "2020-12-01"
+horizon <- 12
+  
+  train <- 
+    ts(data %>% 
+         filter(between(date, as.Date("2005-01-01"), as.Date(last))) %>% 
+         select(ipc), start = c(2005, 1), frequency = 12)
+  
+  test <- data %>% select(ipc) %>% tail(horizon)
+
+forecast <- 
+    hw(train, seasonal = "additive") %>% 
+    forecast(12) %>% 
+    as_tibble() %>% 
+    rename(".pred" = `Point Forecast`) %>% 
+    mutate(key = "HW") %>% 
+    rowid_to_column(".row") %>% 
+    select(.pred, .row, key)
+
+mae <-
+    forecast %>% 
+    select(.pred) %>% 
+    bind_cols(test %>% select(ipc) %>% 
+    rename("truth" = ipc, "estimate" = .pred) %>% 
+    mae(truth = truth, estimate = estimate)
+```
+
+```{r}
 train <- 
     ts(data %>% 
          filter(between(date, as.Date("2005-01-01"), as.Date("2019-12-02"))) %>% 
@@ -109,25 +138,25 @@ train <-
 ```
 
 ```{r}
-ets(ipc)
-ets(ipc) %>% checkresiduals()
-ets(ipc) %>% forecast(24) %>% autoplot()
+ets(train)
+ets(train) %>% checkresiduals()
+ets(train) %>% forecast(24) %>% autoplot()
 ```
 
 ```{r}
-holt(ipc, damped = TRUE)
-holt(ipc, damped = TRUE) %>% checkresiduals()
-holt(ipc, damped = TRUE) %>% forecast(24) %>% autoplot()
+holt(train, damped = TRUE)
+holt(train, damped = TRUE) %>% checkresiduals()
+holt(train, damped = TRUE) %>% forecast(24) %>% autoplot()
 ```
 
 ```{r}
-hw(ipc, seasonal = "additive")
-hw(ipc, seasonal = "additive") %>% checkresiduals()
-hw(ipc, seasonal = "additive") %>% forecast(24) %>% autoplot()
+hw <- HoltWinters(train, beta = FALSE, gamma = TRUE, seasonal = "additive")
+hw %>% checkresiduals()
+hw %>% forecast(24) %>% autoplot()
 ```
 
 ```{r}
-thetaf(ipc)
-thetaf(ipc) %>% checkresiduals()
-thetaf(ipc) %>% forecast(24) %>% autoplot()
+thetaf(train)
+thetaf(train) %>% checkresiduals()
+thetaf(train) %>% forecast(24) %>% autoplot()
 ```
