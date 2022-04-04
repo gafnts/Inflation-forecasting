@@ -5,6 +5,8 @@ pacman::p_load(tidyverse, magrittr, here, yardstick)
 main <- read_csv(here("data", "main.csv")) %>% select(fecha, ipc) %>% rowid_to_column(".row")
 ```
 
+## Import data
+
 ### Time series
 
 ```{r}
@@ -32,3 +34,86 @@ setwd(here())
 ```
 
 ### Machine learning
+
+```{r}
+forecast_import_ml <- function(pattern, key) {
+  key <- enquo(key)
+  
+  data <- 
+    dir(pattern = "^svm.*forecast.csv") %>% 
+    map_dfr(read_csv) %>% 
+    mutate(id = c(rep(12, 12), rep(24, 24), rep(3, 3), rep(9, 9)),
+           key = !!key) %>% 
+    rename("pred" = .pred, "row" = .row) %>% 
+    select(key, id, row, pred)
+  
+  return(data)
+}
+```
+
+```{r}
+setwd(here("results"))
+svm <- forecast_import_ml(pattern = "^svm.*forecast.csv", key = "svm")
+rf <- forecast_import_ml(pattern = "^rf.*forecast.csv", key = "rf")
+xgb <- forecast_import_ml(pattern = "xgb.*forecast.csv", key = "xgb")
+mlp <- forecast_import_ml(pattern = "^mlp.*forecast.csv", key = "mlp")
+lstm <- forecast_import_ml(pattern = "^lstm.*forecast.csv", key = "lstm")
+setwd(here())
+```
+
+```{r}
+ipc <- main %>% select(ipc)
+ts <- snaive %>% bind_rows(hw, ar, sarima, var)
+ml <- svm %>% bind_rows(rf, xgb, mlp, lstm)
+```
+
+## Weighted ensemble function
+
+```{r}
+weighted_ensemble <- function(data, horizon) {
+
+  inf <- 
+    ipc %>% 
+    tail(horizon) %>% 
+    mutate(row = rep(1:horizon))
+  
+  models <- 
+    ts %>% 
+    filter(id == horizon) %>% 
+    group_by(key) %>% 
+    mutate(row = rep(1:horizon)) %>% 
+    ungroup()
+  
+  forecast <- 
+    models %>% 
+    left_join(inf) %>% 
+    group_by(key, row) %>% 
+    mutate(mae = mae_vec(truth = ipc, estimate = pred)) %>% 
+    ungroup() %>% 
+    select(row, key, pred, ipc, mae) %>% 
+    group_by(row) %>% 
+    mutate(weigth = 1 - (mae / sum(mae))) %>% 
+    summarise(pred = weighted.mean(pred, weigth))
+  
+  metrics <- 
+    forecast %>% 
+    left_join(inf) %>% 
+    mae(ipc, pred)
+  
+  return(metrics)
+}
+```
+
+```{r}
+ts %>% weighted_ensemble(3) %>% write_csv(here("results", "ts_3_metrics.csv"))
+ts %>% weighted_ensemble(9) %>% write_csv(here("results", "ts_9_metrics.csv"))
+ts %>% weighted_ensemble(12) %>% write_csv(here("results", "ts_12_metrics.csv"))
+ts %>% weighted_ensemble(24) %>% write_csv(here("results", "ts_24_metrics.csv"))
+```
+
+```{r}
+ml %>% weighted_ensemble(3) %>% write_csv(here("results", "ml_3_metrics.csv"))
+ml %>% weighted_ensemble(9) %>% write_csv(here("results", "ml_9_metrics.csv"))
+ml %>% weighted_ensemble(12) %>% write_csv(here("results", "ml_12_metrics.csv"))
+ml %>% weighted_ensemble(24) %>% write_csv(here("results", "ml_24_metrics.csv"))
+```
