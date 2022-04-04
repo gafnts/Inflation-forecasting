@@ -10,7 +10,72 @@ main <- read_csv(here("data", "main.csv")) %>% select(fecha, ipc) %>% rowid_to_c
 
 ```{r include=FALSE}
 setwd(here("results"))
-knn <- read_csv("knn_24_forecast.csv") %>% mutate(key = "knn")
+snaive <- read_csv("snaive_24_forecast.csv")
+ar <- read_csv("ar_24_forecast.csv")
+sarima <- read_csv("sarima_24_forecast.csv")
+hw <- read_csv("hw_24_forecast.csv") %>% mutate(key = "holt-winters")
+var <- read_csv("var_24_forecast.csv") 
+setwd(here())
+```
+
+```{r include=FALSE}
+ts_bind <- 
+  list(snaive, ar, sarima, hw, var) %>% 
+  reduce(bind_rows) %>% 
+  pivot_wider(names_from = key, values_from = .pred)
+```
+
+\renewcommand{\arraystretch}{1}
+
+```{=tex}
+\begin{center}
+
+\small
+
+\textbf{Figura 2:} Pronósticos de 24 meses hacia delante, modelos de series de tiempo
+
+\end{center}
+```
+\vspace{-12mm}
+
+```{r fig_two, echo=FALSE, warning=FALSE, message=FALSE, fig.align = 'center', fig.dim = c(11.5, 4.7)}
+ts_forecasts <- 
+  main %>% 
+  left_join(ts_bind %>% mutate(.row = 181:204)) %>% 
+  select(-.row) %>% 
+  filter(between(fecha, as.Date("2018-01-01"), as.Date("2021-12-01"))) %>% 
+  pivot_longer(!fecha, names_to = "model", values_to = "value") %>% 
+  arrange(model, fecha)
+
+ggplot(filter(ts_forecasts, model != "ipc"), aes(fecha, value, color = model)) +
+  geom_line(aes(fecha, value, color = model)) +
+  geom_line(data = filter(ts_forecasts, model == "ipc"), linetype = "dashed") +
+  theme_bw() +
+  theme(
+        # X axis
+        axis.title.x = element_blank(),
+        axis.text.x = element_text(size = 12),
+        # Y axis
+        axis.title.y = element_blank(),
+        axis.text.y = element_text(size = 12),
+        # Panel
+        panel.grid = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.grid.major.x = element_blank(),
+        panel.background = element_rect(fill = "white"),
+        # Legend
+        legend.title = element_blank(),
+        legend.text = element_text(size = 11),
+        legend.position = "bottom",
+        legend.justification = "center",
+        legend.margin = margin(.5, 0, 0, 0, "cm")
+    ) + 
+    guides(colour = guide_legend(nrow = 1))
+```
+
+```{r include=FALSE}
+setwd(here("results"))
+# knn <- read_csv("knn_24_forecast.csv") %>% mutate(key = "knn")
 lstm <- read_csv("lstm_24_forecast.csv") %>% mutate(key = "lstm")
 mlp <- read_csv("mlp_24_forecast.csv") %>% mutate(key = "mlp")
 rf <- read_csv("rf_24_forecast.csv") %>% mutate(key = "rf")
@@ -21,7 +86,7 @@ setwd(here())
 
 ```{r include=FALSE}
 ml_bind <- 
-  list(knn, mlp, rf, svm, xgb) %>% 
+  list(mlp, rf, svm, xgb) %>% 
   reduce(bind_rows) %>% 
   select(-ipc) %>% 
   pivot_wider(names_from = key, values_from = .pred) %>% 
@@ -35,7 +100,7 @@ ml_bind <-
 
 \small
 
-\textbf{Figura 3:} Pronósticos de mediano plazo, modelos de aprendizaje estadístico
+\textbf{Figura 3:} Pronósticos de 24 meses hacia delante, modelos de aprendizaje estadístico
 
 \end{center}
 ```
