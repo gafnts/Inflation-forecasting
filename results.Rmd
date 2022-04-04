@@ -1,7 +1,7 @@
 # Resultados
 
 ```{r include=FALSE}
-pacman::p_load(tidyverse, kableExtra, magrittr, here)
+pacman::p_load(tidyverse, kableExtra, magrittr, here, patchwork)
 ```
 
 ```{r include=FALSE}
@@ -32,7 +32,7 @@ ts_bind <-
 
 \small
 
-\textbf{Figura 2:} Pronósticos de 24 meses hacia delante, modelos de series de tiempo
+\textbf{Figura 2:} Pronósticos de 24 meses hacia delante
 
 \end{center}
 ```
@@ -43,11 +43,12 @@ ts_forecasts <-
   main %>% 
   left_join(ts_bind %>% mutate(.row = 181:204)) %>% 
   select(-.row) %>% 
-  filter(between(fecha, as.Date("2018-01-01"), as.Date("2021-12-01"))) %>% 
+  filter(between(fecha, as.Date("2019-01-01"), as.Date("2021-12-01"))) %>% 
   pivot_longer(!fecha, names_to = "model", values_to = "value") %>% 
   arrange(model, fecha)
 
-ggplot(filter(ts_forecasts, model != "ipc"), aes(fecha, value, color = model)) +
+p1 <- 
+  ggplot(filter(ts_forecasts, model != "ipc"), aes(fecha, value, color = model)) +
   geom_line(aes(fecha, value, color = model)) +
   geom_line(data = filter(ts_forecasts, model == "ipc"), linetype = "dashed") +
   theme_bw() +
@@ -93,29 +94,17 @@ ml_bind <-
   bind_cols(lstm %>% select("lstm" = .pred))
 ```
 
-\renewcommand{\arraystretch}{1}
-
-```{=tex}
-\begin{center}
-
-\small
-
-\textbf{Figura 3:} Pronósticos de 24 meses hacia delante, modelos de aprendizaje estadístico
-
-\end{center}
-```
-\vspace{-12mm}
-
 ```{r fig_three, echo=FALSE, warning=FALSE, message=FALSE, fig.align = 'center', fig.dim = c(11.5, 4.7)}
 ml_forecasts <- 
   main %>% 
   left_join(ml_bind) %>% 
   select(-.row) %>% 
-  filter(between(fecha, as.Date("2018-01-01"), as.Date("2021-12-01"))) %>% 
+  filter(between(fecha, as.Date("2019-01-01"), as.Date("2021-12-01"))) %>% 
   pivot_longer(!fecha, names_to = "model", values_to = "value") %>% 
   arrange(model, fecha)
 
-ggplot(filter(ml_forecasts, model != "ipc"), aes(fecha, value, color = model)) +
+p2 <- 
+  ggplot(filter(ml_forecasts, model != "ipc"), aes(fecha, value, color = model)) +
   geom_line(aes(fecha, value, color = model)) +
   geom_line(data = filter(ml_forecasts, model == "ipc"), linetype = "dashed") +
   theme_bw() +
@@ -139,4 +128,8 @@ ggplot(filter(ml_forecasts, model != "ipc"), aes(fecha, value, color = model)) +
         legend.margin = margin(.5, 0, 0, 0, "cm")
     ) + 
     guides(colour = guide_legend(nrow = 1))
+```
+
+```{r fig, echo=FALSE, warning=FALSE, message=FALSE, fig.align = 'center', fig.dim = c(11.5, 4.7)}
+p1 + p2
 ```
