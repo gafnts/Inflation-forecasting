@@ -1,14 +1,34 @@
 # Weighted mean ensembles
 
 ```{r}
-pacman::p_load(tidyverse, kableExtra, magrittr, here, yardstick)
+pacman::p_load(tidyverse, magrittr, here, yardstick)
 main <- read_csv(here("data", "main.csv")) %>% select(fecha, ipc) %>% rowid_to_column(".row")
 ```
 
-## Time series
-
-### h = 3
+### Time series
 
 ```{r}
-
+forecast_import <- function(pattern) {
+  
+  data <- 
+    dir(pattern = pattern) %>% 
+    map_dfr(read_csv) %>% 
+    mutate(id = c(rep(12, 12), rep(24, 24), rep(3, 3), rep(9, 9))) %>% 
+    rename("pred" = .pred, "row" = .row) %>% 
+    select(key, id, row, pred)
+  
+  return(data)
+}
 ```
+
+```{r}
+setwd(here("results"))
+snaive <- forecast_import(pattern = "^snaive.*forecast.csv")
+hw <- forecast_import(pattern = "^hw.*forecast.csv")
+ar <- forecast_import(pattern = "^ar.*forecast.csv")
+sarima <- forecast_import(pattern = "^sarima.*forecast.csv")
+var <- forecast_import(pattern = "^var.*forecast.csv")
+setwd(here())
+```
+
+### Machine learning
