@@ -203,3 +203,45 @@ kbl(mase,
   column_spec(1, width = "1.5cm") %>% 
   column_spec(3, width = "1.9cm")
 ```
+
+\renewcommand{\arraystretch}{1}
+
+```{=tex}
+\begin{center}
+
+\small
+
+\textbf{Figura 4:} Complejidad computacional y precisión de pronóstico
+
+\end{center}
+```
+\vspace{-12mm}
+
+```{r include=FALSE}
+cc <- read_csv(here("results", "analysis", "cc.csv"))
+```
+
+```{r fig_four, echo=FALSE, warning=FALSE, message=FALSE, fig.align = 'center', fig.dim = c(11.5, 4.2)}
+cc %>% 
+  ggplot(aes(cc, mae, label = key)) +
+  geom_smooth(method = "lm", colour = "black", fill = "gray80") +
+  geom_label() +
+  scale_x_continuous(trans = "log") +
+  ylim(0, 2.5) +
+  labs(x = "Complejidad computacional", y = "MAE") +
+  theme_bw() +
+  theme(
+        # X axis
+        axis.title.x = element_text(margin = margin(15, 0, 0, 0)),
+        axis.text.x = element_text(size = 12),
+        # Y axis
+        axis.title.y = element_text(margin = margin(0, 15, 0, 0)),
+        axis.text.y = element_text(size = 12),
+        # Panel
+        panel.grid = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.grid.major.x = element_blank(),
+        panel.background = element_rect(fill = "white")
+    ) + 
+    guides(colour = guide_legend(nrow = 1))
+```
