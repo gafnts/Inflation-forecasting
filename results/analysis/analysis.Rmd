@@ -149,6 +149,7 @@ ml_mean_forecasts %>% write_csv(here("results", "analysis", "ml_mean_forecasts.c
 ## Table two: MAE and rMAE
 
 ```{r}
+# snaïve
 setwd(here("results"))
 snaive_3_metrics <- read_csv("snaive_3_metrics.csv") %>% mutate(key = "snaive 3")
 snaive_9_metrics <- read_csv("snaive_9_metrics.csv") %>% mutate(key = "snaive 9")
@@ -165,9 +166,8 @@ snaive <-
   mutate(key = "snaïve") %>% # Rename
   relocate(key) %>% 
   rename("h = 3" = 3, "h = 9" = 4, "h = 12" = 5, "h = 24" = 6)
-```
 
-```{r}
+# holt-winters
 setwd(here("results"))
 hw_3_metrics <- read_csv("hw_3_metrics.csv") %>% mutate(key = "holt-winters 3")
 hw_9_metrics <- read_csv("hw_9_metrics.csv") %>% mutate(key = "holt-winters 9")
@@ -184,9 +184,196 @@ hw <-
   mutate(key = "holt-winters") %>% # Rename
   relocate(key) %>% 
   rename("h = 3" = 3, "h = 9" = 4, "h = 12" = 5, "h = 24" = 6)
+
+# ar
+setwd(here("results"))
+ar_3_metrics <- read_csv("ar_3_metrics.csv") %>% mutate(key = "ar 3")
+ar_9_metrics <- read_csv("ar_9_metrics.csv") %>% mutate(key = "ar 9")
+ar_12_metrics <- read_csv("ar_12_metrics.csv") %>% mutate(key = "ar 12")
+ar_24_metrics <- read_csv("ar_24_metrics.csv") %>% mutate(key = "ar 24")
+setwd(here())
+
+ar <- 
+  list(ar_3_metrics, ar_9_metrics, ar_12_metrics, ar_24_metrics) %>%
+  reduce(bind_rows) %>% 
+  rename("metric" = .metric, "estimate" = .estimate) %>% 
+  select(-.estimator) %>% 
+  pivot_wider(names_from = key, values_from = estimate) %>% 
+  mutate(key = "ar") %>% # Rename
+  relocate(key) %>% 
+  rename("h = 3" = 3, "h = 9" = 4, "h = 12" = 5, "h = 24" = 6)
+
+# sarima
+setwd(here("results"))
+sarima_3_metrics <- read_csv("sarima_3_metrics.csv") %>% mutate(key = "sarima 3")
+sarima_9_metrics <- read_csv("sarima_9_metrics.csv") %>% mutate(key = "sarima 9")
+sarima_12_metrics <- read_csv("sarima_12_metrics.csv") %>% mutate(key = "sarima 12")
+sarima_24_metrics <- read_csv("sarima_24_metrics.csv") %>% mutate(key = "sarima 24")
+setwd(here())
+
+sarima <- 
+  list(sarima_3_metrics, sarima_9_metrics, sarima_12_metrics, sarima_24_metrics) %>%
+  reduce(bind_rows) %>% 
+  rename("metric" = .metric, "estimate" = .estimate) %>% 
+  select(-.estimator) %>% 
+  pivot_wider(names_from = key, values_from = estimate) %>% 
+  mutate(key = "sarima") %>% # Rename
+  relocate(key) %>% 
+  rename("h = 3" = 3, "h = 9" = 4, "h = 12" = 5, "h = 24" = 6)
+
+# var
+setwd(here("results"))
+var_3_metrics <- read_csv("var_3_metrics.csv") %>% mutate(key = "var 3")
+var_9_metrics <- read_csv("var_9_metrics.csv") %>% mutate(key = "var 9")
+var_12_metrics <- read_csv("var_12_metrics.csv") %>% mutate(key = "var 12")
+var_24_metrics <- read_csv("var_24_metrics.csv") %>% mutate(key = "var 24")
+setwd(here())
+
+var <- 
+  list(var_3_metrics, var_9_metrics, var_12_metrics, var_24_metrics) %>%
+  reduce(bind_rows) %>% 
+  rename("metric" = .metric, "estimate" = .estimate) %>% 
+  select(-.estimator) %>% 
+  pivot_wider(names_from = key, values_from = estimate) %>% 
+  mutate(key = "var") %>% # Rename
+  relocate(key) %>% 
+  rename("h = 3" = 3, "h = 9" = 4, "h = 12" = 5, "h = 24" = 6)
 ```
 
 ```{r}
-snaive %>% 
-  bind_rows(hw)
+# svm
+setwd(here("results"))
+svm_3_metrics <- read_csv("svm_3_metrics.csv") %>% mutate(key = "svm 3")
+svm_9_metrics <- read_csv("svm_9_metrics.csv") %>% mutate(key = "svm 9")
+svm_12_metrics <- read_csv("svm_12_metrics.csv") %>% mutate(key = "svm 12")
+svm_24_metrics <- read_csv("svm_24_metrics.csv") %>% mutate(key = "svm 24")
+setwd(here())
+
+svm <- 
+  list(svm_3_metrics, svm_9_metrics, svm_12_metrics, svm_24_metrics) %>%
+  reduce(bind_rows) %>% 
+  rename("metric" = .metric, "estimate" = .estimate) %>% 
+  select(-.estimator, -.config) %>% 
+  pivot_wider(names_from = key, values_from = estimate) %>% 
+  mutate(key = "svm") %>% # Rename
+  relocate(key) %>% 
+  rename("h = 3" = 3, "h = 9" = 4, "h = 12" = 5, "h = 24" = 6)
+
+# rf
+setwd(here("results"))
+rf_3_metrics <- read_csv("rf_3_metrics.csv") %>% mutate(key = "rf 3")
+rf_9_metrics <- read_csv("rf_9_metrics.csv") %>% mutate(key = "rf 9")
+rf_12_metrics <- read_csv("rf_12_metrics.csv") %>% mutate(key = "rf 12")
+rf_24_metrics <- read_csv("rf_24_metrics.csv") %>% mutate(key = "rf 24")
+setwd(here())
+
+rf <- 
+  list(rf_3_metrics, rf_9_metrics, rf_12_metrics, rf_24_metrics) %>%
+  reduce(bind_rows) %>% 
+  rename("metric" = .metric, "estimate" = .estimate) %>% 
+  select(-.estimator, -.config) %>% 
+  pivot_wider(names_from = key, values_from = estimate) %>% 
+  mutate(key = "rf") %>% # Rename
+  relocate(key) %>% 
+  rename("h = 3" = 3, "h = 9" = 4, "h = 12" = 5, "h = 24" = 6)
+
+# xgb
+setwd(here("results"))
+xgb_3_metrics <- read_csv("xgb_3_metrics.csv") %>% mutate(key = "xgb 3")
+xgb_9_metrics <- read_csv("xgb_9_metrics.csv") %>% mutate(key = "xgb 9")
+xgb_12_metrics <- read_csv("xgb_12_metrics.csv") %>% mutate(key = "xgb 12")
+xgb_24_metrics <- read_csv("xgb_24_metrics.csv") %>% mutate(key = "xgb 24")
+setwd(here())
+
+xgb <- 
+  list(xgb_3_metrics, xgb_9_metrics, xgb_12_metrics, xgb_24_metrics) %>%
+  reduce(bind_rows) %>% 
+  rename("metric" = .metric, "estimate" = .estimate) %>% 
+  select(-.estimator, -.config) %>% 
+  pivot_wider(names_from = key, values_from = estimate) %>% 
+  mutate(key = "xgb") %>% # Rename
+  relocate(key) %>% 
+  rename("h = 3" = 3, "h = 9" = 4, "h = 12" = 5, "h = 24" = 6)
+
+# mlp
+setwd(here("results"))
+mlp_3_metrics <- read_csv("mlp_3_metrics.csv") %>% mutate(key = "mlp 3")
+mlp_9_metrics <- read_csv("mlp_9_metrics.csv") %>% mutate(key = "mlp 9")
+mlp_12_metrics <- read_csv("mlp_12_metrics.csv") %>% mutate(key = "mlp 12")
+mlp_24_metrics <- read_csv("mlp_24_metrics.csv") %>% mutate(key = "mlp 24")
+setwd(here())
+
+mlp <- 
+  list(mlp_3_metrics, mlp_9_metrics, mlp_12_metrics, mlp_24_metrics) %>%
+  reduce(bind_rows) %>% 
+  rename("metric" = .metric, "estimate" = .estimate) %>% 
+  select(-.estimator, -.config) %>% 
+  pivot_wider(names_from = key, values_from = estimate) %>% 
+  mutate(key = "mlp") %>% # Rename
+  relocate(key) %>% 
+  rename("h = 3" = 3, "h = 9" = 4, "h = 12" = 5, "h = 24" = 6)
+
+# lstm
+setwd(here("results"))
+lstm_3_metrics <- read_csv("lstm_3_metrics.csv") %>% mutate(key = "lstm 3")
+lstm_9_metrics <- read_csv("lstm_9_metrics.csv") %>% mutate(key = "lstm 9")
+lstm_12_metrics <- read_csv("lstm_12_metrics.csv") %>% mutate(key = "lstm 12")
+lstm_24_metrics <- read_csv("lstm_24_metrics.csv") %>% mutate(key = "lstm 24")
+setwd(here())
+
+lstm <- 
+  list(lstm_3_metrics, lstm_9_metrics, lstm_12_metrics, lstm_24_metrics) %>%
+  reduce(bind_rows) %>% 
+  rename("metric" = .metric, "estimate" = .estimate) %>% 
+  select(-.estimator) %>% 
+  pivot_wider(names_from = key, values_from = estimate) %>% 
+  mutate(key = "lstm") %>% # Rename
+  relocate(key) %>% 
+  rename("h = 3" = 3, "h = 9" = 4, "h = 12" = 5, "h = 24" = 6)
+```
+
+```{r}
+ts_metrics <- 
+  snaive %>% 
+  bind_rows(hw, ar, sarima, var)
+
+ml_metrics <- 
+  svm %>% 
+  bind_rows(rf, xgb, mlp, lstm)
+```
+
+```{r}
+snaive_longer <- 
+  ts_metrics %>% 
+  bind_rows(ml_metrics) %>% 
+  filter(metric == "mae") %>% 
+  select(-metric) %>% 
+  pivot_longer(-key) %>% 
+  filter(key == "snaïve")
+
+models_longer <- 
+  ts_metrics %>% 
+  bind_rows(ml_metrics) %>% 
+  filter(metric == "mae") %>% 
+  select(-metric) %>% 
+  pivot_longer(-key)
+
+mae <- 
+  ts_metrics %>% 
+  bind_rows(ml_metrics) %>% 
+  filter(metric == "mae") %>% 
+  select(-metric)
+
+rmae <- 
+  models_longer %>% 
+  left_join(snaive_longer, by = "name") %>% 
+  rename("key" = key.x, "horizon" = name, "mae" = value.x, "naive" = value.y) %>% 
+  select(-key.y) %>% 
+  mutate(rmae = mae/naive) %>% 
+  select(-naive, -mae) %>% 
+  pivot_wider(names_from = horizon, values_from = rmae)
+```
+
+```{r}
+
 ```
