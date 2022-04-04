@@ -167,8 +167,39 @@ kbl(results_one,
     booktabs = T,
     align = c("lcccccccc")) %>%
   kable_classic() %>% 
-  add_header_above(c(" " = 1, "MAE" = 4, "rMAE" = 4)) %>%
+  add_header_above(c(" " = 1, "MAE" = 4, "rMAE" = 4), align = "l") %>%
   kable_styling(font_size = 9,
                 full_width = T) %>% 
   column_spec(1, width = "2cm")
+```
+
+```{=tex}
+\begin{center}
+
+\small
+
+\textbf{Cuadro 5:} MASE por modelo y horizonte de pronóstico
+
+\normalsize
+
+\end{center}
+```
+\vspace{-2.7mm}
+
+```{r include=FALSE}
+mase <- read_csv(here("results", "analysis", "final_mase.csv")) %>% 
+  mutate(across(where(is.numeric), ~ round(., 2))) %>%  
+  rename(" " = name)
+```
+
+```{r table_five, echo=FALSE}
+kbl(mase, 
+    booktabs = T,
+    align = c("lcccccccccc")) %>%
+  kable_classic() %>% 
+  add_header_above(c(" " = 1, "MASE" = 10), align = "l") %>%
+  kable_styling(font_size = 9,
+                full_width = T) %>% 
+  column_spec(1, width = "1.5cm") %>% 
+  column_spec(3, width = "1.9cm")
 ```
