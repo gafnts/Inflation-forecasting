@@ -20,7 +20,7 @@ main <- read_csv(here("data", "main.csv")) %>% select(fecha, ipc) %>% rowid_to_c
 
 ```{r include=FALSE}
 ts_forecasts <- read_csv(here("results", "analysis", "ts_24_forecasts.csv"))
-ml_forecasts <- read_csv(here("results", "analysis", "ml_forecasts.csv"))
+ml_forecasts <- read_csv(here("results", "analysis", "ml_24_forecasts.csv"))
 ```
 
 ```{r include=FALSE}
@@ -91,6 +91,48 @@ p2 <-
 p1 + p2
 ```
 
-```{r include=FALSE}
+\renewcommand{\arraystretch}{1}
 
+```{=tex}
+\begin{center}
+
+\small
+
+\textbf{Figura 3:} Ensamble de pronósticos de 24 meses hacia delante
+
+\end{center}
+```
+\vspace{-12mm}
+
+```{r include=FALSE}
+ts_mean_forecasts <- read_csv(here("results", "analysis", "ts_mean_forecasts.csv"))
+ml_mean_forecasts <- read_csv(here("results", "analysis", "ml_mean_forecasts.csv"))
+ensamble <- ts_mean_forecasts %>% bind_rows(ml_mean_forecasts %>% filter(model != "ipc"))
+```
+
+```{r fig_three, echo=FALSE, warning=FALSE, message=FALSE, fig.align = 'center', fig.dim = c(11.5, 4.2)}
+ggplot(filter(ensamble, model != "ipc"), aes(fecha, value, color = model)) +
+  geom_line(aes(fecha, value, color = model)) +
+  geom_line(data = filter(ensamble, model == "ipc"), linetype = "dashed") +
+  theme_bw() +
+  theme(
+        # X axis
+        axis.title.x = element_blank(),
+        axis.text.x = element_text(size = 12),
+        # Y axis
+        axis.title.y = element_blank(),
+        axis.text.y = element_text(size = 12),
+        # Panel
+        panel.grid = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.grid.major.x = element_blank(),
+        panel.background = element_rect(fill = "white"),
+        # Legend
+        legend.title = element_blank(),
+        legend.text = element_text(size = 11),
+        legend.position = "bottom",
+        legend.justification = "center",
+        legend.margin = margin(.5, 0, 0, 0, "cm")
+    ) + 
+    guides(colour = guide_legend(nrow = 1))
 ```
