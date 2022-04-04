@@ -28,7 +28,7 @@ p1 <-
   ggplot(filter(ts_forecasts, model != "ipc"), aes(fecha, value, color = model)) +
   geom_line(aes(fecha, value, color = model)) +
   geom_line(data = filter(ts_forecasts, model == "ipc"), linetype = "dashed") +
-  labs(title = "Modelos de series de tiempo") +
+  labs(title = "(a) Modelos de series de tiempo") +
   theme_bw() +
   theme(
         # X axis
@@ -60,7 +60,7 @@ p2 <-
   ggplot(filter(ml_forecasts, model != "ipc"), aes(fecha, value, color = model)) +
   geom_line(aes(fecha, value, color = model)) +
   geom_line(data = filter(ml_forecasts, model == "ipc"), linetype = "dashed") +
-  labs(title = "Modelos de aprendizaje estadístico") +
+  labs(title = "(b) Modelos de aprendizaje estadístico") +
   theme_bw() +
   theme(
         # X axis
@@ -91,17 +91,6 @@ p2 <-
 p1 + p2
 ```
 
-\renewcommand{\arraystretch}{1}
-
-```{=tex}
-\begin{center}
-
-\small
-
-\textbf{Figura 3:} Ensamble de pronósticos de 24 meses hacia delante
-
-\end{center}
-```
 \vspace{-12mm}
 
 ```{r include=FALSE}
@@ -110,10 +99,11 @@ ml_mean_forecasts <- read_csv(here("results", "analysis", "ml_mean_forecasts.csv
 ensamble <- ts_mean_forecasts %>% bind_rows(ml_mean_forecasts %>% filter(model != "ipc"))
 ```
 
-```{r fig_three, echo=FALSE, warning=FALSE, message=FALSE, fig.align = 'center', fig.dim = c(11.5, 4.2)}
+```{r fig_two_two, echo=FALSE, warning=FALSE, message=FALSE, fig.align = 'center', fig.dim = c(11.5, 4.2)}
 ggplot(filter(ensamble, model != "ipc"), aes(fecha, value, color = model)) +
   geom_line(aes(fecha, value, color = model)) +
   geom_line(data = filter(ensamble, model == "ipc"), linetype = "dashed") +
+  labs(title = "(c) Ensamble de modelos") +
   theme_bw() +
   theme(
         # X axis
@@ -122,6 +112,9 @@ ggplot(filter(ensamble, model != "ipc"), aes(fecha, value, color = model)) +
         # Y axis
         axis.title.y = element_blank(),
         axis.text.y = element_text(size = 12),
+        # Title
+        plot.title = element_text(hjust = 0.5, 
+                                  margin = margin(0, 0, 0.7, 0, "cm")),
         # Panel
         panel.grid = element_blank(),
         panel.grid.minor = element_blank(),
@@ -204,14 +197,57 @@ kbl(mase,
   column_spec(3, width = "1.9cm")
 ```
 
-\renewcommand{\arraystretch}{1}
+```{=tex}
+\begin{center}
+
+\small
+
+\textbf{Figura 2:} MASE por modelo y horizonte de pronóstico
+
+\end{center}
+```
+\vspace{-12mm}
+
+```{r include=FALSE}
+ranking_mase <- read_csv(here("results", "analysis", "ranking_mase.csv"))
+```
+
+```{r fig_three, echo=FALSE, warning=FALSE, message=FALSE, fig.align = 'center', fig.dim = c(11.5, 4.2)}
+ranking_mase %>% 
+  ggplot(aes(key, estimate, fill = horizon)) +
+  geom_col(position = "dodge2") +
+  theme_bw() +
+  theme(
+        # X axis
+        axis.title.x = element_blank(),
+        axis.text.x = element_text(size = 12),
+        # Y axis
+        axis.title.y = element_blank(),
+        axis.text.y = element_text(size = 12),
+        # Title
+        plot.title = element_text(hjust = 0.5, 
+                                  margin = margin(0, 0, 0.7, 0, "cm")),
+        # Panel
+        panel.grid = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.grid.major.x = element_blank(),
+        panel.background = element_rect(fill = "white"),
+        # Legend
+        legend.title = element_blank(),
+        legend.text = element_text(size = 11),
+        legend.position = "bottom",
+        legend.justification = "center",
+        legend.margin = margin(.5, 0, 0, 0, "cm")
+    ) + 
+    guides(colour = guide_legend(nrow = 1))
+```
 
 ```{=tex}
 \begin{center}
 
 \small
 
-\textbf{Figura 4:} Complejidad computacional y precisión de pronóstico
+\textbf{Figura 3:} Complejidad computacional y precisión de pronóstico
 
 \end{center}
 ```
