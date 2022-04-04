@@ -1,7 +1,7 @@
 # Analysis
 
 ```{r}
-pacman::p_load(tidyverse, kableExtra, magrittr, here, yardstick)
+pacman::p_load(tidyverse, magrittr, here, yardstick)
 main <- read_csv(here("data", "main.csv")) %>% select(fecha, ipc) %>% rowid_to_column(".row")
 ```
 
