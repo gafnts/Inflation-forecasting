@@ -2,11 +2,21 @@
 
 ```{r include=FALSE}
 pacman::p_load(tidyverse, kableExtra, magrittr, here, patchwork)
-```
-
-```{r include=FALSE}
 main <- read_csv(here("data", "main.csv")) %>% select(fecha, ipc) %>% rowid_to_column(".row")
 ```
+
+\renewcommand{\arraystretch}{1}
+
+```{=tex}
+\begin{center}
+
+\small
+
+\textbf{Figura 2:} Pronósticos de 24 meses hacia delante
+
+\end{center}
+```
+\vspace{-12mm}
 
 ```{r include=FALSE}
 setwd(here("results"))
@@ -23,22 +33,7 @@ ts_bind <-
   list(snaive, ar, sarima, hw, var) %>% 
   reduce(bind_rows) %>% 
   pivot_wider(names_from = key, values_from = .pred)
-```
 
-\renewcommand{\arraystretch}{1}
-
-```{=tex}
-\begin{center}
-
-\small
-
-\textbf{Figura 2:} Pronósticos de 24 meses hacia delante
-
-\end{center}
-```
-\vspace{-12mm}
-
-```{r fig_two, echo=FALSE, warning=FALSE, message=FALSE, fig.align = 'center', fig.dim = c(11.5, 4.7)}
 ts_forecasts <- 
   main %>% 
   left_join(ts_bind %>% mutate(.row = 181:204)) %>% 
@@ -51,6 +46,7 @@ p1 <-
   ggplot(filter(ts_forecasts, model != "ipc"), aes(fecha, value, color = model)) +
   geom_line(aes(fecha, value, color = model)) +
   geom_line(data = filter(ts_forecasts, model == "ipc"), linetype = "dashed") +
+  labs(title = "Modelos de series de tiempo") +
   theme_bw() +
   theme(
         # X axis
@@ -59,6 +55,9 @@ p1 <-
         # Y axis
         axis.title.y = element_blank(),
         axis.text.y = element_text(size = 12),
+        # Title
+        plot.title = element_text(hjust = 0.5, 
+                                  margin = margin(0, 0, 0.7, 0, "cm")),
         # Panel
         panel.grid = element_blank(),
         panel.grid.minor = element_blank(),
@@ -92,9 +91,7 @@ ml_bind <-
   select(-ipc) %>% 
   pivot_wider(names_from = key, values_from = .pred) %>% 
   bind_cols(lstm %>% select("lstm" = .pred))
-```
 
-```{r fig_three, echo=FALSE, warning=FALSE, message=FALSE, fig.align = 'center', fig.dim = c(11.5, 4.7)}
 ml_forecasts <- 
   main %>% 
   left_join(ml_bind) %>% 
@@ -107,6 +104,7 @@ p2 <-
   ggplot(filter(ml_forecasts, model != "ipc"), aes(fecha, value, color = model)) +
   geom_line(aes(fecha, value, color = model)) +
   geom_line(data = filter(ml_forecasts, model == "ipc"), linetype = "dashed") +
+  labs(title = "Modelos de aprendizaje estadístico") +
   theme_bw() +
   theme(
         # X axis
@@ -115,6 +113,9 @@ p2 <-
         # Y axis
         axis.title.y = element_blank(),
         axis.text.y = element_text(size = 12),
+        # Title
+        plot.title = element_text(hjust = 0.5, 
+                                  margin = margin(0, 0, 0.7, 0, "cm")),
         # Panel
         panel.grid = element_blank(),
         panel.grid.minor = element_blank(),
@@ -130,6 +131,10 @@ p2 <-
     guides(colour = guide_legend(nrow = 1))
 ```
 
-```{r fig, echo=FALSE, warning=FALSE, message=FALSE, fig.align = 'center', fig.dim = c(11.5, 4.7)}
+```{r fig_two, echo=FALSE, warning=FALSE, message=FALSE, fig.align = 'center', fig.dim = c(11.5, 4.7)}
 p1 + p2
+```
+
+```{r include=FALSE}
+
 ```
