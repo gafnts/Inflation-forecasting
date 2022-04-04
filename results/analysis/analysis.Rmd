@@ -146,14 +146,47 @@ ts_mean_forecasts %>% write_csv(here("results", "analysis", "ts_mean_forecasts.c
 ml_mean_forecasts %>% write_csv(here("results", "analysis", "ml_mean_forecasts.csv"))
 ```
 
+## Table two: MAE and rMAE
+
 ```{r}
-  ml_models %>% 
-  left_join(ipc) %>% 
-  group_by(model, fecha) %>% 
-  mutate(mae = mae_vec(truth = truth, estimate = estimate)) %>% 
-  ungroup() %>% 
-  select(fecha, model, estimate, mae) %>% 
-  group_by(fecha) %>% 
-  mutate(weigth = 1 - (mae / sum(mae))) %>% 
-  summarise(`Modelos de aprendizaje estadístico` = weighted.mean(estimate, weigth))
+setwd(here("results"))
+snaive_3_metrics <- read_csv("snaive_3_metrics.csv") %>% mutate(key = "snaive 3")
+snaive_9_metrics <- read_csv("snaive_9_metrics.csv") %>% mutate(key = "snaive 9")
+snaive_12_metrics <- read_csv("snaive_12_metrics.csv") %>% mutate(key = "snaive 12")
+snaive_24_metrics <- read_csv("snaive_24_metrics.csv") %>% mutate(key = "snaive 24")
+setwd(here())
+
+snaive <- 
+  list(snaive_3_metrics, snaive_9_metrics, snaive_12_metrics, snaive_24_metrics) %>%
+  reduce(bind_rows) %>% 
+  rename("metric" = .metric, "estimate" = .estimate) %>% 
+  select(-.estimator) %>% 
+  pivot_wider(names_from = key, values_from = estimate) %>% 
+  mutate(key = "snaïve") %>% # Rename
+  relocate(key) %>% 
+  rename("h = 3" = 3, "h = 9" = 4, "h = 12" = 5, "h = 24" = 6)
+```
+
+```{r}
+setwd(here("results"))
+hw_3_metrics <- read_csv("hw_3_metrics.csv") %>% mutate(key = "holt-winters 3")
+hw_9_metrics <- read_csv("hw_9_metrics.csv") %>% mutate(key = "holt-winters 9")
+hw_12_metrics <- read_csv("hw_12_metrics.csv") %>% mutate(key = "holt-winters 12")
+hw_24_metrics <- read_csv("hw_24_metrics.csv") %>% mutate(key = "holt-winters 24")
+setwd(here())
+
+hw <- 
+  list(hw_3_metrics, hw_9_metrics, hw_12_metrics, hw_24_metrics) %>%
+  reduce(bind_rows) %>% 
+  rename("metric" = .metric, "estimate" = .estimate) %>% 
+  select(-.estimator) %>% 
+  pivot_wider(names_from = key, values_from = estimate) %>% 
+  mutate(key = "holt-winters") %>% # Rename
+  relocate(key) %>% 
+  rename("h = 3" = 3, "h = 9" = 4, "h = 12" = 5, "h = 24" = 6)
+```
+
+```{r}
+snaive %>% 
+  bind_rows(hw)
 ```
