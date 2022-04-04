@@ -146,7 +146,7 @@ ts_mean_forecasts %>% write_csv(here("results", "analysis", "ts_mean_forecasts.c
 ml_mean_forecasts %>% write_csv(here("results", "analysis", "ml_mean_forecasts.csv"))
 ```
 
-## Table two: MAE and rMAE
+## Table four: MAE and rMAE
 
 ```{r}
 # snaïve
@@ -377,4 +377,16 @@ rmae <-
 ```{r}
 mae %>% write_csv(here("results", "analysis", "final_mae.csv"))
 rmae %>% write_csv(here("results", "analysis", "final_rmae.csv"))
+```
+
+## Table five: MASE
+
+```{r}
+ts_metrics %>% 
+  bind_rows(ml_metrics) %>% 
+  filter(metric == "mase") %>% 
+  select(-metric) %>% 
+  pivot_longer(-key) %>% 
+  pivot_wider(names_from = key, values_from = value) %>% 
+  write_csv(here("results", "analysis", "final_mase.csv"))
 ```
