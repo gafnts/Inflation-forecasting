@@ -214,8 +214,9 @@ ranking_mase <- read_csv(here("results", "analysis", "ranking_mase.csv"))
 
 ```{r fig_three, echo=FALSE, warning=FALSE, message=FALSE, fig.align = 'center', fig.dim = c(11.5, 4.2)}
 ranking_mase %>% 
-  ggplot(aes(key, estimate, fill = horizon)) +
+  ggplot(aes(fct_inorder(key, id), estimate, fill = horizon)) +
   geom_col(position = "dodge2") +
+  scale_fill_discrete(limits = c("h = 3", "h = 9", "h = 12", "h = 24")) +
   theme_bw() +
   theme(
         # X axis

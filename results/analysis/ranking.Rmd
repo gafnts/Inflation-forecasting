@@ -49,7 +49,9 @@ mase <-
   snaive %>% 
   bind_rows(hw, ar, sarima, var, svm, rf, xgb, mlp, lstm) %>% 
   select(-.config) %>% 
-  mutate(horizon = as_factor(paste("h = ", as.character(horizon), sep = "")))
+  mutate(horizon = as_factor(paste("h = ", as.character(horizon), sep = "")),
+         key = as_factor(key),
+         id = rep(1:10, each = 4))
 ```
 
 ```{r}
