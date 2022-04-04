@@ -4,3 +4,111 @@
 pacman::p_load(tidyverse, kableExtra, magrittr, here, yardstick)
 main <- read_csv(here("data", "main.csv")) %>% select(fecha, ipc) %>% rowid_to_column(".row")
 ```
+
+### Metrics
+
+```{r}
+metrics_import <- function(pattern, key) {
+  key <- enquo(key)
+  
+  data <- 
+    dir(pattern = pattern) %>% 
+    map(read_csv) %>% 
+    reduce(bind_rows) %>% 
+    filter(.metric == "mae") %>% 
+    summarise(mae = mean(.estimate)) %>% 
+    dplyr::mutate(key = !!key) %>% 
+    relocate(key)
+  
+  return(data)
+}
+```
+
+```{r}
+setwd(here("results"))
+snaive <- metrics_import(pattern = "^snaive.*metrics.csv", key = "snaive")
+hw <- metrics_import(pattern = "^hw.*metrics.csv", key = "hw")
+ar <- metrics_import(pattern = "^ar.*metrics.csv", key = "ar")
+sarima <- metrics_import(pattern = "^sarima.*metrics.csv", key = "sarima")
+var <- metrics_import(pattern = "^var.*metrics.csv", key = "var")
+setwd(here())
+```
+
+```{r}
+setwd(here("results"))
+svm <- metrics_import(pattern = "^svm.*metrics.csv", key = "svm")
+rf <- metrics_import(pattern = "^rf.*metrics.csv", key = "rf")
+xgb <- metrics_import(pattern = "xgb.*metrics.csv", key = "xgb")
+mlp <- metrics_import(pattern = "^mlp.*metrics.csv", key = "mlp")
+lstm <- metrics_import(pattern = "^lstm.*metrics.csv", key = "lstm")
+setwd(here())
+```
+
+```{r}
+mae <- snaive %>% bind_rows(hw, ar, sarima, var, svm, rf, xgb, mlp, lstm)
+```
+
+### Time
+
+```{r}
+time_import <- function(pattern, key) {
+  key <- enquo(key)
+  
+  data <- 
+    dir(pattern = pattern) %>% 
+    map(read_csv) %>% 
+    reduce(bind_rows) %>% 
+    mutate(time = parse_number(value)) %>% 
+    summarise(time = mean(time)) %>% 
+    dplyr::mutate(key = !!key) %>% 
+    relocate(key)
+  
+  return(data)
+}
+```
+
+```{r}
+setwd(here("results"))
+snaive <- time_import(pattern = "^snaive.*time.csv", key = "snaive")
+hw <- time_import(pattern = "^hw.*time.csv", key = "hw")
+ar <- time_import(pattern = "^ar.*time.csv", key = "ar")
+sarima <- time_import(pattern = "^sarima.*time.csv", key = "sarima")
+var <- time_import(pattern = "^var.*time.csv", key = "var")
+setwd(here())
+```
+
+```{r}
+setwd(here("results"))
+svm <- time_import(pattern = "^svm.*time.csv", key = "svm")
+rf <- time_import(pattern = "^rf.*time.csv", key = "rf")
+xgb <- time_import(pattern = "xgb.*time.csv", key = "xgb")
+mlp <- time_import(pattern = "^mlp.*time.csv", key = "mlp")
+lstm <- time_import(pattern = "^lstm.*time.csv", key = "lstm")
+setwd(here())
+```
+
+```{r}
+time <- snaive %>% bind_rows(hw, ar, sarima, var, svm, rf, xgb, mlp, lstm)
+```
+
+```{r}
+time %<>% mutate(cc = time / 0.0272)
+```
+
+### Plot
+
+```{r}
+cc <- 
+  mae %>% 
+  left_join(time, key = key) %>% 
+  write_csv(here("results", "analysis", "cc.csv"))
+```
+
+```{r}
+cc %>% 
+  ggplot(aes(cc, mae, label = key)) +
+  geom_point() +
+  geom_text(hjust = 0, vjust = 0) +
+  scale_x_continuous(trans = "log") +
+  geom_smooth(method = "lm", se = FALSE)
+```
