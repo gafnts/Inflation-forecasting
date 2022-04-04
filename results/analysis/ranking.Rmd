@@ -1,0 +1,63 @@
+# Ranking by MASE
+
+```{r}
+pacman::p_load(tidyverse, magrittr, here, yardstick)
+main <- read_csv(here("data", "main.csv")) %>% select(fecha, ipc) %>% rowid_to_column(".row")
+```
+
+```{r}
+metrics_import <- function(pattern, key) {
+  key <- enquo(key)
+  
+  data <- 
+    dir(pattern = pattern) %>% 
+    map(read_csv) %>% 
+    reduce(bind_rows) %>% 
+    filter(.metric == "mase") %>% 
+    dplyr::mutate(horizon = c(12, 24, 3, 9), key = !!key) %>% 
+    relocate(key, horizon) %>% 
+    select(-.estimator, -.metric) %>% 
+    rename("estimate" = .estimate) %>% 
+    arrange(horizon)
+  
+  return(data)
+}
+```
+
+```{r}
+setwd(here("results"))
+snaive <- metrics_import(pattern = "^snaive.*metrics.csv", key = "snaive")
+hw <- metrics_import(pattern = "^hw.*metrics.csv", key = "hw")
+ar <- metrics_import(pattern = "^ar.*metrics.csv", key = "ar")
+sarima <- metrics_import(pattern = "^sarima.*metrics.csv", key = "sarima")
+var <- metrics_import(pattern = "^var.*metrics.csv", key = "var")
+setwd(here())
+```
+
+```{r}
+setwd(here("results"))
+svm <- metrics_import(pattern = "^svm.*metrics.csv", key = "svm")
+rf <- metrics_import(pattern = "^rf.*metrics.csv", key = "rf")
+xgb <- metrics_import(pattern = "xgb.*metrics.csv", key = "xgb")
+mlp <- metrics_import(pattern = "^mlp.*metrics.csv", key = "mlp")
+lstm <- metrics_import(pattern = "^lstm.*metrics.csv", key = "lstm")
+setwd(here())
+```
+
+```{r}
+mase <- 
+  snaive %>% 
+  bind_rows(hw, ar, sarima, var, svm, rf, xgb, mlp, lstm) %>% 
+  select(-.config) %>% 
+  mutate(horizon = as_factor(paste("h = ", as.character(horizon), sep = "")))
+```
+
+```{r}
+mase %>% write_csv(here("results", "analysis", "ranking_mase.csv"))
+```
+
+```{r}
+mase %>% 
+  ggplot(aes(key, estimate, fill = horizon)) +
+  geom_col(position = "dodge2")
+```
