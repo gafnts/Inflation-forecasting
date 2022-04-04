@@ -19,29 +19,11 @@ main <- read_csv(here("data", "main.csv")) %>% select(fecha, ipc) %>% rowid_to_c
 \vspace{-12mm}
 
 ```{r include=FALSE}
-setwd(here("results"))
-snaive <- read_csv("snaive_24_forecast.csv")
-ar <- read_csv("ar_24_forecast.csv")
-sarima <- read_csv("sarima_24_forecast.csv")
-hw <- read_csv("hw_24_forecast.csv") %>% mutate(key = "holt-winters")
-var <- read_csv("var_24_forecast.csv") 
-setwd(here())
+ts_forecasts <- read_csv(here("results", "analysis", "ts_24_forecasts.csv"))
+ml_forecasts <- read_csv(here("results", "analysis", "ml_forecasts.csv"))
 ```
 
 ```{r include=FALSE}
-ts_bind <- 
-  list(snaive, ar, sarima, hw, var) %>% 
-  reduce(bind_rows) %>% 
-  pivot_wider(names_from = key, values_from = .pred)
-
-ts_forecasts <- 
-  main %>% 
-  left_join(ts_bind %>% mutate(.row = 181:204)) %>% 
-  select(-.row) %>% 
-  filter(between(fecha, as.Date("2019-01-01"), as.Date("2021-12-01"))) %>% 
-  pivot_longer(!fecha, names_to = "model", values_to = "value") %>% 
-  arrange(model, fecha)
-
 p1 <- 
   ggplot(filter(ts_forecasts, model != "ipc"), aes(fecha, value, color = model)) +
   geom_line(aes(fecha, value, color = model)) +
@@ -74,32 +56,6 @@ p1 <-
 ```
 
 ```{r include=FALSE}
-setwd(here("results"))
-# knn <- read_csv("knn_24_forecast.csv") %>% mutate(key = "knn")
-lstm <- read_csv("lstm_24_forecast.csv") %>% mutate(key = "lstm")
-mlp <- read_csv("mlp_24_forecast.csv") %>% mutate(key = "mlp")
-rf <- read_csv("rf_24_forecast.csv") %>% mutate(key = "rf")
-svm <- read_csv("svm_24_forecast.csv") %>% mutate(key = "svm")
-xgb <- read_csv("xgb_24_forecast.csv") %>% mutate(key = "xgb")
-setwd(here())
-```
-
-```{r include=FALSE}
-ml_bind <- 
-  list(mlp, rf, svm, xgb) %>% 
-  reduce(bind_rows) %>% 
-  select(-ipc) %>% 
-  pivot_wider(names_from = key, values_from = .pred) %>% 
-  bind_cols(lstm %>% select("lstm" = .pred))
-
-ml_forecasts <- 
-  main %>% 
-  left_join(ml_bind) %>% 
-  select(-.row) %>% 
-  filter(between(fecha, as.Date("2019-01-01"), as.Date("2021-12-01"))) %>% 
-  pivot_longer(!fecha, names_to = "model", values_to = "value") %>% 
-  arrange(model, fecha)
-
 p2 <- 
   ggplot(filter(ml_forecasts, model != "ipc"), aes(fecha, value, color = model)) +
   geom_line(aes(fecha, value, color = model)) +
