@@ -375,5 +375,6 @@ rmae <-
 ```
 
 ```{r}
-
+mae %>% write_csv(here("results", "analysis", "final_mae.csv"))
+rmae %>% write_csv(here("results", "analysis", "final_rmae.csv"))
 ```
