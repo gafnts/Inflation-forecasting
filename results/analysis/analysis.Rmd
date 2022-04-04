@@ -1,7 +1,7 @@
 # Analysis
 
 ```{r}
-pacman::p_load(tidyverse, kableExtra, magrittr, here, patchwork)
+pacman::p_load(tidyverse, kableExtra, magrittr, here, yardstick)
 main <- read_csv(here("data", "main.csv")) %>% select(fecha, ipc) %>% rowid_to_column(".row")
 ```
 
@@ -66,11 +66,94 @@ ml_forecasts <-
 
 ```{r}
 ts_forecasts %>% write_csv(here("results", "analysis", "ts_24_forecasts.csv"))
-ml_forecasts %>% write_csv(here("results", "analysis", "ml_forecasts.csv"))
+ml_forecasts %>% write_csv(here("results", "analysis", "ml_24_forecasts.csv"))
 ```
 
-## Weighted average forecasts
+## Weighted mean forecasts
+
+### Time series
 
 ```{r}
+ipc <- 
+  ts_forecasts %>% 
+  drop_na() %>% 
+  filter(model == "ipc" & between(fecha, as.Date("2020-01-01"), as.Date("2021-12-01"))) %>% 
+  rename("ipc" = model, "truth" = value)
 
+ts_models <- 
+  ts_forecasts %>% 
+  drop_na() %>% 
+  filter(model != "ipc") %>% 
+  rename("estimate" = value)
+
+ts_ensamble <- 
+  ts_models %>% 
+  left_join(ipc) %>% 
+  group_by(model, fecha) %>% 
+  mutate(mae = mae_vec(truth = truth, estimate = estimate)) %>% 
+  ungroup() %>% 
+  select(fecha, model, estimate, mae) %>% 
+  group_by(fecha) %>% 
+  mutate(weigth = 1 - (mae / sum(mae))) %>% 
+  summarise(`Modelos de series de tiempo` = weighted.mean(estimate, weigth))
+
+ts_mean_forecasts <- 
+  main %>% 
+  left_join(ts_ensamble) %>% 
+  select(-.row) %>% 
+  filter(between(fecha, as.Date("2018-01-01"), as.Date("2021-12-01"))) %>% 
+  pivot_longer(!fecha, names_to = "model", values_to = "value") %>% 
+  arrange(model, fecha)
+```
+
+### Machine learning
+
+```{r}
+ipc <- 
+  ml_forecasts %>% 
+  drop_na() %>% 
+  filter(model == "ipc" & between(fecha, as.Date("2020-01-01"), as.Date("2021-12-01"))) %>% 
+  rename("ipc" = model, "truth" = value)
+
+ml_models <- 
+  ml_forecasts %>% 
+  drop_na() %>% 
+  filter(model != "ipc") %>% 
+  rename("estimate" = value)
+
+ml_ensamble <- 
+  ml_models %>% 
+  left_join(ipc) %>% 
+  group_by(model, fecha) %>% 
+  mutate(mae = mae_vec(truth = truth, estimate = estimate)) %>% 
+  ungroup() %>% 
+  select(fecha, model, estimate, mae) %>% 
+  group_by(fecha) %>% 
+  mutate(weigth = 1 - (mae / sum(mae))) %>% 
+  summarise(`Modelos de aprendizaje estadístico` = weighted.mean(estimate, weigth))
+
+ml_mean_forecasts <- 
+  main %>% 
+  left_join(ml_ensamble) %>% 
+  select(-.row) %>% 
+  filter(between(fecha, as.Date("2018-01-01"), as.Date("2021-12-01"))) %>% 
+  pivot_longer(!fecha, names_to = "model", values_to = "value") %>% 
+  arrange(model, fecha)
+```
+
+```{r}
+ts_mean_forecasts %>% write_csv(here("results", "analysis", "ts_mean_forecasts.csv"))
+ml_mean_forecasts %>% write_csv(here("results", "analysis", "ml_mean_forecasts.csv"))
+```
+
+```{r}
+  ml_models %>% 
+  left_join(ipc) %>% 
+  group_by(model, fecha) %>% 
+  mutate(mae = mae_vec(truth = truth, estimate = estimate)) %>% 
+  ungroup() %>% 
+  select(fecha, model, estimate, mae) %>% 
+  group_by(fecha) %>% 
+  mutate(weigth = 1 - (mae / sum(mae))) %>% 
+  summarise(`Modelos de aprendizaje estadístico` = weighted.mean(estimate, weigth))
 ```
