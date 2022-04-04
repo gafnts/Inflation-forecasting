@@ -69,7 +69,7 @@ ts_forecasts %>% write_csv(here("results", "analysis", "ts_24_forecasts.csv"))
 ml_forecasts %>% write_csv(here("results", "analysis", "ml_24_forecasts.csv"))
 ```
 
-## Weighted mean forecasts
+## Weighted mean forecast
 
 ### Time series
 
@@ -238,6 +238,24 @@ var <-
   mutate(key = "var") %>% # Rename
   relocate(key) %>% 
   rename("h = 3" = 3, "h = 9" = 4, "h = 12" = 5, "h = 24" = 6)
+
+# ensamble
+setwd(here("results"))
+ts_3_metrics <- read_csv("ts_3_metrics.csv") %>% mutate(key = "ts 3")
+ts_9_metrics <- read_csv("ts_9_metrics.csv") %>% mutate(key = "ts 9")
+ts_12_metrics <- read_csv("ts_12_metrics.csv") %>% mutate(key = "ts 12")
+ts_24_metrics <- read_csv("ts_24_metrics.csv") %>% mutate(key = "ts 24")
+setwd(here())
+
+ts_ensemble <- 
+  list(ts_3_metrics, ts_9_metrics, ts_12_metrics, ts_24_metrics) %>%
+  reduce(bind_rows) %>% 
+  rename("metric" = .metric, "estimate" = .estimate) %>% 
+  select(-.estimator) %>% 
+  pivot_wider(names_from = key, values_from = estimate) %>% 
+  mutate(key = "ensemble (ts)") %>% # Rename
+  relocate(key) %>% 
+  rename("h = 3" = 3, "h = 9" = 4, "h = 12" = 5, "h = 24" = 6)
 ```
 
 ```{r}
@@ -330,16 +348,34 @@ lstm <-
   mutate(key = "lstm") %>% # Rename
   relocate(key) %>% 
   rename("h = 3" = 3, "h = 9" = 4, "h = 12" = 5, "h = 24" = 6)
+
+# ensemble
+setwd(here("results"))
+ml_3_metrics <- read_csv("ml_3_metrics.csv") %>% mutate(key = "ml 3")
+ml_9_metrics <- read_csv("ml_9_metrics.csv") %>% mutate(key = "ml 9")
+ml_12_metrics <- read_csv("ml_12_metrics.csv") %>% mutate(key = "ml 12")
+ml_24_metrics <- read_csv("ml_24_metrics.csv") %>% mutate(key = "ml 24")
+setwd(here())
+
+ml_ensemble <- 
+  list(ml_3_metrics, ml_9_metrics, ml_12_metrics, ml_24_metrics) %>%
+  reduce(bind_rows) %>% 
+  rename("metric" = .metric, "estimate" = .estimate) %>% 
+  select(-.estimator) %>% 
+  pivot_wider(names_from = key, values_from = estimate) %>% 
+  mutate(key = "ensemble (ml)") %>% # Rename
+  relocate(key) %>% 
+  rename("h = 3" = 3, "h = 9" = 4, "h = 12" = 5, "h = 24" = 6)
 ```
 
 ```{r}
 ts_metrics <- 
   snaive %>% 
-  bind_rows(hw, ar, sarima, var)
+  bind_rows(hw, ar, sarima, var, ts_ensemble)
 
 ml_metrics <- 
   svm %>% 
-  bind_rows(rf, xgb, mlp, lstm)
+  bind_rows(rf, xgb, mlp, lstm, ml_ensemble)
 ```
 
 ```{r}
