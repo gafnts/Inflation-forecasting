@@ -152,7 +152,8 @@ results_one <-
   mae %>% 
   left_join(rmae) %>% 
   mutate(across(where(is.numeric), ~ round(., 2))) %>% 
-  rename(" " = 1)
+  rename(" " = 1) %>% 
+  filter(` ` != "(ts & ml) ensemble")
 ```
 
 ```{r table_four, echo=FALSE}
