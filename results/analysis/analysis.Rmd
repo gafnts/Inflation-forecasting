@@ -253,7 +253,7 @@ ts_ensemble <-
   rename("metric" = .metric, "estimate" = .estimate) %>% 
   select(-.estimator) %>% 
   pivot_wider(names_from = key, values_from = estimate) %>% 
-  mutate(key = "ensemble (ts)") %>% # Rename
+  mutate(key = "(ts) ensemble") %>% # Rename
   relocate(key) %>% 
   rename("h = 3" = 3, "h = 9" = 4, "h = 12" = 5, "h = 24" = 6)
 ```
@@ -363,7 +363,7 @@ ml_ensemble <-
   rename("metric" = .metric, "estimate" = .estimate) %>% 
   select(-.estimator) %>% 
   pivot_wider(names_from = key, values_from = estimate) %>% 
-  mutate(key = "ensemble (ml)") %>% # Rename
+  mutate(key = "(ml) ensemble") %>% # Rename
   relocate(key) %>% 
   rename("h = 3" = 3, "h = 9" = 4, "h = 12" = 5, "h = 24" = 6)
 ```
