@@ -5,7 +5,92 @@ pacman::p_load(tidyverse, kableExtra, magrittr, here, patchwork)
 main <- read_csv(here("data", "main.csv")) %>% select(fecha, ipc) %>% rowid_to_column(".row")
 ```
 
-\renewcommand{\arraystretch}{1}
+Esta investigación compara la precisión de pronóstico durante 4 horizontes temporales entre métodos econométricos comúnmente utilizados y una variedad de alternativas basadas en algoritmos de aprendizaje estadístico. Como ha sido mencionado anteriormente, un modelo de caminata aleatoria estacional es empleado como línea base para comparar a estos métodos.
+
+Phasellus ante mauris, condimentum et elementum non, fringilla at arcu. Cras at lacus a enim auctor blandit sit amet id tortor. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia curae; Cras enim ante, cursus sed elementum et, lacinia a ipsum. Nullam eu sodales risus, sit amet iaculis urna. Cras ac metus id ex faucibus tincidunt quis quis risus. Quisque pulvinar erat accumsan metus aliquet, nec malesuada leo tempus.
+
+```{=tex}
+\begin{center}
+
+\small
+
+\textbf{Cuadro 4:} MAE y rMAE para cada horizonte de pronóstico y modelo
+
+\normalsize
+
+\end{center}
+```
+\vspace{-2.7mm}
+
+```{r include=FALSE}
+mae <- read_csv(here("results", "analysis", "final_mae.csv"))
+rmae <- read_csv(here("results", "analysis", "final_rmae.csv")) %>% 
+  rename("h = 3 " = 2, "h = 9 " = 3, "h = 12 " = 4, "h = 24 " = 5)
+
+results_one <- 
+  mae %>% 
+  left_join(rmae) %>% 
+  mutate(across(where(is.numeric), ~ round(., 2)),
+         key = str_remove_all(key, "[()]")) %>% 
+  rename(" " = 1) %>% 
+  filter(` ` != "ts & ml ensemble")
+```
+
+```{r table_four, echo=FALSE}
+kbl(results_one, 
+    booktabs = T,
+    align = c("lcccccccc")) %>%
+  kable_styling(font_size = 9,
+                full_width = T) %>% 
+  add_header_above(c(" " = 1, "MAE" = 4, "rMAE" = 4), align = "l") %>%
+  column_spec(1, width = "2.9cm") %>% 
+  group_rows(start_row = 1, 
+             end_row = 6, 
+             latex_align = "l",
+             latex_gap_space = "-0.25cm") %>% 
+  row_spec(6, bold = TRUE) %>% 
+  group_rows(start_row = 7, 
+             end_row = 12, 
+             latex_align = "l",
+             latex_gap_space = "-0.10cm") %>% 
+  row_spec(12, bold = TRUE)
+```
+
+```{=tex}
+\begin{center}
+
+\small
+
+\textbf{Cuadro 5:} MASE por modelo y horizonte de pronóstico
+
+\normalsize
+
+\end{center}
+```
+\vspace{-3.5mm}
+
+```{r include=FALSE}
+mase <- read_csv(here("results", "analysis", "final_mase.csv")) %>% 
+  mutate(across(where(is.numeric), ~ round(., 2))) %>%  
+  rename(" " = name)
+```
+
+```{r table_five, echo=FALSE}
+kbl(mase, 
+    booktabs = T,
+    align = c("lcccccccccc")) %>%
+  kable_classic() %>% 
+  add_header_above(c(" " = 1, "MASE" = 10), align = "l") %>%
+  kable_styling(font_size = 9,
+                full_width = T,
+                latex_options = "hold_position") %>% 
+  column_spec(1, width = "1.5cm") %>% 
+  column_spec(3, width = "1.9cm")
+```
+
+Proin sit amet justo ipsum. Mauris id pellentesque nibh. Quisque pulvinar erat accumsan metus aliquet, nec malesuada leo tempus. Sed sed elit sit amet lacus posuere vulputate eu et augue. Fusce eros ante, malesuada a augue in, faucibus mattis enim. Vivamus nec leo vel nisl placerat maximus. Proin velit libero, molestie vel nisi ut, laoreet varius velit. Nunc pulvinar lacinia enim, et tristique justo ultrices quis. Aenean lacus ligula, posuere ut ultricies quis, euismod eget arcu. Donec eu rutrum mi. Mauris sed sapien mauris. Nunc sed risus in risus maximus interdum. Sed placerat nisi feugiat quam iaculis placerat. Proin interdum justo in urna interdum sollicitudin. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia curae;
+
+Praesent vel congue lorem. Pellentesque dapibus, leo vel aliquam consequat, arcu risus fringilla nunc, tincidunt dignissim lectus sem vitae velit. Pellentesque consectetur ante leo, non posuere ligula luctus at. Etiam eu pretium orci. Ut finibus accumsan odio at laoreet. Vivamus sit amet ex vel elit tempus malesuada. In nec tempus arcu, et bibendum nibh. Nullam bibendum neque eget magna tempus tincidunt eget vitae massa. Nam ornare sem at magna laoreet pellentesque. Nunc eu tellus vitae massa posuere auctor ullamcorper sed nunc. Nulla sed massa id nunc tempor dignissim. Cras at nunc pharetra, luctus risus ac, rhoncus lorem. Ut sagittis sit amet dolor finibus euismod. Morbi sollicitudin purus in nibh mollis posuere sit amet non arcu. Vestibulum vehicula diam odio, luctus porttitor nunc aliquam eget. Pellentesque at eros efficitur, venenatis mi sit amet, fringilla augue.
 
 ```{=tex}
 \begin{center}
@@ -16,7 +101,7 @@ main <- read_csv(here("data", "main.csv")) %>% select(fecha, ipc) %>% rowid_to_c
 
 \end{center}
 ```
-\vspace{-12mm}
+\vspace{-8mm}
 
 ```{r include=FALSE}
 ts_forecasts <- read_csv(here("results", "analysis", "ts_24_forecasts.csv"))
@@ -91,7 +176,7 @@ p2 <-
 p1 + p2
 ```
 
-\vspace{-12mm}
+\vspace{-11mm}
 
 ```{r include=FALSE}
 ts_mean_forecasts <- read_csv(here("results", "analysis", "ts_mean_forecasts.csv"))
@@ -103,7 +188,7 @@ ensamble <- ts_mean_forecasts %>% bind_rows(ml_mean_forecasts %>% filter(model !
 ggplot(filter(ensamble, model != "ipc"), aes(fecha, value, color = model)) +
   geom_line(aes(fecha, value, color = model)) +
   geom_line(data = filter(ensamble, model == "ipc"), linetype = "dashed") +
-  labs(title = "(c) Ensamble de modelos") +
+  labs(title = "(c) Ensambles de modelos") +
   theme_bw() +
   theme(
         # X axis
@@ -135,88 +220,11 @@ ggplot(filter(ensamble, model != "ipc"), aes(fecha, value, color = model)) +
 
 \small
 
-\textbf{Cuadro 4:} MAE y rMAE por modelo y horizonte de pronóstico
-
-\normalsize
-
-\end{center}
-```
-\vspace{-2.7mm}
-
-```{r include=FALSE}
-mae <- read_csv(here("results", "analysis", "final_mae.csv"))
-rmae <- read_csv(here("results", "analysis", "final_rmae.csv")) %>% 
-  rename("h = 3 " = 2, "h = 9 " = 3, "h = 12 " = 4, "h = 24 " = 5)
-
-results_one <- 
-  mae %>% 
-  left_join(rmae) %>% 
-  mutate(across(where(is.numeric), ~ round(., 2))) %>% 
-  rename(" " = 1) %>% 
-  filter(` ` != "(ts & ml) ensemble")
-```
-
-```{r table_four, echo=FALSE}
-kbl(results_one, 
-    booktabs = T,
-    align = c("lcccccccc")) %>%
-  kable_styling(font_size = 9,
-                full_width = T) %>% 
-  add_header_above(c(" " = 1, "MAE" = 4, "rMAE" = 4), align = "l") %>%
-  column_spec(1, width = "2.9cm") %>% 
-  group_rows(start_row = 1, 
-             end_row = 6, 
-             latex_align = "l",
-             latex_gap_space = "-0.25cm") %>% 
-  row_spec(6, bold = TRUE) %>% 
-  group_rows(start_row = 7, 
-             end_row = 12, 
-             latex_align = "l",
-             latex_gap_space = "-0.10cm") %>% 
-  row_spec(12, bold = TRUE)
-```
-
-```{=tex}
-\begin{center}
-
-\small
-
-\textbf{Cuadro 5:} MASE por modelo y horizonte de pronóstico
-
-\normalsize
-
-\end{center}
-```
-\vspace{-2.7mm}
-
-```{r include=FALSE}
-mase <- read_csv(here("results", "analysis", "final_mase.csv")) %>% 
-  mutate(across(where(is.numeric), ~ round(., 2))) %>%  
-  rename(" " = name)
-```
-
-```{r table_five, echo=FALSE}
-kbl(mase, 
-    booktabs = T,
-    align = c("lcccccccccc")) %>%
-  kable_classic() %>% 
-  add_header_above(c(" " = 1, "MASE" = 10), align = "l") %>%
-  kable_styling(font_size = 9,
-                full_width = T) %>% 
-  column_spec(1, width = "1.5cm") %>% 
-  column_spec(3, width = "1.9cm")
-```
-
-```{=tex}
-\begin{center}
-
-\small
-
 \textbf{Figura 3:} MASE por modelo y horizonte de pronóstico
 
 \end{center}
 ```
-\vspace{-12mm}
+\vspace{-9mm}
 
 ```{r include=FALSE}
 ranking_mase <- read_csv(here("results", "analysis", "ranking_mase.csv")) %>% 
@@ -251,21 +259,25 @@ ranking_mase %>%
         legend.position = "bottom",
         legend.justification = "center",
         legend.spacing.x = unit(.5, "cm"),
-        legend.margin = margin(.5, 0, 0, 0, "cm")
+        legend.margin = margin(.3, 0, 0, 0, "cm")
     ) + 
     guides(colour = guide_legend(nrow = 1))
 ```
+
+Praesent ultrices sapien sit amet augue efficitur rhoncus. Donec laoreet accumsan leo eget ultricies. Quisque risus nisl, volutpat eu est et, maximus pharetra nibh. Donec feugiat eros imperdiet ligula venenatis finibus. Suspendisse potenti. Quisque pretium elit et tempor rutrum. Curabitur porttitor interdum laoreet. Nam tempor aliquam mauris quis tempor. Etiam volutpat tortor vitae dolor gravida, id ornare augue gravida. Nunc dui dui, sagittis malesuada tempor placerat, hendrerit ut mauris. Donec at turpis vitae sapien convallis semper vel at massa. Donec tristique venenatis sem, nec mollis elit finibus ac. Integer at lorem nibh. In vitae libero eu felis porttitor efficitur.
+
+Phasellus ante mauris, condimentum et elementum non, fringilla at arcu. Cras at lacus a enim auctor blandit sit amet id tortor. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia curae; Cras enim ante, cursus sed elementum et, lacinia a ipsum. Nullam eu sodales risus, sit amet iaculis urna. Cras ac metus id ex faucibus tincidunt quis quis risus. Ut rhoncus, odio vitae blandit consequat, nulla arcu ultricies risus, quis rhoncus diam arcu quis leo. Nullam id egestas libero. Pellentesque vitae convallis enim. Quisque aliquet, metus ac malesuada vestibulum, lectus leo fermentum lacus, quis ultrices velit erat quis justo. Duis consectetur felis vehicula nisi dignissim, eget sodales lectus dapibus. Donec erat dolor, volutpat et suscipit vitae, accumsan sed justo.
 
 ```{=tex}
 \begin{center}
 
 \small
 
-\textbf{Figura 4:} Complejidad computacional y precisión de pronóstico
+\textbf{Figura 4:} Relación entre precisión de pronóstico y complejidad computacional
 
 \end{center}
 ```
-\vspace{-12mm}
+\vspace{-9mm}
 
 ```{r include=FALSE}
 cc <- read_csv(here("results", "analysis", "cc.csv"))
