@@ -4,7 +4,7 @@ bibliography: references.bib
 
 # Revisión de la literatura
 
-Algunos autores afirman que la literatura dedicada a la comparación de pronósticos entre modelos econométricos y de aprendizaje de máquina es relativamente reciente. Por ejemplo, @rodríguez-vargas2020 observa que, si bien desde inicios de los años noventas ha habido diferentes estudios en los que variables como tasas de inflación y tipos de cambio son pronosticadas utilizando k-NN y redes neuronales, en ningún momento estos autores se enfocaron en producir evaluaciones de las propiedades de sus predicciones de manera sistemática.
+Algunos autores afirman que la literatura dedicada a la comparación de pronósticos entre modelos econométricos y de aprendizaje de máquina es relativamente reciente. Por ejemplo, @rodríguez-vargas2020 observa que, si bien desde inicios de los años noventas ha habido diferentes estudios en los que variables como tasas de inflación y tipos de cambio son pronosticadas utilizando k vecinos más cercanos (k-NN) y redes neuronales artificiales (ANN), en ningún momento estos autores se enfocaron en producir evaluaciones de las propiedades de sus predicciones de manera sistemática.
 
 No obstante, un análisis más detenido permite apreciar que ya desde esa década diversos estudios evalúan los resultados de pronósticos generados con redes neuronales artificiales al contrastarlos con las predicciones obtenidas por medio de modelos autorregresivos integrados de medias móviles y modelos de suavizamiento exponencial para series de tiempo en ámbitos micro y macroeconómicos.
 
