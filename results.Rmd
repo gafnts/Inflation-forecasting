@@ -33,10 +33,10 @@ p1 <-
   theme(
         # X axis
         axis.title.x = element_blank(),
-        axis.text.x = element_text(size = 12),
+        axis.text.x = element_text(size = 12, color = "black"),
         # Y axis
         axis.title.y = element_blank(),
-        axis.text.y = element_text(size = 12),
+        axis.text.y = element_text(size = 12, color = "black"),
         # Title
         plot.title = element_text(hjust = 0.5, 
                                   margin = margin(0, 0, 0.7, 0, "cm")),
@@ -44,7 +44,7 @@ p1 <-
         panel.grid = element_blank(),
         panel.grid.minor = element_blank(),
         panel.grid.major.x = element_blank(),
-        panel.background = element_rect(fill = "white"),
+        panel.background = element_rect(fill = "white", color = "black"),
         # Legend
         legend.title = element_blank(),
         legend.text = element_text(size = 11),
@@ -65,10 +65,10 @@ p2 <-
   theme(
         # X axis
         axis.title.x = element_blank(),
-        axis.text.x = element_text(size = 12),
+        axis.text.x = element_text(size = 12, color = "black"),
         # Y axis
         axis.title.y = element_blank(),
-        axis.text.y = element_text(size = 12),
+        axis.text.y = element_text(size = 12, color = "black"),
         # Title
         plot.title = element_text(hjust = 0.5, 
                                   margin = margin(0, 0, 0.7, 0, "cm")),
@@ -76,7 +76,7 @@ p2 <-
         panel.grid = element_blank(),
         panel.grid.minor = element_blank(),
         panel.grid.major.x = element_blank(),
-        panel.background = element_rect(fill = "white"),
+        panel.background = element_rect(fill = "white", color = "black"),
         # Legend
         legend.title = element_blank(),
         legend.text = element_text(size = 11),
@@ -108,10 +108,10 @@ ggplot(filter(ensamble, model != "ipc"), aes(fecha, value, color = model)) +
   theme(
         # X axis
         axis.title.x = element_blank(),
-        axis.text.x = element_text(size = 12),
+        axis.text.x = element_text(size = 12, color = "black"),
         # Y axis
         axis.title.y = element_blank(),
-        axis.text.y = element_text(size = 12),
+        axis.text.y = element_text(size = 12, color = "black"),
         # Title
         plot.title = element_text(hjust = 0.5, 
                                   margin = margin(0, 0, 0.7, 0, "cm")),
@@ -119,7 +119,7 @@ ggplot(filter(ensamble, model != "ipc"), aes(fecha, value, color = model)) +
         panel.grid = element_blank(),
         panel.grid.minor = element_blank(),
         panel.grid.major.x = element_blank(),
-        panel.background = element_rect(fill = "white"),
+        panel.background = element_rect(fill = "white", color = "black"),
         # Legend
         legend.title = element_blank(),
         legend.text = element_text(size = 11),
@@ -218,22 +218,24 @@ kbl(mase,
 \vspace{-12mm}
 
 ```{r include=FALSE}
-ranking_mase <- read_csv(here("results", "analysis", "ranking_mase.csv"))
+ranking_mase <- read_csv(here("results", "analysis", "ranking_mase.csv")) %>% 
+  mutate(horid = rep(1:4, times = 10))
 ```
 
-```{r fig_three, echo=FALSE, warning=FALSE, message=FALSE, fig.align = 'center', fig.dim = c(11.5, 4.2)}
+```{r fig_three, echo=FALSE, warning=FALSE, message=FALSE, fig.align = 'center', fig.dim = c(11.5, 4.5)}
 ranking_mase %>% 
-  ggplot(aes(fct_inorder(key, id), estimate, fill = horizon)) +
+  ggplot(aes(fct_inorder(key, id), estimate, fill = fct_inorder(horizon, horid))) +
   geom_col(position = "dodge2") +
-  scale_fill_discrete(limits = c("h = 3", "h = 9", "h = 12", "h = 24")) +
+  scale_fill_discrete(limits = c("h = 3", "h = 9", "h = 12", "h = 24")) + 
+  scale_fill_grey() +
   theme_bw() +
   theme(
         # X axis
         axis.title.x = element_blank(),
-        axis.text.x = element_text(size = 12),
+        axis.text.x = element_text(size = 12, color = "black"),
         # Y axis
         axis.title.y = element_blank(),
-        axis.text.y = element_text(size = 12),
+        axis.text.y = element_text(size = 12, color = "black"),
         # Title
         plot.title = element_text(hjust = 0.5, 
                                   margin = margin(0, 0, 0.7, 0, "cm")),
@@ -241,12 +243,13 @@ ranking_mase %>%
         panel.grid = element_blank(),
         panel.grid.minor = element_blank(),
         panel.grid.major.x = element_blank(),
-        panel.background = element_rect(fill = "white"),
+        panel.background = element_rect(fill = "white", color = "black"),
         # Legend
         legend.title = element_blank(),
         legend.text = element_text(size = 11),
         legend.position = "bottom",
         legend.justification = "center",
+        legend.spacing.x = unit(.5, "cm"),
         legend.margin = margin(.5, 0, 0, 0, "cm")
     ) + 
     guides(colour = guide_legend(nrow = 1))
@@ -267,27 +270,31 @@ ranking_mase %>%
 cc <- read_csv(here("results", "analysis", "cc.csv"))
 ```
 
-```{r fig_four, echo=FALSE, warning=FALSE, message=FALSE, fig.align = 'center', fig.dim = c(11.5, 4.2)}
+```{r fig_four, echo=FALSE, warning=FALSE, message=FALSE, fig.align = 'center', fig.dim = c(11.5, 4.5)}
+x_breaks = 10^pretty(log10(cc$cc))
+
 cc %>% 
   ggplot(aes(cc, mae, label = key)) +
   geom_smooth(method = "lm", colour = "black", fill = "gray80") +
   geom_label() +
-  scale_x_continuous(trans = "log") +
+  scale_x_continuous(trans = "log",
+                     label = scales::comma,
+                     breaks = x_breaks) +
   ylim(0, 2.5) +
   labs(x = "Complejidad computacional", y = "MAE") +
   theme_bw() +
   theme(
         # X axis
         axis.title.x = element_text(margin = margin(15, 0, 0, 0)),
-        axis.text.x = element_text(size = 12),
+        axis.text.x = element_text(size = 12, color = "black"),
         # Y axis
         axis.title.y = element_text(margin = margin(0, 15, 0, 0)),
-        axis.text.y = element_text(size = 12),
+        axis.text.y = element_text(size = 12, color = "black"),
         # Panel
         panel.grid = element_blank(),
         panel.grid.minor = element_blank(),
         panel.grid.major.x = element_blank(),
-        panel.background = element_rect(fill = "white")
+        panel.background = element_rect(fill = "white", color = "black")
     ) + 
     guides(colour = guide_legend(nrow = 1))
 ```
