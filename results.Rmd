@@ -159,11 +159,20 @@ results_one <-
 kbl(results_one, 
     booktabs = T,
     align = c("lcccccccc")) %>%
-  kable_classic() %>% 
-  add_header_above(c(" " = 1, "MAE" = 4, "rMAE" = 4), align = "l") %>%
   kable_styling(font_size = 9,
                 full_width = T) %>% 
-  column_spec(1, width = "2cm")
+  add_header_above(c(" " = 1, "MAE" = 4, "rMAE" = 4), align = "l") %>%
+  column_spec(1, width = "2.9cm") %>% 
+  group_rows(start_row = 1, 
+             end_row = 6, 
+             latex_align = "l",
+             latex_gap_space = "-0.25cm") %>% 
+  row_spec(6, bold = TRUE) %>% 
+  group_rows(start_row = 7, 
+             end_row = 12, 
+             latex_align = "l",
+             latex_gap_space = "-0.10cm") %>% 
+  row_spec(12, bold = TRUE)
 ```
 
 ```{=tex}
@@ -202,7 +211,7 @@ kbl(mase,
 
 \small
 
-\textbf{Figura 2:} MASE por modelo y horizonte de pronóstico
+\textbf{Figura 3:} MASE por modelo y horizonte de pronóstico
 
 \end{center}
 ```
@@ -248,7 +257,7 @@ ranking_mase %>%
 
 \small
 
-\textbf{Figura 3:} Complejidad computacional y precisión de pronóstico
+\textbf{Figura 4:} Complejidad computacional y precisión de pronóstico
 
 \end{center}
 ```

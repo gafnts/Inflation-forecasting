@@ -40,7 +40,7 @@ forecast_import_ml <- function(pattern, key) {
   key <- enquo(key)
   
   data <- 
-    dir(pattern = "^svm.*forecast.csv") %>% 
+    dir(pattern = pattern) %>% 
     map_dfr(read_csv) %>% 
     mutate(id = c(rep(12, 12), rep(24, 24), rep(3, 3), rep(9, 9)),
            key = !!key) %>% 
@@ -57,7 +57,15 @@ svm <- forecast_import_ml(pattern = "^svm.*forecast.csv", key = "svm")
 rf <- forecast_import_ml(pattern = "^rf.*forecast.csv", key = "rf")
 xgb <- forecast_import_ml(pattern = "xgb.*forecast.csv", key = "xgb")
 mlp <- forecast_import_ml(pattern = "^mlp.*forecast.csv", key = "mlp")
-lstm <- forecast_import_ml(pattern = "^lstm.*forecast.csv", key = "lstm")
+lstm <- 
+  dir(pattern = "^lstm.*forecast.csv") %>% 
+  map_dfr(read_csv) %>% 
+  mutate(id = c(rep(12, 12), rep(24, 24), rep(3, 3), rep(9, 9)),
+         key = "lstm") %>% 
+  rename("pred" = .pred) %>% 
+  select(key, id, pred) %>% 
+  mutate(row = c(193:204, 181:204, 202:204, 196:204))
+
 setwd(here())
 ```
 
@@ -78,7 +86,7 @@ weighted_ensemble <- function(data, horizon) {
     mutate(row = rep(1:horizon))
   
   models <- 
-    ts %>% 
+    data %>% 
     filter(id == horizon) %>% 
     group_by(key) %>% 
     mutate(row = rep(1:horizon)) %>% 
