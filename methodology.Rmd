@@ -11,7 +11,7 @@ main <- read_csv(here("data", "main.csv"))
 
 ## Análisis de datos
 
-Con el objeto de pronosticar la tasa de variación interanual del índice de precios al consumidor en Guatemala, la especificación de los regresores ha sido propuesta a partir de un procedimiento en el que a 36 series de tiempo---seleccionadas considerando el canal de demanda agregada, el canal de tipo de cambio y las variables del sector externo del mecanismo de transmisión de política monetaria [@castillo2014]---les son aplicadas pruebas de causalidad de Wiener-Granger respecto a la variable objetivo para cada uno de los rezagos de mediano plazo y en el que, posteriormente, son filtradas tomando en cuenta (a) la cantidad de retardos que causan en el sentido de Granger al ritmo inflacionario y (b) la magnitud en el nivel de significancia del estadístico $F$ de los *tests* previamente mencionados.
+Con el objeto de pronosticar la tasa de variación interanual del índice de precios al consumidor en Guatemala, la especificación de los regresores ha sido propuesta a partir de un procedimiento en el que a 36 series de tiempo---seleccionadas considerando el canal de demanda agregada, el canal de tipo de cambio y las variables del sector externo del mecanismo de transmisión de política monetaria [@castillo2014, p. 332]---les son aplicadas pruebas de causalidad de Wiener-Granger respecto a la variable objetivo para cada uno de los rezagos de mediano plazo y en el que, posteriormente, son filtradas tomando en cuenta (a) la cantidad de retardos que causan en el sentido de Granger al ritmo inflacionario y (b) la magnitud en el nivel de significancia del estadístico $F$ de los *tests* previamente mencionados.
 
 El cuadro 1 muestra a las 13 variables cuyos valores pasados son los más útiles, dado el vector inicial de posibles predictores, para pronosticar los valores futuros de la variación en el nivel de precios de la economía. Los datos corresponden al periodo que abarca de enero del 2005 a diciembre del 2021.
 
@@ -393,7 +393,7 @@ Además, los resultados de la prueba de raíz unitaria evidencian que la tasa de
 
 ### Modelos de aprendizaje de máquina
 
-## Validación de modelos
+## Validación de modelos y calibración de hiperparámetros
 
 La validación empírica de los modelos es una preocupación constante en la literatura de *machine learning*. Tal y como observan @kuhn2022, debido a que la implementación de estos métodos conlleva una serie de pasos (estimación de parámetros, calibración de hiperparámetros, selección del modelo, evaluación de su desempeño) y, al mismo tiempo, una muestra finita de observaciones, es una práctica común y recomendada dividir al conjunto de datos existente en un subconjunto de observaciones de entrenamiento (el cual es utilizado para optimizar al modelo) y un subconjunto de datos de evaluación (que se mantiene en reserva hasta que el método que tiene más probabilidades de éxito sea finalmente escogido).
 
