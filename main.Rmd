@@ -31,7 +31,7 @@ Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque nibh ex, mollis
 
 \normalsize
 
-\textit{Palabras clave:} Machine learning, deep learning, series de tiempo, pronósticos, inflación
+\textit{Palabras clave:} Machine learning, series de tiempo, pronósticos, inflación
 
 \textit{Clasificación JEL:} E31, C22, C45, C53
 
