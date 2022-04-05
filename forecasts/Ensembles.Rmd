@@ -73,6 +73,7 @@ setwd(here())
 ipc <- main %>% select(ipc)
 ts <- snaive %>% bind_rows(hw, ar, sarima, var)
 ml <- svm %>% bind_rows(rf, xgb, mlp, lstm)
+ts_ml <- ts %>% bind_rows(ml)
 ```
 
 ## Weighted ensemble function
@@ -124,4 +125,11 @@ ml %>% weighted_ensemble(3) %>% write_csv(here("results", "ml_3_metrics.csv"))
 ml %>% weighted_ensemble(9) %>% write_csv(here("results", "ml_9_metrics.csv"))
 ml %>% weighted_ensemble(12) %>% write_csv(here("results", "ml_12_metrics.csv"))
 ml %>% weighted_ensemble(24) %>% write_csv(here("results", "ml_24_metrics.csv"))
+```
+
+```{r}
+ts_ml %>% weighted_ensemble(3) %>% write_csv(here("results", "ts_ml_3_metrics.csv"))
+ts_ml %>% weighted_ensemble(9) %>% write_csv(here("results", "ts_ml_9_metrics.csv"))
+ts_ml %>% weighted_ensemble(12) %>% write_csv(here("results", "ts_ml_12_metrics.csv"))
+ts_ml %>% weighted_ensemble(24) %>% write_csv(here("results", "ts_ml_24_metrics.csv"))
 ```
