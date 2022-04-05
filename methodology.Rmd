@@ -102,15 +102,15 @@ fig1 %>%
   theme(
         # X axis
         axis.title.x = element_blank(),
-        axis.text.x = element_text(size = 12),
+        axis.text.x = element_text(size = 12, color = "black"),
         # Y axis
         axis.title.y = element_blank(),
-        axis.text.y = element_text(size = 12),
+        axis.text.y = element_text(size = 12, color = "black"),
         # Panel
         panel.grid = element_blank(),
         panel.grid.minor = element_blank(),
         panel.grid.major.x = element_blank(),
-        panel.background = element_rect(fill = "white"),
+        panel.background = element_rect(fill = "white", color = "black"),
         # Legend
         legend.title = element_blank(),
         legend.text = element_text(size = 11),
