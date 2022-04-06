@@ -165,7 +165,7 @@ fevd(model, n.ahead = lag) %>% plot()
 
 ```{r}
 par(mar = rep(2,4))
-prediction <- predict(model, n.ahead = 24, ci = 0.95)[[1]]$ipc
+prediction <- predict(model, n.ahead = 24, ci = 0.95) #[[1]]$ipc
 prediction %>% fanchart()
 ```
 
