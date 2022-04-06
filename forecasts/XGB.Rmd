@@ -46,6 +46,7 @@ xg_boost <-
         cumulative = TRUE
       )
     
+    set.seed(123)
     grid <-
       grid_latin_hypercube(
         tree_depth(),
@@ -61,7 +62,7 @@ xg_boost <-
     
     doParallel::registerDoParallel()
     
-    set.seed(123)
+    set.seed(234)
     tune <- 
       tune_grid(
         workflow,
@@ -203,6 +204,7 @@ resamples %>%
 ```
 
 ```{r}
+set.seed(123)
 grid <- 
   grid_latin_hypercube(
     tree_depth(),
@@ -211,7 +213,7 @@ grid <-
     sample_size = sample_prop(),
     finalize(mtry(), train),
     learn_rate(),
-    size = 15
+    size = 100
 )
 ```
 
@@ -222,7 +224,7 @@ metrics <- metric_set(mae, mase)
 
 tic("XGBoost")
 
-set.seed(123)
+set.seed(234)
 tune <- tune_grid(
   workflow,
   resamples = resamples,
