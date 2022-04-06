@@ -5,9 +5,9 @@ pacman::p_load(tidyverse, kableExtra, magrittr, here, patchwork, ggforce)
 main <- read_csv(here("data", "main.csv")) %>% select(fecha, ipc) %>% rowid_to_column(".row")
 ```
 
-Esta investigación compara la precisión de pronóstico durante 4 horizontes temporales entre métodos econométricos comúnmente utilizados y una variedad de alternativas basadas en algoritmos de aprendizaje estadístico. Como ha sido mencionado anteriormente, un modelo de caminata aleatoria estacional es empleado como línea base para comparar a estos métodos.
+Esta investigación compara la precisión en los pronósticos durante 4 horizontes temporales entre métodos econométricos comúnmente utilizados y diversas alternativas de modelos de aprendizaje estadístico. Como ha sido mencionado anteriormente, un modelo de caminata aleatoria estacional es empleado como línea base con la que el resto de los métodos son evaluados.
 
-Phasellus ante mauris, condimentum et elementum non, fringilla at arcu. Cras at lacus a enim auctor blandit sit amet id tortor. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia curae; Cras enim ante, cursus sed elementum et, lacinia a ipsum. Nullam eu sodales risus, sit amet iaculis urna. Cras ac metus id ex faucibus tincidunt quis quis risus. Quisque pulvinar erat accumsan metus aliquet, nec malesuada leo tempus.
+El cuadro 4 muestra los resultados por modelo y horizonte de pronóstico en términos del error absoluto medio (MAE) y el error absoluto medio relativo (rMAE). En principio, es posible apreciar que todos los métodos se desempeñan mejor de lo que lo hace el modelo de referencia. Sin embargo, ciertamente existe heterogeneidad en cuanto a la forma en la que cada método se comporta durante la predicción de la variable objetivo en los distintos intervalos de tiempo.
 
 ```{=tex}
 \begin{center}
