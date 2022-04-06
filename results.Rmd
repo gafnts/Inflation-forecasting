@@ -1,7 +1,7 @@
 # Resultados
 
 ```{r include=FALSE}
-pacman::p_load(tidyverse, kableExtra, magrittr, here, patchwork)
+pacman::p_load(tidyverse, kableExtra, magrittr, here, patchwork, ggforce)
 main <- read_csv(here("data", "main.csv")) %>% select(fecha, ipc) %>% rowid_to_column(".row")
 ```
 
@@ -228,7 +228,11 @@ ggplot(filter(ensamble, model != "ipc"), aes(fecha, value, color = model)) +
 
 ```{r include=FALSE}
 ranking_mase <- read_csv(here("results", "analysis", "ranking_mase.csv")) %>% 
-  mutate(horid = rep(1:4, times = 10))
+  mutate(horid = rep(1:4, times = 10),
+         key = case_when(
+           key == "snaive" ~ "snaïve", 
+           TRUE ~ key
+         ))
 ```
 
 ```{r fig_three, echo=FALSE, warning=FALSE, message=FALSE, fig.align = 'center', fig.dim = c(11.5, 4.5)}
@@ -280,7 +284,16 @@ Phasellus ante mauris, condimentum et elementum non, fringilla at arcu. Cras at 
 \vspace{-9mm}
 
 ```{r include=FALSE}
-cc <- read_csv(here("results", "analysis", "cc.csv"))
+cc <- 
+  read_csv(here("results", "analysis", "cc.csv")) %>% 
+  mutate(id = case_when(
+    key == "snaive" ~ 1, key == "hw" ~ 1,
+    key == "ar" ~ 1, key == "var" ~ 1,
+    TRUE ~ 2
+  ),
+  id = as_factor(id),
+  key = case_when(key == "snaive" ~ "snaïve",
+                  TRUE ~ key))
 ```
 
 ```{r fig_four, echo=FALSE, warning=FALSE, message=FALSE, fig.align = 'center', fig.dim = c(11.5, 4.5)}
@@ -289,6 +302,7 @@ x_breaks = 10^pretty(log10(cc$cc))
 cc %>% 
   ggplot(aes(cc, mae, label = key)) +
   geom_smooth(method = "lm", colour = "black", fill = "gray80") +
+  #geom_mark_ellipse(aes(fill = id, label = NULL), expand = unit(7, "mm")) + 
   geom_label() +
   scale_x_continuous(trans = "log",
                      label = scales::comma,
@@ -301,13 +315,15 @@ cc %>%
         axis.title.x = element_text(margin = margin(15, 0, 0, 0)),
         axis.text.x = element_text(size = 12, color = "black"),
         # Y axis
-        axis.title.y = element_text(margin = margin(0, 15, 0, 0)),
+        axis.title.y = element_text(margin = margin(0, 15, 0, 0), angle = 0, vjust = 0.5),
         axis.text.y = element_text(size = 12, color = "black"),
         # Panel
         panel.grid = element_blank(),
         panel.grid.minor = element_blank(),
         panel.grid.major.x = element_blank(),
-        panel.background = element_rect(fill = "white", color = "black")
+        panel.background = element_rect(fill = "white", color = "black"),
+        # Legend
+        legend.position = "none"
     ) + 
     guides(colour = guide_legend(nrow = 1))
 ```
