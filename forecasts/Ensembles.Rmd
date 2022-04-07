@@ -133,3 +133,49 @@ ts_ml %>% weighted_ensemble(9) %>% write_csv(here("results", "ts_ml_9_metrics.cs
 ts_ml %>% weighted_ensemble(12) %>% write_csv(here("results", "ts_ml_12_metrics.csv"))
 ts_ml %>% weighted_ensemble(24) %>% write_csv(here("results", "ts_ml_24_metrics.csv"))
 ```
+
+## Simple average forecast
+
+```{r}
+simple_ensemble <- function(data, horizon) {
+
+  inf <- 
+    ipc %>% 
+    tail(horizon) %>% 
+    mutate(row = rep(1:horizon))
+  
+  models <- 
+    data %>% 
+    filter(id == horizon) %>% 
+    group_by(key) %>% 
+    mutate(row = rep(1:horizon)) %>% 
+    ungroup()
+  
+  forecast <- 
+    models %>% 
+    left_join(inf) %>% 
+    group_by(key, row) %>% 
+    mutate(mae = mae_vec(truth = ipc, estimate = pred)) %>% 
+    ungroup() %>% 
+    select(row, key, pred, ipc, mae) %>% 
+    group_by(row) %>% 
+    summarise(pred = mean(pred))
+  
+  metrics <- 
+    forecast %>% 
+    left_join(inf) %>% 
+    mae(ipc, pred)
+  
+  return(metrics)
+}
+```
+
+```{r}
+ts %>% simple_ensemble(24)
+ts %>% weighted_ensemble(24)
+```
+
+```{r}
+ml %>% simple_ensemble(24)
+ml %>% weighted_ensemble(24)
+```
