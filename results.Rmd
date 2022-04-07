@@ -1,3 +1,7 @@
+---
+bibliography: references.bib
+---
+
 # Resultados
 
 ```{r include=FALSE}
@@ -58,11 +62,157 @@ kbl(results_one,
 
 \vspace{5mm}
 
-En lo que respecta a los métodos de series de tiempo, los modelos univariables de suavizamiento exponencial con estacionalidad aditiva y autorregresivo de segundo orden tienen un desempeño similar a lo largo de todos los horizontes temporales, aunque el modelo autorregresivo es más eficiente en cada uno de ellos. Mientras tanto, el modelo SARIMA y el modelo VAR---cuya especificación utiliza únicamente tres variables: las tasas de variación interanual del IPC y del IMAE, así como la segunda diferencia del medio circulante, cada una de ellas rezagada por 24 periodos---son los métodos que, en general, cuentan con la eficiencia más alta durante los pronósticos de 3 meses hacia delante. De hecho, el excelente desempeño del modelo SARIMA se extiende hasta el horizonte temporal de 12 periodos.
+En lo que respecta a los métodos de series de tiempo, el modelo de suavizamiento exponencial con estacionalidad aditiva y el modelo autorregresivo de segundo orden tienen un desempeño similar a lo largo de todos los horizontes temporales, aunque el modelo autorregresivo es más eficiente en cada uno de ellos. Mientras tanto, el modelo SARIMA y el modelo VAR---cuya especificación utiliza únicamente tres variables: las tasas de variación interanual del IPC y del IMAE, así como la segunda diferencia del medio circulante, cada una de ellas rezagada por 24 periodos---son los métodos que, en general, cuentan con la eficiencia más alta durante los pronósticos de 3 meses hacia delante. De hecho, el excelente desempeño del modelo SARIMA se extiende hasta el horizonte temporal de 12 periodos.
 
-Por otro lado, los pronósticos de la regresión de vectores de soporte (SVM) superan en todos los horizontes a los de los modelos *Holt-Winters* y AR, mas no a los de SARIMA (a los que únicamente supera durante su predicción de 24 meses hacia delante) ni a los del modelo de vectores autorregresivos. Una situación similar ocurre con los modelos de bosques aleatorios (RF) y de potenciación de gradiente extremo (XGB), quienes, en la categoría de métodos de aprendizaje automático, presentan la mayor eficiencia de pronóstico---siendo RF el modelo con el mejor desempeño. Es importante mencionar que ambos modelos son extremadamente eficientes en lo que respecta a los horizontes temporales de 12 y, principalmente, 24 meses.
+Por otro lado, los pronósticos de la regresión de vectores de soporte (SVM) superan en todos los horizontes a los de los modelos *Holt-Winters* y AR, mas no a los de SARIMA (a los que únicamente supera durante su predicción de 24 meses hacia delante) ni a los del modelo de vectores autorregresivos. Una situación similar ocurre con los modelos de bosques aleatorios (RF) y de potenciación de gradiente extremo (XGB), los que, en la categoría de métodos de aprendizaje automático, presentan la mayor eficiencia de pronóstico---siendo RF el modelo con el mejor desempeño. Es importante mencionar que ambos modelos son extremadamente eficientes en lo que respecta a los horizontes temporales de 12 y, principalmente, 24 meses.
 
-Los dos modelos de redes neuronales (el perceptrón multicapa y la red neuronal recurrente con arquitectura de larga memoria de corto plazo, la cual, a diferencia del resto de modelos de aprendizaje estadístico en este estudio, utiliza como predictor únicamente el ritmo inflacionario rezagado por 35 periodos) son los modelos de *machine learning* con la menor eficiencia en sus pronósticos en términos del error absoluto medio. Si bien ambos modelos superan consistentemente a los modelos econométricos más simples (*Holt-Winters* y AR), lo mismo no sucede al contrastar sus resultados con los de los modelos SARIMA y VAR, o con los del resto de modelos de aprendizaje de máquina. Sin embargo, al considerar los horizontes de 12 y 24 meses, las redes neuronales superan a algunas de las predicciones del resto de sus contrapartes.
+Los dos modelos de redes neuronales (el perceptrón multicapa y la red neuronal recurrente con arquitectura de larga memoria de corto plazo, la cual, a diferencia del resto de modelos de aprendizaje estadístico en este estudio, utiliza como predictor únicamente el ritmo inflacionario rezagado por 35 periodos) son los modelos de *machine learning* con la menor eficiencia en sus pronósticos en términos del error absoluto medio. Si bien ambos modelos superan consistentemente a los métodos econométricos más simples (*Holt-Winters* y AR), lo mismo no sucede al contrastar sus resultados con los de los modelos SARIMA y VAR, o con los del resto de modelos de aprendizaje de máquina. Sin embargo, al considerar únicamente los horizontes de 12 y 24 meses, las redes neuronales superan en algunos casos al resto de sus contrapartes.
+
+El cuadro 4 también presenta los resultados de una combinación de pronósticos por cada método, mientras que la figura 3 muestra las series de tiempo de ambas combinaciones durante la predicción de 24 meses hacia delante. Estos ensambles se realizan a través de una media ponderada en la que el peso relativo de los ponderadores está dado por:
+
+\vspace{-3mm}
+
+$$
+w_i = 1 - \frac{MAE_i}{\sum_{i=1}^H MAE},
+$$
+
+donde $MAE_i$ es el error absoluto medio del pronóstico $i$ y $H$ representa al horizonte de pronóstico en consideración. De esta forma, $w_i$ pondera con un mayor peso a las predicciones de modelos específicos que tienen un menor MAE. Este método de combinación de pronósticos es considerado como una técnica dinámica cuya ventaja principal es abstraer mayor complejidad estadística en comparación a estimar un vector constante de ponderación y aplicarlo durante todo el horizonte de pronóstico [@wang2018, p. 2, 3].
+
+En uno de los estudios seminales en la literatura de combinación de pronósticos, @bates1969 mencionan que dado a que diferentes métodos utilizan distintos supuestos acerca de la forma en la que las variables se relacionan, combinaciones de los resultados de distintos modelos pueden mejorar la precisión en sus predicciones, aunque no es necesariamente el caso que tal resultado pueda obtenerse siempre. En esta investigación, la combinación de los pronósticos de modelos econométricos genera---al compararla con el resto de modelos de la misma categoría---predicciones más eficientes en los horizontes temporales de 12 y 24 meses. Mientras que, al combinar los pronósticos de los modelos de aprendizaje automático lo mismo solo ocurre para el periodo de 12 meses.
+
+```{=tex}
+\begin{center}
+
+\small
+
+\textbf{Figura 2:} Pronósticos de 24 meses hacia delante
+
+\end{center}
+```
+\vspace{-8mm}
+
+```{r include=FALSE}
+ts_forecasts <- read_csv(here("results", "analysis", "ts_24_forecasts.csv"))
+ml_forecasts <- read_csv(here("results", "analysis", "ml_24_forecasts.csv"))
+```
+
+```{r include=FALSE}
+p1 <- 
+  ggplot(filter(ts_forecasts, model != "ipc"), aes(fecha, value, color = model)) +
+  geom_line(aes(fecha, value, color = model)) +
+  geom_line(data = filter(ts_forecasts, model == "ipc"), linetype = "dashed") +
+  labs(title = "Modelos de series de tiempo") +
+  theme_bw() +
+  theme(
+        # X axis
+        axis.title.x = element_blank(),
+        axis.text.x = element_text(size = 12, color = "black"),
+        # Y axis
+        axis.title.y = element_blank(),
+        axis.text.y = element_text(size = 12, color = "black"),
+        # Title
+        plot.title = element_text(hjust = 0.5, 
+                                  margin = margin(0, 0, 0.7, 0, "cm")),
+        # Panel
+        panel.grid = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.grid.major.x = element_blank(),
+        panel.background = element_rect(fill = "white", color = "black"),
+        # Legend
+        legend.title = element_blank(),
+        legend.text = element_text(size = 11),
+        legend.position = "bottom",
+        legend.justification = "center",
+        legend.margin = margin(.5, 0, 0, 0, "cm")
+    ) + 
+    guides(colour = guide_legend(nrow = 1))
+```
+
+```{r include=FALSE}
+p2 <- 
+  ggplot(filter(ml_forecasts, model != "ipc"), aes(fecha, value, color = model)) +
+  geom_line(aes(fecha, value, color = model)) +
+  geom_line(data = filter(ml_forecasts, model == "ipc"), linetype = "dashed") +
+  labs(title = "Modelos de aprendizaje estadístico") +
+  theme_bw() +
+  theme(
+        # X axis
+        axis.title.x = element_blank(),
+        axis.text.x = element_text(size = 12, color = "black"),
+        # Y axis
+        axis.title.y = element_blank(),
+        axis.text.y = element_text(size = 12, color = "black"),
+        # Title
+        plot.title = element_text(hjust = 0.5, 
+                                  margin = margin(0, 0, 0.7, 0, "cm")),
+        # Panel
+        panel.grid = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.grid.major.x = element_blank(),
+        panel.background = element_rect(fill = "white", color = "black"),
+        # Legend
+        legend.title = element_blank(),
+        legend.text = element_text(size = 11),
+        legend.position = "bottom",
+        legend.justification = "center",
+        legend.margin = margin(.5, 0, 0, 0, "cm")
+    ) + 
+    guides(colour = guide_legend(nrow = 1))
+```
+
+```{r fig_two, echo=FALSE, warning=FALSE, message=FALSE, fig.align = 'center', fig.dim = c(11.5, 4.7)}
+p1 + p2
+```
+
+```{=tex}
+\begin{center}
+
+\small
+
+\textbf{Figura 3:} Combinación de pronósticos por tipo método
+
+\end{center}
+```
+\vspace{-9mm}
+
+```{r include=FALSE}
+ts_mean_forecasts <- read_csv(here("results", "analysis", "ts_mean_forecasts.csv"))
+ml_mean_forecasts <- read_csv(here("results", "analysis", "ml_mean_forecasts.csv"))
+ensamble <- ts_mean_forecasts %>% bind_rows(ml_mean_forecasts %>% filter(model != "ipc"))
+```
+
+```{r fig_three, echo=FALSE, warning=FALSE, message=FALSE, fig.align = 'center', fig.dim = c(11.5, 4.7)}
+ggplot(filter(ensamble, model != "ipc"), aes(fecha, value, color = model)) +
+  geom_line(aes(fecha, value, color = model)) +
+  geom_line(data = filter(ensamble, model == "ipc"), linetype = "dashed") +
+  theme_bw() +
+  theme(
+        # X axis
+        axis.title.x = element_blank(),
+        axis.text.x = element_text(size = 12, color = "black"),
+        # Y axis
+        axis.title.y = element_blank(),
+        axis.text.y = element_text(size = 12, color = "black"),
+        # Title
+        plot.title = element_blank(),
+        # Panel
+        panel.grid = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.grid.major.x = element_blank(),
+        panel.background = element_rect(fill = "white", color = "black"),
+        # Legend
+        legend.title = element_blank(),
+        legend.text = element_text(size = 11),
+        legend.position = "bottom",
+        legend.justification = "center",
+        legend.margin = margin(.5, 0, 0, 0, "cm")
+    ) + 
+    guides(colour = guide_legend(nrow = 1))
+```
+
+Phasellus ante mauris, condimentum et elementum non, fringilla at arcu. Cras at lacus a enim auctor blandit sit amet id tortor. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia curae; Cras enim ante, cursus sed elementum et, lacinia a ipsum. Nullam eu sodales risus, sit amet iaculis urna. Cras ac metus id ex faucibus tincidunt quis quis risus. Ut rhoncus, odio vitae blandit consequat, nulla arcu ultricies risus, quis rhoncus diam arcu quis leo. Nullam id egestas libero. Pellentesque vitae convallis enim. Quisque aliquet, metus ac malesuada vestibulum, lectus leo fermentum lacus, quis ultrices velit erat quis justo. Duis consectetur felis vehicula nisi dignissim, eget sodales lectus dapibus. Donec erat dolor, volutpat et suscipit vitae, accumsan sed justo.
+
+Phasellus ante mauris, condimentum et elementum non, fringilla at arcu. Cras at lacus a enim auctor blandit sit amet id tortor. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia curae; Cras enim ante, cursus sed elementum et, lacinia a ipsum. Nullam eu sodales risus, sit amet iaculis urna. Cras ac metus id ex faucibus tincidunt quis quis risus. Ut rhoncus, odio vitae blandit consequat, nulla arcu ultricies risus, quis rhoncus diam arcu quis leo. Nullam id egestas libero. Pellentesque vitae convallis enim. Quisque aliquet, metus ac malesuada vestibulum, lectus leo fermentum lacus, quis ultrices velit erat quis justo. Duis consectetur felis vehicula nisi dignissim, eget sodales lectus dapibus. Donec erat dolor, volutpat et suscipit vitae, accumsan sed justo. Nunc dui dui, sagittis malesuada tempor placerat, hendrerit ut mauris. Donec at turpis vitae sapien convallis semper vel at massa. Donec tristique venenatis sem, nec mollis elit finibus ac. Integer at lorem nibh. In vitae libero eu felis porttitor efficitur.
 
 ```{=tex}
 \begin{center}
@@ -101,130 +251,7 @@ kbl(mase,
 
 \small
 
-\textbf{Figura 2:} Pronósticos de 24 meses hacia delante
-
-\end{center}
-```
-\vspace{-8mm}
-
-```{r include=FALSE}
-ts_forecasts <- read_csv(here("results", "analysis", "ts_24_forecasts.csv"))
-ml_forecasts <- read_csv(here("results", "analysis", "ml_24_forecasts.csv"))
-```
-
-```{r include=FALSE}
-p1 <- 
-  ggplot(filter(ts_forecasts, model != "ipc"), aes(fecha, value, color = model)) +
-  geom_line(aes(fecha, value, color = model)) +
-  geom_line(data = filter(ts_forecasts, model == "ipc"), linetype = "dashed") +
-  labs(title = "(a) Modelos de series de tiempo") +
-  theme_bw() +
-  theme(
-        # X axis
-        axis.title.x = element_blank(),
-        axis.text.x = element_text(size = 12, color = "black"),
-        # Y axis
-        axis.title.y = element_blank(),
-        axis.text.y = element_text(size = 12, color = "black"),
-        # Title
-        plot.title = element_text(hjust = 0.5, 
-                                  margin = margin(0, 0, 0.7, 0, "cm")),
-        # Panel
-        panel.grid = element_blank(),
-        panel.grid.minor = element_blank(),
-        panel.grid.major.x = element_blank(),
-        panel.background = element_rect(fill = "white", color = "black"),
-        # Legend
-        legend.title = element_blank(),
-        legend.text = element_text(size = 11),
-        legend.position = "bottom",
-        legend.justification = "center",
-        legend.margin = margin(.5, 0, 0, 0, "cm")
-    ) + 
-    guides(colour = guide_legend(nrow = 1))
-```
-
-```{r include=FALSE}
-p2 <- 
-  ggplot(filter(ml_forecasts, model != "ipc"), aes(fecha, value, color = model)) +
-  geom_line(aes(fecha, value, color = model)) +
-  geom_line(data = filter(ml_forecasts, model == "ipc"), linetype = "dashed") +
-  labs(title = "(b) Modelos de aprendizaje estadístico") +
-  theme_bw() +
-  theme(
-        # X axis
-        axis.title.x = element_blank(),
-        axis.text.x = element_text(size = 12, color = "black"),
-        # Y axis
-        axis.title.y = element_blank(),
-        axis.text.y = element_text(size = 12, color = "black"),
-        # Title
-        plot.title = element_text(hjust = 0.5, 
-                                  margin = margin(0, 0, 0.7, 0, "cm")),
-        # Panel
-        panel.grid = element_blank(),
-        panel.grid.minor = element_blank(),
-        panel.grid.major.x = element_blank(),
-        panel.background = element_rect(fill = "white", color = "black"),
-        # Legend
-        legend.title = element_blank(),
-        legend.text = element_text(size = 11),
-        legend.position = "bottom",
-        legend.justification = "center",
-        legend.margin = margin(.5, 0, 0, 0, "cm")
-    ) + 
-    guides(colour = guide_legend(nrow = 1))
-```
-
-```{r fig_two, echo=FALSE, warning=FALSE, message=FALSE, fig.align = 'center', fig.dim = c(11.5, 4.7)}
-p1 + p2
-```
-
-\vspace{-11mm}
-
-```{r include=FALSE}
-ts_mean_forecasts <- read_csv(here("results", "analysis", "ts_mean_forecasts.csv"))
-ml_mean_forecasts <- read_csv(here("results", "analysis", "ml_mean_forecasts.csv"))
-ensamble <- ts_mean_forecasts %>% bind_rows(ml_mean_forecasts %>% filter(model != "ipc"))
-```
-
-```{r fig_two_two, echo=FALSE, warning=FALSE, message=FALSE, fig.align = 'center', fig.dim = c(11.5, 4.7)}
-ggplot(filter(ensamble, model != "ipc"), aes(fecha, value, color = model)) +
-  geom_line(aes(fecha, value, color = model)) +
-  geom_line(data = filter(ensamble, model == "ipc"), linetype = "dashed") +
-  labs(title = "(c) Ensambles de modelos") +
-  theme_bw() +
-  theme(
-        # X axis
-        axis.title.x = element_blank(),
-        axis.text.x = element_text(size = 12, color = "black"),
-        # Y axis
-        axis.title.y = element_blank(),
-        axis.text.y = element_text(size = 12, color = "black"),
-        # Title
-        plot.title = element_text(hjust = 0.5, 
-                                  margin = margin(0, 0, 0.7, 0, "cm")),
-        # Panel
-        panel.grid = element_blank(),
-        panel.grid.minor = element_blank(),
-        panel.grid.major.x = element_blank(),
-        panel.background = element_rect(fill = "white", color = "black"),
-        # Legend
-        legend.title = element_blank(),
-        legend.text = element_text(size = 11),
-        legend.position = "bottom",
-        legend.justification = "center",
-        legend.margin = margin(.5, 0, 0, 0, "cm")
-    ) + 
-    guides(colour = guide_legend(nrow = 1))
-```
-
-```{=tex}
-\begin{center}
-
-\small
-
-\textbf{Figura 3:} MASE por modelo y horizonte de pronóstico
+\textbf{Figura 4:} MASE por modelo y horizonte de pronóstico
 
 \end{center}
 ```
@@ -239,7 +266,7 @@ ranking_mase <- read_csv(here("results", "analysis", "ranking_mase.csv")) %>%
          ))
 ```
 
-```{r fig_three, echo=FALSE, warning=FALSE, message=FALSE, fig.align = 'center', fig.dim = c(11.5, 4.5)}
+```{r fig_four, echo=FALSE, warning=FALSE, message=FALSE, fig.align = 'center', fig.dim = c(11.5, 4.5)}
 ranking_mase %>% 
   ggplot(aes(fct_inorder(key, id), estimate, fill = fct_inorder(horizon, horid))) +
   geom_col(position = "dodge2") +
@@ -281,7 +308,7 @@ Phasellus ante mauris, condimentum et elementum non, fringilla at arcu. Cras at 
 
 \small
 
-\textbf{Figura 4:} Relación entre precisión de pronóstico y complejidad computacional
+\textbf{Figura 5:} Relación entre precisión de pronóstico y complejidad computacional
 
 \end{center}
 ```
@@ -300,14 +327,14 @@ cc <-
                   TRUE ~ key))
 ```
 
-```{r fig_four, echo=FALSE, warning=FALSE, message=FALSE, fig.align = 'center', fig.dim = c(11.5, 4.5)}
+```{r fig_five, echo=FALSE, warning=FALSE, message=FALSE, fig.align = 'center', fig.dim = c(11.5, 4.5)}
 x_breaks = 10^pretty(log10(cc$cc))
 
 cc %>% 
   ggplot(aes(cc, mae, label = key)) +
   geom_smooth(method = "lm", colour = "black", fill = "gray80") +
-  #geom_mark_ellipse(aes(fill = id, label = NULL), expand = unit(7, "mm")) + 
-  geom_label() +
+  #geom_mark_ellipse(aes(fill = id, label = NULL), expand = unit(7, "mm")) +
+  geom_label(position = position_jitter(width = 0.09, height = 0.05)) +
   scale_x_continuous(trans = "log",
                      label = scales::comma,
                      breaks = x_breaks) +
