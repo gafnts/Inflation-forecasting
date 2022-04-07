@@ -425,16 +425,22 @@ Debido a que existe una amplia gama de medidas de precisión que pueden ser cata
 
 Con el fin de evaluar las diferencias en la precisión de los pronósticos entre métodos tradicionales y de aprendizaje estadístico, este estudio utilizará 3 medidas distintas. La primera de ellas, el error absoluto medio (MAE), es seleccionada no solo por ser una opción ampliamente utilizada al comparar distintos métodos que predicen un solo conjunto de datos, sino por contar con la ventaja de presentar una mayor robustez a valores atípicos que otras medidas dependientes de escala como la raíz del error cuadrático medio (RMSE) [@shcherbakov2013]. Esta medida se define como,
 
+\vspace{-2mm}
+
 $$
 MAE = \frac{1}{n}\sum_{i=1}^{n}|y_{t}-\hat{y}_{t}|.
 $$
 
 La segunda medida a considerar será el error absoluto medio relativo (rMAE), que es calculado como el ratio entre el MAE del método $i$ que se desea evaluar y el $MAE_{rw}$ de un método utilizado como punto de referencia, que en el caso de la presente investigación será un modelo de caminata aleatoria estacional (*snaïve*). @hyndman2006 observan que una de las ventajas de esta medida es su interpretabilidad: Un $rMAE > 1$ significa que el método propuesto se desempeña peor que lo que lo hace el modelo de referencia, mientras que un $rMAE < 1$ denota lo opuesto. Formalmente,
 
+\vspace{-4mm}
+
 $$rMAE = \frac{MAE_i}{MAE_{rw}}.
 $$
 
 La última medida que será considerada en la presente investigación es el error medio absoluto escalado (MASE), un método propuesto por primera vez en @hyndman2006 con el objeto de brindar una mejor opción que el error porcentual absoluto medio simétrico (sMAPE). Dicha medida se encuentra definida de la siguiente manera:
+
+\vspace{-2.5mm}
 
 $$MASE=\frac{1}{k}\frac{\sum_{t=1}^{k}|y_{t}-\hat{y}_{t}|}{\frac{1}{n-m}\sum_{t=1}^{k}|y_{t}-\hat{y}_{t-m}|},
 $$
