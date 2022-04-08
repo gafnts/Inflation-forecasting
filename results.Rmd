@@ -210,11 +210,11 @@ ggplot(filter(ensamble, model != "ipc"), aes(fecha, value, color = model)) +
     guides(colour = guide_legend(nrow = 1))
 ```
 
-Como ha sido mencionado con anterioridad, el error absoluto medio escalado (MASE) contrasta los errores fuera de la muestra entre un modelo de caminata aleatoria y el método que se busca evaluar. Si bien, en teoría un MASE menor que uno es la magnitud deseable del error en la predicción de un modelo particular durante el horizonte $H$, en la práctica esto rara vez ocurre; resulta problemático juzgar la precisión en los pronósticos sin considerar que los modelos que se emplean pueden desempeñarse de formas diferentes según los datos y el problema en cuestión.
+Como ha sido mencionado con anterioridad, el error absoluto medio escalado (MASE) contrasta los errores fuera de muestra entre un modelo de caminata aleatoria y el método que se busca evaluar. Si bien, en teoría un MASE menor que uno es la magnitud deseable del error en la predicción de un modelo particular durante el horizonte $H$, en la práctica esto rara vez ocurre, por lo que resulta problemático juzgar la precisión en los pronósticos sin considerar que los modelos que se emplean pueden desempeñarse de formas diferentes según los datos y el problema en cuestión.
 
-Por ejemplo, en @athanasopoulos2011, los autores (al comparar los pronósticos de diversos métodos de suavizamiento exponencial con pronósticos de modelos ARIMA) utilizan como punto de referencia el promedio del MASE en el modelo ARIMA durante todos los horizontes temporales en lugar de la unidad. En línea con este estudio, la presente investigación utilizará el valor 8.58 (el MASE promedio del modelo de caminata aleatoria estacional durante los cuatro horizontes de pronóstico) como *benchmark* para el resto de modelos. Tanto el cuadro 5 como la figura 4 presentan los resultados obtenidos por cada uno de los métodos al ser evaluados por esta medida de precisión.
+Por ejemplo, en @athanasopoulos2011, los autores (al comparar las predicciones de diversos métodos de suavizamiento exponencial con pronósticos de modelos ARIMA) utilizan como punto de referencia el promedio del MASE en el modelo ARIMA durante todos los horizontes temporales en lugar de la unidad. En línea con ese estudio, la presente investigación utilizará el valor 8.58 (el MASE promedio del modelo de caminata aleatoria estacional durante los cuatro horizontes de pronóstico) como *benchmark* para el resto de modelos. Tanto el cuadro 5 como la figura 4 presentan los resultados obtenidos por cada uno de los métodos al ser evaluados por esta medida de precisión.
 
-Praesent ultrices sapien sit amet augue efficitur rhoncus. Donec laoreet accumsan leo eget ultricies. Quisque risus nisl, volutpat eu est et, maximus pharetra nibh. Donec feugiat eros imperdiet ligula venenatis finibus. Suspendisse potenti. Quisque pretium elit et tempor rutrum. Praesent ultrices sapien sit amet augue efficitur rhoncus. Donec laoreet accumsan leo eget ultricies. Quisque risus nisl, volutpat eu est et, maximus pharetra nibh.
+La comparación del MASE promedio durante todos los horizontes de pronóstico de los modelos de series de tiempo muestra que cada uno de ellos supera, en términos de eficiencia, al modelo de caminata aleatoria estacional. Además, exceptuando al pronóstico del modelo de suavizamiento exponencial durante el horizonte de 9 meses, todas las predicciones se mantienen por debajo del punto de referencia.
 
 ```{=tex}
 \begin{center}
@@ -286,7 +286,7 @@ ranking_mase <- read_csv(here("results", "analysis", "ranking_mase.csv")) %>%
          ))
 ```
 
-```{r fig_four, echo=FALSE, warning=FALSE, message=FALSE, fig.align = 'center', fig.dim = c(11.5, 4.5)}
+```{r fig_four, echo=FALSE, warning=FALSE, message=FALSE, fig.align = 'center', fig.dim = c(11.5, 3.5)}
 ranking_mase %>% 
   ggplot(aes(fct_inorder(key, id), estimate, fill = fct_inorder(horizon, horid))) +
   geom_col(position = "dodge2") +
@@ -319,9 +319,11 @@ ranking_mase %>%
     guides(colour = guide_legend(nrow = 1))
 ```
 
-Praesent ultrices sapien sit amet augue efficitur rhoncus. Donec laoreet accumsan leo eget ultricies. Quisque risus nisl, volutpat eu est et, maximus pharetra nibh. Donec feugiat eros imperdiet ligula venenatis finibus. Suspendisse potenti. Quisque pretium elit et tempor rutrum. Curabitur porttitor interdum laoreet. Nam tempor aliquam mauris quis tempor. Etiam volutpat tortor vitae dolor gravida, id ornare augue gravida. Nunc dui dui, sagittis malesuada tempor placerat, hendrerit ut mauris. Donec at turpis vitae sapien convallis semper vel at massa. Donec tristique venenatis sem, nec mollis elit finibus ac. Integer at lorem nibh. In vitae libero eu felis porttitor efficitur.
+SARIMA vuelve a desempeñarse mejor que el resto de métodos, llegando durante el horizonte de 9 meses a superar al pronóstico del modelo ingenuo fuera de muestra (lo que lo convierte en el único modelo considerado en el estudio que consigue obtener un MASE menor que la unidad para algún horizonte de predicción). El modelo VAR logra resultados comparables, aunque aún lejanos a los del modelo SARIMA.
 
-Phasellus ante mauris, condimentum et elementum non, fringilla at arcu. Cras at lacus a enim auctor blandit sit amet id tortor. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia curae; Cras enim ante, cursus sed elementum et, lacinia a ipsum. Nullam eu sodales risus, sit amet iaculis urna. Cras ac metus id ex faucibus tincidunt quis quis risus. Ut rhoncus, odio vitae blandit consequat, nulla arcu ultricies risus, quis rhoncus diam arcu quis leo. Nullam id egestas libero. Pellentesque vitae convallis enim. Quisque aliquet, metus ac malesuada vestibulum, lectus leo fermentum lacus, quis ultrices velit erat quis justo. Duis consectetur felis vehicula nisi dignissim, eget sodales lectus dapibus. Donec erat dolor, volutpat et suscipit vitae, accumsan sed justo.
+Mientras tanto, al considerar el desempeño de los diferentes métodos de aprendizaje estadístico, el perceptrón multicapa (MLP) es el único modelo cuyas predicciones, en promedio, no logran superar la eficiencia de pronóstico del modelo de caminata aleatoria estacional. Los resultados del resto de modelos son muy similares a los de las predicciones evaluadas a través de error absoluto medio. El modelo de bosques aleatorios, el de potenciación de gradiente extremo y la regresión de máquinas de vectores de soporte son los más eficientes en la categoría de *machine learning*, en ese orden. Sin embargo, mientras el error absoluto medio cataloga al promedio de las predicciones del perceptrón multicapa como pronósticos más eficientes que los de la red neuronal de larga memoria de corto plazo durante todos los horizontes de pronóstico, lo contrario ocurre al comparar sus resultados por medio del error medio absoluto escalado.
+
+Por último, la figura 5 muestra la relación que existe entre la precisión de pronóstico evaluada por medio del error absoluto medio y la complejidad computacional, a la cual @makridakis2018 definen como $cc = T_i^c / T_{snaïve}^c$ donde el numerador representa la cantidad promedio de segundos que el modelo $i$ tarda en generar sus predicciones para los cuatro horizontes de pronóstico considerados y el denominador denota la misma medida pero para el modelo de referencia.
 
 ```{=tex}
 \begin{center}
@@ -347,7 +349,7 @@ cc <-
                   TRUE ~ key))
 ```
 
-```{r fig_five, echo=FALSE, warning=FALSE, message=FALSE, fig.align = 'center', fig.dim = c(11.5, 4.5)}
+```{r fig_five, echo=FALSE, warning=FALSE, message=FALSE, fig.align = 'center', fig.dim = c(11.5, 3.5)}
 x_breaks = 10^pretty(log10(cc$cc))
 
 cc %>% 
