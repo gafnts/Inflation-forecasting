@@ -210,9 +210,11 @@ ggplot(filter(ensamble, model != "ipc"), aes(fecha, value, color = model)) +
     guides(colour = guide_legend(nrow = 1))
 ```
 
-Phasellus ante mauris, condimentum et elementum non, fringilla at arcu. Cras at lacus a enim auctor blandit sit amet id tortor. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia curae; Cras enim ante, cursus sed elementum et, lacinia a ipsum. Nullam eu sodales risus, sit amet iaculis urna. Cras ac metus id ex faucibus tincidunt quis quis risus. Ut rhoncus, odio vitae blandit consequat, nulla arcu ultricies risus, quis rhoncus diam arcu quis leo. Nullam id egestas libero. Pellentesque vitae convallis enim. Quisque aliquet, metus ac malesuada vestibulum, lectus leo fermentum lacus, quis ultrices velit erat quis justo. Duis consectetur felis vehicula nisi dignissim, eget sodales lectus dapibus. Donec erat dolor, volutpat et suscipit vitae, accumsan sed justo.
+Como ha sido mencionado con anterioridad, el error absoluto medio escalado (MASE) contrasta los errores fuera de la muestra entre un modelo de caminata aleatoria y el método que se busca evaluar. Si bien, en teoría un MASE menor que uno es la magnitud deseable del error en la predicción de un modelo particular durante el horizonte $H$, en la práctica esto rara vez ocurre; resulta problemático juzgar la precisión en los pronósticos sin considerar que los modelos que se emplean pueden desempeñarse de formas diferentes según los datos y el problema en cuestión.
 
-Phasellus ante mauris, condimentum et elementum non, fringilla at arcu. Cras at lacus a enim auctor blandit sit amet id tortor. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia curae; Cras enim ante, cursus sed elementum et, lacinia a ipsum. Nullam eu sodales risus, sit amet iaculis urna. Cras ac metus id ex faucibus tincidunt quis quis risus. Ut rhoncus, odio vitae blandit consequat, nulla arcu ultricies risus, quis rhoncus diam arcu quis leo. Nullam id egestas libero. Pellentesque vitae convallis enim. Quisque aliquet, metus ac malesuada vestibulum, lectus leo fermentum lacus, quis ultrices velit erat quis justo. Duis consectetur felis vehicula nisi dignissim, eget sodales lectus dapibus. Donec erat dolor, volutpat et suscipit vitae, accumsan sed justo. Nunc dui dui, sagittis malesuada tempor placerat, hendrerit ut mauris. Donec at turpis vitae sapien convallis semper vel at massa. Donec tristique venenatis sem, nec mollis elit finibus ac. Integer at lorem nibh. In vitae libero eu felis porttitor efficitur.
+Por ejemplo, en @athanasopoulos2011, los autores (al comparar los pronósticos de diversos métodos de suavizamiento exponencial con pronósticos de modelos ARIMA) utilizan como punto de referencia el promedio del MASE en el modelo ARIMA durante todos los horizontes temporales en lugar de la unidad. En línea con este estudio, la presente investigación utilizará el valor 8.58 (el MASE promedio del modelo de caminata aleatoria estacional durante los cuatro horizontes de pronóstico) como *benchmark* para el resto de modelos. Tanto el cuadro 5 como la figura 4 presentan los resultados obtenidos por cada uno de los métodos al ser evaluados por esta medida de precisión.
+
+Praesent ultrices sapien sit amet augue efficitur rhoncus. Donec laoreet accumsan leo eget ultricies. Quisque risus nisl, volutpat eu est et, maximus pharetra nibh. Donec feugiat eros imperdiet ligula venenatis finibus. Suspendisse potenti. Quisque pretium elit et tempor rutrum. Praesent ultrices sapien sit amet augue efficitur rhoncus. Donec laoreet accumsan leo eget ultricies. Quisque risus nisl, volutpat eu est et, maximus pharetra nibh.
 
 ```{=tex}
 \begin{center}
@@ -229,8 +231,17 @@ Phasellus ante mauris, condimentum et elementum non, fringilla at arcu. Cras at 
 
 ```{r include=FALSE}
 mase <- read_csv(here("results", "analysis", "final_mase.csv")) %>% 
-  mutate(across(where(is.numeric), ~ round(., 2))) %>%  
   rename(" " = name)
+
+mase_mean <- 
+  mase %>% 
+  summarise(across(where(is.numeric), mean)) %>% 
+  mutate(` ` = "Media") %>% 
+  relocate(` `)
+
+mase %<>% 
+  bind_rows(mase_mean) %>%
+  mutate(across(where(is.numeric), ~ round(., 2)))
 ```
 
 ```{r table_five, echo=FALSE}
@@ -242,8 +253,17 @@ kbl(mase,
   kable_styling(font_size = 9,
                 full_width = T,
                 latex_options = "hold_position") %>% 
-  column_spec(1, width = "1.5cm") %>% 
-  column_spec(3, width = "1.9cm")
+  column_spec(1, width = "2cm") %>% 
+  column_spec(3, width = "1.9cm") %>% 
+  group_rows(start_row = 1, 
+             end_row = 4, 
+             label_row_css = "l",
+             latex_gap_space = "-0.25cm") %>% 
+  group_rows(start_row = 5, 
+             end_row = 5, 
+             label_row_css = "l",
+             latex_gap_space = "-0.10cm") %>% 
+  row_spec(5, bold = TRUE)
 ```
 
 ```{=tex}
