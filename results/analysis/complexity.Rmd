@@ -92,7 +92,7 @@ time <- snaive %>% bind_rows(hw, ar, sarima, var, svm, rf, xgb, mlp, lstm)
 ```
 
 ```{r}
-time %<>% mutate(cc = time / 0.0272)
+time %<>% mutate(cc = time / 0.00825)
 ```
 
 ### Plot

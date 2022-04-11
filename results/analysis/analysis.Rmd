@@ -456,7 +456,7 @@ rmae <-
   left_join(snaive_longer, by = "name") %>% 
   rename("key" = key.x, "horizon" = name, "mae" = value.x, "naive" = value.y) %>% 
   select(-key.y) %>% 
-  mutate(rmae = mae/naive) %>% 
+  mutate(rmae = mae/3.41) %>% 
   select(-naive, -mae) %>% 
   pivot_wider(names_from = horizon, values_from = rmae)
 ```
