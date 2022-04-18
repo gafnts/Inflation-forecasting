@@ -407,6 +407,20 @@ Dicho método de remuestreo es utilizado específicamente con el objetivo de cal
 
 De tal forma, con 100 combinaciones distintas de hiperparámetros y 6 conjuntos de remuestreo, 600 modelos son estimados y aquella combinación de parámetros que minimiza el error absoluto medio (MAE) en los subconjuntos de evaluación es seleccionada para predecir el ritmo inflacionario durante cada uno de los horizontes de pronóstico, de modo que en total se estiman 2400 modelos por cada método de aprendizaje de máquina (exceptuando a la red neuronal de larga memoria de corto plazo).
 
+## Procedimiento de pronóstico
+
+Aunque la estimación de los valores futuros de una serie puede ser llevada a cabo de diversas maneras---por ejemplo, @taieb2011 hacen un análisis teórico-comparativo de cinco estrategias que pueden ser utilizadas para generar pronósticos de varios pasos hacia delante (*multi-step ahead*)---existen dos métodos particulares que sobresalen en la literatura.
+
+El primero y el más antiguo de ellos es el método iterativo (también llamado recursivo o *multi-stage*). Con esta estrategia, un modelo $f$ es entrenado para pronosticar un único periodo hacia delante. Subsecuentemente, un segundo pronóstico $h+2$ es obtenido utilizando la predicción $h +1$ producida por el modelo y el proceso se repite hasta llegar al final del horizonte de pronóstico $H$ [@hamzaçebi2009].
+
+Mientras tanto, el segundo procedimiento es llamado método directo y consiste en pronosticar cada periodo $h$ de manera independiente al resto de los periodos que conforman al horizonte de pronóstico $H$. De tal manera, $H$ modelos $f_h$ son producidos para predecir los valores futuros de la serie de tiempo $[y_1, ..., y_N]$ [@taieb2011].
+
+Ambas estrategias cuentan con ventajas y desventajas. Dependiendo de las características de la serie, el método recursivo puede tener un peor desempeño dado a que dicha estrategia es sensible a la acumulación de errores durante la iteración de los pronósticos, propagándolos hacia adelante y teniendo un efecto negativo sobre el resto de las predicciones $h+i$.
+
+Por otro lado, el procedimiento directo induce independencia condicional para cada una de las predicciones individuales del horizonte $H$, aspecto que afecta a la precisión de los pronósticos al impedir que el modelo tome en cuenta la complejidad entre la relación de la variable objetivo con el resto de sus predictores [@taieb2011].
+
+Tal y como mencionan @marcellino2006, la cuestión sobre cuál procedimiento elegir es más bien una pregunta empírica. Por lo general, la literatura se mantiene dividida entre estudios que encuentran que uno de estos métodos supera en términos de eficiencia de pronóstico al otro. Esta investigación optará por utilizar el método recursivo para todos los procedimientos de predicción, tanto en los métodos econométricos (en línea con la metodología Box-Jenkins) como para los modelos de aprendizaje automático.
+
 ## Medidas de precisión
 
 Debido a que existe una amplia gama de medidas de precisión que pueden ser catalogadas en siete grupos distintos [@shcherbakov2013], es importante considerar que la clasificación relativa del resultado de los diversos métodos que se evalúan puede variar según la medida que se utilice [@makridakis2000]. Además, cada medida tiene desventajas que pueden conducir a una evaluación inexacta de los resultados, por lo que---así como @mathews1994 señalan---ninguna medida por sí sola brinda una pauta inequívoca de la eficiencia en las predicciones.
