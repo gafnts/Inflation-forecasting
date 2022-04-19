@@ -13,6 +13,8 @@ Esta investigación compara la precisión en los pronósticos durante 4 horizont
 
 El cuadro 4 muestra los resultados por modelo y horizonte de pronóstico en términos del error absoluto medio (MAE) y el error absoluto medio relativo (rMAE). En principio, es posible apreciar que todos los métodos se desempeñan mejor de lo que lo hace el modelo de referencia. Sin embargo, existe heterogeneidad en cuanto a la forma en la que cada uno se comporta durante la predicción de la variable objetivo en los distintos intervalos de tiempo.
 
+En lo que respecta a los métodos de series temporales, el modelo de caminata aleatoria estacional es comparativamente el más ineficiente. Mientras tanto, el modelo de suavizamiento exponencial con estacionalidad aditiva y el modelo autorregresivo de segundo orden tienen un desempeño similar a lo largo de todos los horizontes temporales, aunque este último es más eficiente en cada uno de ellos. Además, el modelo SARIMA y el modelo VAR---cuya especificación utiliza únicamente tres variables: las tasas de variación interanual del IPC y del IMAE, así como la segunda diferencia del medio circulante, cada una de ellas rezagada por 24 periodos---son los métodos que, en general, cuentan con la eficiencia más alta durante los pronósticos de 3 meses hacia delante. De hecho, el excelente desempeño del modelo SARIMA se extiende hasta el horizonte temporal de 12 periodos.
+
 ```{=tex}
 \begin{center}
 
@@ -62,8 +64,6 @@ kbl(results_one,
 
 \vspace{5mm}
 
-En lo que respecta a los métodos de series temporales, el modelo de caminata aleatoria estacional es comparativamente el más ineficiente. Mientras tanto, el modelo de suavizamiento exponencial con estacionalidad aditiva y el modelo autorregresivo de segundo orden tienen un desempeño similar a lo largo de todos los horizontes temporales, aunque este último es más eficiente en cada uno de ellos. Además, el modelo SARIMA y el modelo VAR---cuya especificación utiliza únicamente tres variables: las tasas de variación interanual del IPC y del IMAE, así como la segunda diferencia del medio circulante, cada una de ellas rezagada por 24 periodos---son los métodos que, en general, cuentan con la eficiencia más alta durante los pronósticos de 3 meses hacia delante. De hecho, el excelente desempeño del modelo SARIMA se extiende hasta el horizonte temporal de 12 periodos.
-
 Por otro lado, los pronósticos de la regresión de vectores de soporte (SVM) superan en todos los horizontes a los de los modelos econométricos más simples. Sin embargo, lo mismo no ocurre cuando su desempeño es comparado con el del modelo SARIMA (al que únicamente supera durante su predicción de 24 meses hacia delante) o con los pronósticos de 3 y 9 periodos hacia delante del modelo de vectores autorregresivos. Una situación similar acontece con los modelos de bosques aleatorios (RF) y de potenciación de gradiente extremo (XGB), los que, en la categoría de métodos de aprendizaje automático, presentan la mayor eficiencia de pronóstico---siendo RF el modelo con el mejor desempeño. Es importante mencionar que ambos modelos son extremadamente eficientes en lo que respecta al horizonte temporal de 24 meses.
 
 Los dos modelos de redes neuronales (el perceptrón multicapa y la red neuronal recurrente de larga memoria de corto plazo, la cual, a diferencia del resto de modelos de aprendizaje estadístico en este estudio, utiliza como predictor únicamente el ritmo inflacionario rezagado por 35 periodos) son los modelos de *machine learning* con el peor desempeño en términos de error absoluto medio. Si bien ambos modelos superan consistentemente a los métodos econométricos más simples, lo contrario sucede al contrastar sus resultados con los de los modelos SARIMA y VAR---específicamente durante los pronósticos de corto plazo---y con los del resto de modelos de aprendizaje de máquina. Aun así, al considerar únicamente los horizontes de 12 y 24 meses, las redes neuronales superan en algunos casos al resto de sus contrapartes.
@@ -77,8 +77,6 @@ w_i = 1 - \frac{MAE_h}{\sum_{h=1}^H MAE},
 $$
 
 donde $MAE_h$ es el error absoluto medio del pronóstico en el periodo $h$ de un modelo específico y $H$ representa al horizonte de predicción. De tal forma, $w_i$ pondera con un mayor peso a las predicciones de los modelos que tienen un menor MAE. Este método de combinación de pronósticos es considerado como una técnica dinámica cuya ventaja principal es abstraer mayor complejidad estadística en comparación con estimar un vector constante de ponderación y aplicarlo durante todo el horizonte de pronóstico [@wang2018].
-
-En uno de los estudios seminales en la literatura de combinación de pronósticos, @bates1969 mencionan que dado a que diferentes métodos utilizan distintos supuestos acerca de la forma en la que las variables se relacionan, combinaciones de los resultados de distintos modelos pueden mejorar la precisión en sus predicciones, aunque no es necesariamente el caso que tal resultado pueda obtenerse siempre. En esta investigación, la combinación de los pronósticos de modelos econométricos genera predicciones más eficientes en el horizonte de 24 meses. Mientras que el ensamble de pronósticos de modelos de aprendizaje automático produce una mejora en la eficiencia para el horizonte de 12 periodos hacia delante.
 
 ```{=tex}
 \begin{center}
@@ -210,11 +208,11 @@ ggplot(filter(ensamble, model != "ipc"), aes(fecha, value, color = model)) +
     guides(colour = guide_legend(nrow = 1))
 ```
 
+En uno de los estudios seminales en la literatura de combinación de pronósticos, @bates1969 mencionan que dado a que diferentes métodos utilizan distintos supuestos acerca de la forma en la que las variables se relacionan, combinaciones de los resultados de distintos modelos pueden mejorar la precisión en sus predicciones, aunque no es necesariamente el caso que tal resultado pueda obtenerse siempre. En esta investigación, la combinación de los pronósticos de modelos econométricos genera predicciones más eficientes en el horizonte de 24 meses. Mientras que el ensamble de pronósticos de modelos de aprendizaje automático produce una mejora en la eficiencia para el horizonte de 12 periodos hacia delante.
+
 Como ha sido mencionado con anterioridad, el error absoluto medio escalado (MASE) contrasta los errores fuera de muestra entre un modelo de caminata aleatoria y el método que se busca evaluar. Si bien, en teoría un MASE menor que uno es la magnitud deseable del error en la predicción de un modelo particular durante el horizonte $H$, en la práctica esto rara vez ocurre, por lo que resulta problemático juzgar la precisión de los pronósticos sin considerar que los modelos pueden desempeñarse de formas diferentes según las características de los datos que se emplean.
 
 Por ejemplo, @athanasopoulos2011---al comparar las predicciones de diversos métodos de suavizamiento exponencial con pronósticos de modelos ARIMA---utilizan como punto de referencia el promedio del MASE en el modelo ARIMA durante todos los horizontes temporales en lugar de la unidad. En línea con dicha investigación, el presente estudio utilizará el valor 8.58 (el MASE promedio del modelo de caminata aleatoria estacional durante los cuatro horizontes de pronóstico) como *benchmark* para el resto de modelos. Tanto el cuadro 5 como la figura 4 presentan los resultados obtenidos por cada uno de los métodos al ser evaluados por esta medida de precisión.
-
-La comparación del MASE promedio durante todos los horizontes de pronóstico de los modelos de series de tiempo muestra que cada uno de ellos supera, en términos de eficiencia, al modelo de caminata aleatoria estacional. Además, exceptuando al pronóstico del modelo de suavizamiento exponencial durante el horizonte de 9 meses, la eficiencia en la predicción de cada uno de los periodos individuales se mantiene por debajo del promedio del modelo de referencia.
 
 ```{=tex}
 \begin{center}
@@ -275,7 +273,7 @@ kbl(mase,
 
 \end{center}
 ```
-\vspace{-9mm}
+\vspace{-10mm}
 
 ```{r include=FALSE}
 ranking_mase <- read_csv(here("results", "analysis", "ranking_mase.csv")) %>% 
@@ -286,7 +284,7 @@ ranking_mase <- read_csv(here("results", "analysis", "ranking_mase.csv")) %>%
          ))
 ```
 
-```{r fig_four, echo=FALSE, warning=FALSE, message=FALSE, fig.align = 'center', fig.dim = c(11.5, 3.5)}
+```{r fig_four, echo=FALSE, warning=FALSE, message=FALSE, fig.align = 'center', fig.dim = c(11.5, 3.9)}
 ranking_mase %>% 
   ggplot(aes(fct_inorder(key, id), estimate, fill = fct_inorder(horizon, horid))) +
   geom_col(position = "dodge2") +
@@ -319,6 +317,8 @@ ranking_mase %>%
     guides(colour = guide_legend(nrow = 1))
 ```
 
+La comparación del MASE promedio durante todos los horizontes de pronóstico de los modelos de series de tiempo muestra que cada uno de ellos supera, en términos de eficiencia, al modelo de caminata aleatoria estacional. Además, exceptuando al pronóstico del modelo de suavizamiento exponencial durante el horizonte de 9 meses, la eficiencia en la predicción de cada uno de los periodos individuales se mantiene por debajo del promedio del modelo de referencia.
+
 SARIMA vuelve a desempeñarse mejor que el resto de métodos, llegando durante el horizonte de 9 meses a superar al pronóstico del modelo ingenuo fuera de muestra (lo que lo convierte en el único modelo considerado en el estudio que consigue obtener un MASE menor que la unidad para algún horizonte de predicción). El modelo VAR logra resultados comparables, aunque aún lejanos a los del modelo SARIMA.
 
 Mientras tanto, al considerar el desempeño de los diferentes métodos de aprendizaje estadístico, el perceptrón multicapa (MLP) es el único modelo cuyas predicciones, en promedio, no logran superar la eficiencia de pronóstico del modelo de caminata aleatoria estacional. Los resultados del resto de modelos son muy similares a los de las predicciones evaluadas a través de error absoluto medio. El modelo de bosques aleatorios, el de potenciación de gradiente extremo y la regresión de máquinas de vectores de soporte son los más eficientes en la categoría de *machine learning*, en ese orden. Sin embargo, mientras el error absoluto medio cataloga al promedio de las predicciones del perceptrón multicapa como pronósticos más eficientes que los de la red neuronal de larga memoria de corto plazo durante todos los horizontes de pronóstico, lo contrario ocurre al comparar sus resultados por medio del error medio absoluto escalado.
@@ -349,7 +349,7 @@ cc <-
                   TRUE ~ key))
 ```
 
-```{r fig_five, echo=FALSE, warning=FALSE, message=FALSE, fig.align = 'center', fig.dim = c(11.5, 3.5)}
+```{r fig_five, echo=FALSE, warning=FALSE, message=FALSE, fig.align = 'center', fig.dim = c(11.5, 4.7)}
 x_breaks = 10^pretty(log10(cc$cc))
 
 cc %>% 
