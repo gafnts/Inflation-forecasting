@@ -439,7 +439,7 @@ Con el fin de evaluar las diferencias en la precisión de los pronósticos entre
 
 La primera de ellas, el error absoluto medio (MAE), es seleccionada no solo por ser una opción ampliamente utilizada al comparar distintos métodos que predicen un solo conjunto de datos, sino por contar con la ventaja de presentar una mayor robustez a valores atípicos que otras medidas dependientes de escala como la raíz del error cuadrático medio (RMSE) [@shcherbakov2013]. Esta medida se define como,
 
-\vspace{-2mm}
+\vspace{-4mm}
 
 $$
 MAE = \frac{1}{n}\sum_{i=1}^{n}|y_{t}-\hat{y}_{t}|.
@@ -454,7 +454,7 @@ $$
 
 La última medida que será considerada en la presente investigación es el error medio absoluto escalado (MASE), un método propuesto por primera vez en @hyndman2006 con el objeto de brindar una mejor opción que el error porcentual absoluto medio simétrico (sMAPE). El error medio absoluto escalado se encuentra definido de la siguiente manera:
 
-\vspace{-2.5mm}
+\vspace{-2mm}
 
 $$MASE=\frac{1}{k}\frac{\sum_{t=1}^{k}|y_{t}-\hat{y}_{t}|}{\frac{1}{n-m}\sum_{t=1}^{k}|y_{t}-\hat{y}_{t-m}|},
 $$
