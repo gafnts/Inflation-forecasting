@@ -13,7 +13,9 @@ main <- read_csv(here("data", "main.csv"))
 
 Con el objeto de pronosticar la tasa de variación interanual del índice de precios al consumidor en Guatemala, la especificación de los regresores ha sido propuesta a partir de un procedimiento en el que a 36 series de tiempo---seleccionadas considerando el canal de demanda agregada, el canal de tipo de cambio y las variables del sector externo del mecanismo de transmisión de política monetaria del país [@castillo2014]---les son aplicadas pruebas de causalidad de Wiener-Granger respecto a la variable objetivo para cada uno de los rezagos de mediano plazo y en el que, posteriormente, son filtradas tomando en cuenta (a) la cantidad de retardos que causan en el sentido de Granger al ritmo inflacionario y (b) la magnitud en el nivel de significancia del estadístico $F$ de cada una de las pruebas del *test* previamente mencionado.
 
-El cuadro 1 muestra a las 13 variables cuyos valores pasados son los más útiles, dado el vector inicial de posibles predictores, para pronosticar los valores futuros de la variación en el nivel de precios de la economía. Los datos corresponden al periodo que abarca de enero del 2005 a diciembre del 2021.
+El cuadro 1 muestra a las 11 variables cuyos valores pasados son los más útiles, dado el vector inicial de posibles predictores, para pronosticar los valores futuros de la variación en el nivel de precios de la economía. Los datos corresponden al periodo que abarca de enero del 2005 a diciembre del 2021.
+
+\vspace{3mm}
 
 ```{=tex}
 \begin{center}
@@ -40,16 +42,14 @@ table_one <-
   "rev", "Tasa de variación interanual de los ingresos totales del gobierno central", "BANGUAT",
   "debt", "Tasa de variación interanual del saldo de la deuda pública externa", "BANGUAT",
   "exports", "Tasa de variación interanual del valor (FOB) de las exportaciones totales", "SECMCA",
-  "bananas", "Tasa de variación interanual del valor promedio (dólares por tonelada) de las exportaciones de banano", "SECMCA",
   "hydro", "Tasa de variación interanual del valor promedio (dólares por barril) de las importaciones de hidrocarburos", "SECMCA",
   "lendrate", "Tasa de interés activa (real) en moneda nacional", "SECMCA",
-  "deprate", "Tasa de interés pasiva (nominal) en moneda nacional", "SECMCA",
   "itcer", "Tasa de variación interanual del índice de tipo de cambio efectivo real (global)", "SECMCA",
   "cpi", "Tasa de variación interanual del índice de precios al consumidor en Estados Unidos", "FRED"
   )
 ```
 
-\renewcommand{\arraystretch}{1.35}
+\renewcommand{\arraystretch}{1.5}
 
 ```{r table_one, echo=FALSE}
 kbl(table_one, 
@@ -57,16 +57,17 @@ kbl(table_one,
     align = c("clc")) %>%
   kable_styling(font_size = 9,
                 full_width = T) %>% 
-  row_spec(0, align = "c", 
+  row_spec(0, 
            bold = TRUE, 
            extra_css = 'vertical-align: middle !important;') %>% 
   column_spec(1, width = "1.7cm") %>% 
   column_spec(2, width = "12cm") %>% 
   group_rows(start_row = 1, 
-             end_row = 14, 
-             latex_align = "c",
+             end_row = 12, 
              latex_gap_space = "-0.50cm")
 ```
+
+\vspace{2mm}
 
 \renewcommand{\arraystretch}{1}
 
@@ -79,7 +80,7 @@ kbl(table_one,
 
 \end{center}
 ```
-\vspace{-12mm}
+\vspace{-11mm}
 
 ```{r include=FALSE}
 order <- table_one %>% rowid_to_column(var = "id") %>% select(id, "name" = Variable)
@@ -121,13 +122,15 @@ fig1 %>%
     guides(colour = guide_legend(nrow = 1))
 ```
 
-\vspace{-2mm}
+\vspace{2mm}
 
 \normalsize
 
 El cuadro 2 presenta estadísticas descriptivas para cada una de las variables. En ellas se incluyen el primer, tercer y cuarto momentos de sus funciones de densidad de probabilidad, así como la raíz cuadrada del segundo---para evidenciar la volatilidad de las series. En este último sentido, es posible observar que las tasas de cambio interanual del valor promedio de las importaciones de hidrocarburos, las exportaciones totales y los ingresos del gobierno central son los predictores que exhiben la mayor volatilidad durante el periodo del análisis.
 
 Las estadísticas descriptivas también demuestran que esta investigación lidia mayoritariamente con variables que no se distribuyen normalmente, de las cuales 9 presentan distribuciones leptocúrticas, 2 platicúrticas y 3 una distribución aproximadamente normal, en términos de exceso de curtosis. Además, el estadístico de asimetría comprueba que 4 series se encuentran sesgadas hacia la izquierda y el resto de ellas hacia la derecha (exceptuando a la tasa de variación de los ingresos del gobierno central, cuya asimetría es cercana a 0).
+
+\vspace{3mm}
 
 ```{=tex}
 \begin{center}
@@ -167,7 +170,7 @@ obs <-
 table_two <- 
   sumtable %>% 
   left_join(obs) %>% 
-  slice(8, 14, 11, 12, 7, 13, 3, 5, 1, 6, 10, 4, 9, 2) %>% 
+  slice(6, 12, 9, 10, 5, 11, 2, 3, 4, 8, 7, 1) %>% 
   as.data.frame()
 ```
 
@@ -349,7 +352,7 @@ table_three <-
   left_join(white) %>% 
   left_join(adf) %>% 
   left_join(hurst) %>% 
-  slice(8, 14, 11, 12, 7, 13, 3, 5, 1, 6, 10, 4, 9, 2)
+  slice(6, 12, 9, 10, 5, 11, 2, 3, 4, 8, 7, 1)
 ```
 
 \renewcommand{\arraystretch}{1.3}
@@ -370,15 +373,13 @@ kbl(table_three,
 
 \renewcommand{\arraystretch}{1}
 
-\vspace{-1.6mm}
-
 \scriptsize
 
 $^*$ Nivel de significancia entre paréntesis.
 
 \normalsize
 
-\vspace{3mm}
+\vspace{5mm}
 
 El cuadro 3 muestra un panel de pruebas estadísticas compuesto por un *test* de Ljung--Box para autocorrelación, uno de Jarque--Bera para normalidad, una prueba de red neuronal de White para comprobar si las variables exhiben comportamientos no-lineales, una prueba de Dickey--Fuller aumentada para verificar si existen raíces unitarias y la estimación del exponente de Hurst para medir la memoria de largo plazo de las series.
 
@@ -404,9 +405,7 @@ Por otro lado, este estudio emplea cinco algoritmos de aprendizaje supervisado. 
 
 En este contexto, el concepto de planitud se refiere a que se desea el valor $w$ más pequeño posible. El problema de optimización consiste entonces en encontrar el margen máximo que separa al hiperplano, clasificando correctamente la mayor cantidad de observaciones, por lo que una regresión de vectores de soporte se formula definiendo primero una función de pérdida convexa insensible a ser minimizada y encontrando el tubo más plano que contenga a la mayoría de las instancias de entrenamiento [@smola2004].
 
-Además, son considerados dos métodos que corresponden a la categoría de árboles de decisión, los cuales pueden ser definidos como modelos no-paramétricos basados en la segregación binaria recursiva del espacio de características en un número de regiones más simples. Sin embargo, los árboles de decisión (considerados *weak learners*) son propensos a sobreajustarse a los datos, por lo que una diversidad de métodos de ensamble son empleados para solucionar este problema.
-
-La idea central de estos métodos deviene del hecho de que un gran número de árboles de decisión independientes pueden, conjuntamente, superar el desempeño en las predicciones de uno solo (un fenómeno conocido como *crowd intelligence*).
+Además, son considerados dos métodos que corresponden a la categoría de árboles de decisión, los cuales pueden ser definidos como modelos no-paramétricos basados en la segregación binaria recursiva del espacio de características en un número de regiones más simples. Sin embargo, los árboles de decisión (considerados *weak learners*) son propensos a sobreajustarse a los datos, por lo que una diversidad de métodos de ensamble son empleados para solucionar este problema. La idea central de estos métodos deviene del hecho de que un gran número de árboles de decisión independientes pueden, conjuntamente, superar el desempeño en las predicciones de uno solo (un fenómeno conocido como *crowd intelligence*).
 
 El primer método basado en árboles de decisión abordado por esta investigación es el algoritmo de bosques aleatorios (RF), un procedimiento que consiste en la construcción de cierta cantidad de árboles de decisión a partir de muestras de entrenamiento generadas a través de un proceso de muestreo aleatorio con reemplazo (*bootstrapping*). Durante el proceso de construcción de los árboles, el algoritmo impide que estos consideren una mayor parte de los predictores disponibles. De esta forma, en promedio, las particiones no toman en cuenta a la variable con mayor capacidad predictiva, por lo que otras variables tienen una mayor oportunidad de ejercer influencia en los modelos. Este proceso de "decorrelación" de los árboles de decisión reduce la varianza en sus resultados, por lo que vuelve a sus predicciones más confiables [@james2013].
 

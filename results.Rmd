@@ -39,7 +39,8 @@ results_one <-
   mutate(across(where(is.numeric), ~ round(., 2)),
          key = str_remove_all(key, "[()]")) %>% 
   rename(" " = 1) %>% 
-  filter(` ` != "ts & ml ensemble")
+  filter(` ` != "ts & ml ensemble") %>%
+  mutate(` ` = str_replace(` `, "svm", "svr"))
 ```
 
 ```{r table_four, echo=FALSE}
@@ -52,12 +53,10 @@ kbl(results_one,
   column_spec(1, width = "2.9cm") %>% 
   group_rows(start_row = 1, 
              end_row = 6, 
-             latex_align = "l",
              latex_gap_space = "-0.25cm") %>% 
   row_spec(6, bold = TRUE) %>% 
   group_rows(start_row = 7, 
              end_row = 12, 
-             latex_align = "l",
              latex_gap_space = "-0.10cm") %>% 
   row_spec(12, bold = TRUE)
 ```
@@ -91,7 +90,8 @@ donde $MAE_h$ es el error absoluto medio del pronóstico en el periodo $h$ de un
 
 ```{r include=FALSE}
 ts_forecasts <- read_csv(here("results", "analysis", "ts_24_forecasts.csv"))
-ml_forecasts <- read_csv(here("results", "analysis", "ml_24_forecasts.csv"))
+ml_forecasts <- read_csv(here("results", "analysis", "ml_24_forecasts.csv")) %>%
+  mutate(model = str_replace(model, "svm", "svr"))
 ```
 
 ```{r include=FALSE}
@@ -239,7 +239,8 @@ mase_mean <-
 
 mase %<>% 
   bind_rows(mase_mean) %>%
-  mutate(across(where(is.numeric), ~ round(., 2)))
+  mutate(across(where(is.numeric), ~ round(., 2))) %>% 
+  rename("svr" = svm)
 ```
 
 ```{r table_five, echo=FALSE}
@@ -281,7 +282,8 @@ ranking_mase <- read_csv(here("results", "analysis", "ranking_mase.csv")) %>%
          key = case_when(
            key == "snaive" ~ "snaïve", 
            TRUE ~ key
-         ))
+         )) %>% 
+  mutate(key = str_replace_all(key, "svm", "svr"))
 ```
 
 ```{r fig_four, echo=FALSE, warning=FALSE, message=FALSE, fig.align = 'center', fig.dim = c(11.5, 3.9)}
@@ -346,6 +348,7 @@ cc <-
   ),
   id = as_factor(id),
   key = case_when(key == "snaive" ~ "snaïve",
+                  key == "svm" ~ "svr",
                   TRUE ~ key))
 ```
 
@@ -355,8 +358,8 @@ x_breaks = 10^pretty(log10(cc$cc))
 cc %>% 
   ggplot(aes(cc, mae, label = key)) +
   geom_smooth(method = "lm", colour = "black", fill = "gray80") +
-  #geom_mark_ellipse(aes(fill = id, label = NULL), expand = unit(7, "mm")) +
-  geom_label(position = position_jitter(width = 0.09, height = 0.05)) +
+  # geom_mark_ellipse(aes(fill = id, label = NULL), expand = unit(7, "mm")) +
+  geom_label(vjust = 0, nudge_x = 0.05) +
   scale_x_continuous(trans = "log",
                      label = scales::comma,
                      breaks = x_breaks) +
