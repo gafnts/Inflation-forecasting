@@ -53,8 +53,6 @@ Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque nibh ex, mollis
 
 ```
 
-\newpage
-
 ```{r conclusions, child = 'conclusions.Rmd'}
 
 ```
