@@ -105,6 +105,11 @@ ar_3[[1]] %>%
 ## (b) Model building
 
 ```{r}
+p1 <- acf(ipc)
+p2 <- pacf(ipc)
+```
+
+```{r}
 ar <- auto.arima(ipc, 
                  max.p = 10, max.q = 0, max.d = 0, 
                  max.P = 0, max.Q = 0, max.D = 0,
