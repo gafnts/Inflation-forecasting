@@ -90,9 +90,7 @@ main <-
     "imae" = imae_variacion_interanual,
     "itcer" = itcer_global_variacion_interanual,
     "lendrate" = tasa_de_interes_activa_real_en_mn,
-    "deprate" = tasa_de_interes_pasiva_nominal_en_mn,
-    "tpm" = tasa_de_politica_monetaria,
-    "bananas" = banano_precio_promedio_de_exportacion
+    "tpm" = tasa_de_politica_monetaria
   ) %>% 
   write_csv(here("data", "main.csv"))
 ```

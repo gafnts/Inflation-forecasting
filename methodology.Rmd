@@ -184,8 +184,7 @@ kbl(table_two,
   column_spec(6, width = "1.8cm") %>% 
   column_spec(9, width = "1cm") %>% 
   group_rows(start_row = 1, 
-             end_row = 14, 
-             latex_align = "c",
+             end_row = 12,
              latex_gap_space = "-0.35cm")
 ```
 
@@ -337,8 +336,9 @@ for (i in names) {
 }
 
 hurst %<>% 
+  rename("Hurst" = 1) %>% 
   cbind(main_longer %>% distinct(Variable)) %>% 
-  select(Variable, Hurst = X0.651292518103147) %>% 
+  select(Variable, Hurst) %>% 
   mutate(Hurst = round(Hurst, 4))
 ```
 
@@ -362,8 +362,7 @@ kbl(table_three,
                 full_width = T) %>% 
   row_spec(0, bold = TRUE) %>% 
   group_rows(start_row = 1, 
-             end_row = 14, 
-             latex_align = "c",
+             end_row = 12,
              latex_gap_space = "-0.5cm") %>% 
   column_spec(1, width = "2cm") %>% 
   column_spec(6, width = "1.5cm")
