@@ -298,7 +298,7 @@ ranking_mase <- read_csv(here("results", "analysis", "ranking_mase.csv")) %>%
   mutate(key = str_replace_all(key, "svm", "svr"))
 ```
 
-```{r fig_four, echo=FALSE, warning=FALSE, message=FALSE, fig.align = 'center', fig.dim = c(11.5, 3.9)}
+```{r fig_four, echo=FALSE, warning=FALSE, message=FALSE, fig.align = 'center', fig.dim = c(11.5, 3.5)}
 ranking_mase %>% 
   ggplot(aes(fct_inorder(key, id), estimate, fill = fct_inorder(horizon, horid))) +
   geom_col(position = "dodge2") +
