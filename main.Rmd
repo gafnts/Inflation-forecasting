@@ -1,7 +1,7 @@
 ---
 title: "Pronósticos de inflación en Guatemala: ¿Modelos de series de tiempo o algoritmos de *machine learning*?^[Con el propósito de maximizar la reproducibilidad del presente estudio, las bases de datos utilizadas y el código en R se encuentran disponibles en`:` https://github.com/gafnts/Inflation-forecasting]"
 author: Gabriel A. Fuentes^[Séptimo semestre, Teoría y Política Monetaria. Correo electrónico`:` gafnts@gmail.com]
-date: "22 de abril, 2022"
+date: "Abril, 2022"
 output:
   pdf_document:
     number_sections: TRUE
@@ -25,7 +25,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 \end{centering}
 ```
-La presente investigación conduce un extenso ejercicio de pronósticos fuera de muestra de la variación en el nivel de precios de Guatemala durante 4 horizontes temporales con el propósito de contrastar la eficiencia en la predicción de 5 modelos econométricos tradicionales y 5 alternativas basadas en algoritmos de aprendizaje estadístico. Los principales resultados sugieren que, mientras modelos autorregresivos integrados de medias móviles estacionales (SARIMA) y de vectores autorregresivos (VAR) generan pronósticos eficientes durante horizontes de 3 y 9 meses, métodos de aprendizaje automático como regresión de vectores de soporte (SVR), bosques aleatorios (RF) y algoritmos de potenciación de gradiente extremo (XGB) son capaces de desempeñarse mejor que el resto de sus contrapartes durante el pronóstico del ritmo inflacionario en horizontes temporales de 1 y 2 años. Tales hallazgos conllevan una valiosa contribución a la literatura de pronósticos macroeconómicos al ser---al mejor de nuestro conocimiento---la primera investigación en su género en emplear métodos de aprendizaje automático durante la predicción de la tasa de inflación en Guatemala.
+La presente investigación conduce un extenso ejercicio de pronósticos fuera de muestra de la variación en el nivel de precios de Guatemala durante 4 horizontes temporales con el propósito de contrastar la eficiencia en la predicción de 5 modelos econométricos tradicionales y 5 alternativas basadas en algoritmos de aprendizaje estadístico. Los principales resultados sugieren que, mientras modelos autorregresivos integrados de medias móviles estacionales (SARIMA) y de vectores autorregresivos (VAR) generan pronósticos eficientes durante horizontes de 3 y 9 meses, métodos de aprendizaje automático como regresión de vectores de soporte (SVR), bosques aleatorios (RF) y algoritmos de potenciación de gradiente extremo (XGB) son capaces de desempeñarse mejor que el resto de sus contrapartes durante la predicción del ritmo inflacionario en horizontes temporales de 1 y 2 años. Tales hallazgos conllevan una valiosa contribución a la literatura de pronósticos macroeconómicos al ser---al mejor de nuestro conocimiento---la primera investigación en su género en emplear métodos de aprendizaje automático durante la predicción de la tasa de inflación en Guatemala.
 
 \vspace{0.5 cm}
 
