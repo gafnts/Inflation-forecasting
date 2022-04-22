@@ -250,13 +250,6 @@ final <-
 ```
 
 ```{r}
-final %>%
-  fit(data = train) %>%
-  extract_fit_parsnip() %>%
-  vip(geom = "col")
-```
-
-```{r}
 final_res <- last_fit(final, splits, metrics = metrics)
 collect_metrics(final_res)
 ```
