@@ -1,0 +1,69 @@
+---
+title: "Pronósticos de inflación en Guatemala: ¿Modelos de series de tiempo o algoritmos de *machine learning*?"
+date: "Abril, 2022"
+output:
+  pdf_document:
+    number_sections: TRUE
+geometry: "left = 2.5cm, right = 2.5cm, top = 2.5cm, bottom = 2.5cm"
+fontsize: 11pt
+header-includes: \usepackage{setspace}\spacing{1}
+bibliography: references.bib
+csl: apa.csl
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{=tex}
+\begin{centering}
+
+\large
+
+\textbf{Resumen}
+
+\end{centering}
+```
+La presente investigación conduce un extenso ejercicio de pronósticos fuera de muestra de la variación en el nivel de precios de Guatemala durante 4 horizontes temporales con el propósito de contrastar la eficiencia en la predicción de 5 modelos econométricos tradicionales y 5 alternativas basadas en algoritmos de aprendizaje estadístico. Los principales resultados sugieren que, mientras modelos autorregresivos integrados de medias móviles estacionales (SARIMA) y de vectores autorregresivos (VAR) generan pronósticos eficientes durante horizontes de 3 y 9 meses, métodos de aprendizaje automático como regresión de vectores de soporte (SVR), bosques aleatorios (RF) y algoritmos de potenciación de gradiente extremo (XGB) son capaces de desempeñarse mejor que el resto de sus contrapartes durante la predicción del ritmo inflacionario en horizontes temporales de 1 y 2 años. Tales hallazgos conllevan una valiosa contribución a la literatura de pronósticos macroeconómicos al ser---al mejor de nuestro conocimiento---la primera investigación en su género en emplear métodos de aprendizaje automático durante la predicción de la tasa de inflación en Guatemala.
+
+\vspace{0.5 cm}
+
+\normalsize
+
+\textit{Palabras clave:} Machine learning, series de tiempo, pronósticos, inflación
+
+\textit{Clasificación JEL:} E31, C22, C45, C53
+
+\newpage
+
+\renewcommand\contentsname{Índice}
+
+\tableofcontents
+
+\newpage
+
+```{r intro, child = 'introduction.Rmd'}
+
+```
+
+```{r litrev, child = 'literature-review.Rmd'}
+
+```
+
+```{r methodology, child = 'methodology.Rmd'}
+
+```
+
+```{r results, child = 'results.Rmd'}
+
+```
+
+```{r conclusions, child = 'conclusions.Rmd'}
+
+```
+
+\newpage
+
+```{r biblio, child = 'references.Rmd'}
+
+```
