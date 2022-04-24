@@ -298,7 +298,7 @@ ranking_mase <- read_csv(here("results", "analysis", "ranking_mase.csv")) %>%
   mutate(key = str_replace_all(key, "svm", "svr"))
 ```
 
-```{r fig_four, echo=FALSE, warning=FALSE, message=FALSE, fig.align = 'center', fig.dim = c(11.5, 3.5)}
+```{r fig_four, echo=FALSE, warning=FALSE, message=FALSE, fig.align = 'center', fig.dim = c(11.5, 3.2)}
 ranking_mase %>% 
   ggplot(aes(fct_inorder(key, id), estimate, fill = fct_inorder(horizon, horid))) +
   geom_col(position = "dodge2") +
@@ -331,6 +331,6 @@ ranking_mase %>%
     guides(colour = guide_legend(nrow = 1))
 ```
 
-SARIMA vuelve a desempeñarse mejor que el resto de métodos estadísticos, llegando incluso durante el horizonte de 9 meses a superar al pronóstico del modelo ingenuo fuera de muestra (lo que lo convierte en el único método de series de tiempo que consigue obtener un MASE menor que la unidad para algún horizonte de predicción). El modelo VAR logra resultados comparables, aunque aún lejanos a los del modelo SARIMA.
+SARIMA vuelve a desempeñarse mejor que el resto de métodos estadísticos, llegando incluso durante el horizonte de 9 meses a superar al pronóstico del modelo ingenuo fuera de muestra (lo que lo convierte en el único método de series de tiempo que consigue obtener un MASE menor que la unidad para algún horizonte de predicción). El modelo VAR logra resultados comparables, aunque aún lejanos a los del modelo SARIMA. Mientras que, al considerar el desempeño de los diferentes métodos de aprendizaje de máquina, la regresión de vectores de soporte vuelve a superar al resto de modelos, consiguiendo un MASE menor que uno durante el intervalo de predicción de dos años.
 
-Mientras tanto, al considerar el desempeño de los diferentes métodos de aprendizaje de máquina, la regresión de vectores de soporte vuelve a superar al resto de modelos, consiguiendo un MASE menor que uno durante el intervalo de predicción de dos años. Los resultados del resto de los métodos son muy similares a los de los resultados evaluados a través del error absoluto medio. Sin embargo, mientras el error absoluto medio cataloga al promedio de las predicciones del perceptrón multicapa como pronósticos más eficientes que los de la red neuronal de larga memoria de corto plazo durante todos los horizontes de pronóstico, ocurre exactamente lo contrario al comparar sus resultados por medio del error medio absoluto escalado.
+Los resultados del resto de los métodos son similares a los de los resultados evaluados a través del MAE. Sin embargo, mientras el MAE cataloga al promedio de las predicciones del perceptrón multicapa como pronósticos más eficientes que los de la red neuronal LSTM durante todos los horizontes de pronóstico, lo contrario ocurre al comparar sus resultados por medio del MASE.
